@@ -1,0 +1,22 @@
+// More information at this link:- https://biomejs.dev/reference/configuration/
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.2/schema.json",
+	"files": {
+		"ignore": []
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+	"vcs": {
+		"clientKind": "git",
+		"defaultBranch": "develop",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
+}

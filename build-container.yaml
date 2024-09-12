@@ -1,0 +1,74 @@
+---
+name: Build Container
+
+on:
+  # makes this workflow trigger only on a git push to the main branch and changes to the "Containerfile" file 
+  push:
+    branches: [main]
+    paths: [Containerfile]
+  # used to manually trigger the workflow
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  # built-in github actions variable that gives us the information about the organization/user name and the repository name in the syntax "<organization_name>/<repository_name>" or "<user_name>/<repository_name>"
+  REPO: ${{ github.repository }}
+
+jobs:
+  build-collection:
+    # the runner this workflow will run on
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      # required to push to github containers registry
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate image name for docker
+        # tranforms the "IMAGE_NAME" environment variable to lowercase using bash variable transformation and appens it to the file at "GITHUB_ENV" environment variable
+        run: |
+          echo "IMAGE_NAME=${REPO..}" >> ${GITHUB_ENV}
+
+      - name: Login to github container registry
+        uses: docker/login-action@v3
+        with:
+          # ad hoc token created by github for each workflow
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          # actor who triggered this workflow
+          username: ${{ github.actor }}
+
+      - name: Set up Docker Buildx
+        # only needed in certain kinds of docker builds
+        uses: docker/setup-buildx-action@v2
+        
+        # allows accessing the outputs of a step in subsequent steps by using the "steps.<id>.outputs.<name>" syntax.
+      - id: metadata
+        name: Extract metadata
+        uses: docker/metadata-action@v5
+        with:
+          # name of the container
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # tags to apply to the container
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest
+            type=sha
+
+      - name: Build/push container image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          # whether to push the container to the github container registry
+          push: true
+          # output "labels" from the step with id "metadata"
+          labels: ${{ steps.metadata.outputs.labels }}
+          # output "tags" from the step with id "metadata"
+          tags: ${{ steps.metadata.outputs.tags }}
+
+      
