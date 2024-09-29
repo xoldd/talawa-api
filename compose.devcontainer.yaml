@@ -23,6 +23,8 @@ services:
     environment:
       - API_DEBUGGER_HOST=${API_DEBUGGER_HOST:?error}
       - API_DEBUGGER_PORT=${API_DEBUGGER_PORT:?error}
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
     healthcheck:
       disable: true
     # https://docs.docker.com/reference/compose-file/services/#ports
@@ -36,27 +38,18 @@ services:
         published: ${API_DEBUGGER_MAPPED_PORT:?error}
         target: ${API_DEBUGGER_PORT}
     volumes:
-      # # - target: /home/talawa/.local/share/pnpm/store
-      # - target: /home/vscode/.local/share/pnpm/store
+      # - source: api_pnpm_store
+      #   target: /home/talawa/api/.pnpm-store
       #   type: volume
-      # # - target: /home/talawa/api/node_modules
-      # - target: /home/vscode/api/node_modules
+      # - target: /home/talawa/api/node_modules
       #   type: volume
-      # - source: ./
-      #   # target: /home/talawa/api
-      #   target: /home/vscode/api
-      #   type: bind
-        # The talawa api workspace volume is managed by docker. This lets us use the devcontainer without mounting the talawa api workspace from the host system. 
-      - source: talawa_api_workspace
-        target: /home/vscode/api
-        # target: /home/talawa/api
-        type: volume
-  caddy:
-    depends_on:
-      api:
-        condition: service_healthy
-        # We disable the dependence of the caddy service on the api service when using devcontainer because within the devcontainer the api is not guaranteed to be running. This way the caddy service can start independently but still be able to proxy the incoming HTTP requests to the api service whenever it is online within the devcontainer.
-        required: false
+      - bind:
+          # changes made within the container are reflected on the host and changes made on the host are reflected within the container
+          propagation: shared
+        consistency: cached
+        source: ./
+        target: /home/talawa/api
+        type: bind
   cloudbeaver:
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:

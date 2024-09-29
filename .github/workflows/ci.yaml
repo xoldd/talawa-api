@@ -1,0 +1,46 @@
+jobs:
+  check_linting_and_formatting:
+    name: Check linting and formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Build talawa api non production environment docker image
+        uses: docker buildx build --file ./Containerfile --tag talawa_api --target non_production ./
+      - name: Check linting and formatting
+        run: docker container run -i --rm talawa_api pnpm check_code_quality
+  check_type_errors:
+    name: Check type errors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Build talawa api non production environment docker image
+        uses: docker buildx build -file ./Containerfile --tag talawa_api --target non_production .
+      - name: Check type errors
+        uses: docker container run -i --rm talawa_api pnpm check_type_errors
+  check_dockerfile_linting:
+    name: Check Dockerfile linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - with:
+          dockerfile: ./Containerfile
+        uses: hadolint/hadolint-action@v3.1.0
+  run_api_tests:
+    name: Run api tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Create `.env` file for api testing
+        run: cp ./.env.testing ./.env
+      - name: Build talawa api non production compose testing environment
+        run: docker compose build
+      - name: Run api tests
+        run: docker compose up
+name: ci
+on:
+  pull_request:
+  

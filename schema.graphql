@@ -1,8 +1,7 @@
-type User {
-    id: ID!
-    name: String
+type Mutation {
+  increaseCountByOne: Int
 }
 
 type Query {
-    user(id: ID!): User
+  count: Int
 }

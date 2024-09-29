@@ -1,7 +1,6 @@
-import type { PubSub, YogaInitialContext } from "graphql-yoga";
-import type { EnvConfig } from "../env_config_schema.js";
-import type { PubSubPublishArgsByKey } from "./pubSub.js";
-import type { GraphQLServerContext } from "./server.js";
+import type { PubSub, YogaInitialContext, YogaLogger } from "graphql-yoga";
+import type { EnvConfig } from "~/src/envConfig.js";
+import type { TalawaPubSubPublishArgsByKey } from "./pubSub.js";
 
 /**
  * Type of authentication context of a client making a request to the graphQL server.
@@ -18,19 +17,19 @@ export type CurrentClientAuthContext = {
  * Type of the initial context argument provided to the createContext function by the
  * graphQL server.
  */
-type InitialContext = GraphQLServerContext &
-	YogaInitialContext & {
-		envConfig: EnvConfig;
-		pubSub: PubSub<PubSubPublishArgsByKey>;
-	};
+type InitialContext = YogaInitialContext & {
+	envConfig: EnvConfig;
+	log: YogaLogger;
+	pubSub: PubSub<TalawaPubSubPublishArgsByKey>;
+};
 
 /**
  * Type of the context passed to the graphQL resolvers on each request.
  */
-export type GraphQLUserContext = {
-	apiRootUrl: string;
-	pubSub: PubSub<PubSubPublishArgsByKey>;
-} & CurrentClientAuthContext;
+export type GraphQLContext = {
+	pubSub: PubSub<TalawaPubSubPublishArgsByKey>;
+};
+// } & CurrentClientAuthContext;
 
 /**
  * This function is responsible for creating a new graphQL context that is scoped to each
@@ -45,45 +44,46 @@ export type GraphQLUserContext = {
  * can be found here:- {@link https://the-guild.dev/graphql/yoga-server/docs/features/context#extending-the-initial-context}
  */
 export const createContext = async ({
-	apiRootUrl,
 	envConfig,
+	log,
+	params,
 	pubSub,
 	request,
-}: InitialContext): Promise<GraphQLUserContext> => {
-	/**
-	 * As this function is traversed, this object will be mutated accordingly.
-	 */
-	const authContext: CurrentClientAuthContext = {
-		expired: undefined,
-		isAuth: false,
-		userId: undefined,
-	};
+	waitUntil,
+}: InitialContext): Promise<GraphQLContext> => {
+	// /**
+	//  * As this function is traversed, this object will be mutated accordingly.
+	//  */
+	// const authContext: CurrentClientAuthContext = {
+	// 	expired: undefined,
+	// 	isAuth: false,
+	// 	userId: undefined,
+	// };
 
-	const authorizationHeader = request.headers.get("Authorization");
+	// const authorizationHeader = request.headers.get("Authorization");
 
-	if (authorizationHeader !== null) {
-		const token = authorizationHeader.split(" ")[1];
+	// if (authorizationHeader !== null) {
+	// 	const token = authorizationHeader.split(" ")[1];
 
-		if (token !== undefined && token !== "") {
-			try {
-				const decodedToken = verify(
-					token,
-					envConfig.ACCESS_TOKEN_SECRET,
-				) as InterfaceJwtTokenPayload;
+	// 	if (token !== undefined && token !== "") {
+	// 		try {
+	// 			const decodedToken = verify(
+	// 				token,
+	// 				envConfig.ACCESS_TOKEN_SECRET,
+	// 			) as InterfaceJwtTokenPayload;
 
-				authContext.expired = false;
-				authContext.userId = decodedToken.userId;
-			} catch (error) {
-				if (error instanceof TokenExpiredError) {
-					authContext.expired = true;
-				}
-			}
-		}
-	}
+	// 			authContext.expired = false;
+	// 			authContext.userId = decodedToken.userId;
+	// 		} catch (error) {
+	// 			if (error instanceof TokenExpiredError) {
+	// 				authContext.expired = true;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	return {
-		...authContext,
-		apiRootUrl,
+		// ...authContext,
 		pubSub,
 	};
 };

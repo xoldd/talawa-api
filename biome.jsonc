@@ -1,22 +1,33 @@
-// More information at this link:- https://biomejs.dev/reference/configuration/
+// More information at this link: https://biomejs.dev/reference/configuration/
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.2/schema.json",
+	// https://biomejs.dev/reference/configuration/#schema
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	// https://biomejs.dev/reference/configuration/#files
 	"files": {
-		"ignore": []
+		// https://biomejs.dev/reference/configuration/#filesignore
+		"ignore": ["./pnpm-lock.yaml", "./schema.graphql"],
+		// https://biomejs.dev/reference/configuration/#filesignoreunknown
+		"ignoreUnknown": true
 	},
+	// https://biomejs.dev/reference/configuration/#linter
 	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true
-		}
-	},
-	"organizeImports": {
+		// https://biomejs.dev/reference/configuration/#linterenabled
 		"enabled": true
 	},
+	// https://biomejs.dev/reference/configuration/#vcs
+	"organizeImports": {
+		// https://biomejs.dev/reference/configuration/#organizeimportsenabled
+		"enabled": true
+	},
+	// https://biomejs.dev/reference/configuration/#vcs
 	"vcs": {
+		// https://biomejs.dev/reference/configuration/#vcsclientkind
 		"clientKind": "git",
+		// https://biomejs.dev/reference/configuration/#vcsdefaultbranch
 		"defaultBranch": "develop",
+		// https://biomejs.dev/reference/configuration/#vcsenabled
 		"enabled": true,
+		// https://biomejs.dev/reference/configuration/#vcsuseignorefile
 		"useIgnoreFile": true
 	}
 }

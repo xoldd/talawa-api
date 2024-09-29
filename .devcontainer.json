@@ -2,8 +2,7 @@
 // https://github.com/orgs/devcontainers/discussions/4
 {
 	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
-	// "containerUser": "talawa",
-	"containerUser": "vscode",
+	"containerUser": "talawa",
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -57,8 +56,7 @@
 			"installOhMyZsh": false,
 			"installOhMyZshConfig": false,
 			"nonFreePackages": true,
-			// "username": "talawa",
-			"username": "vscode"
+			"username": "talawa"
 		},
 		// https://github.com/devcontainers/features/tree/main/src/git
 		"ghcr.io/devcontainers/features/git": {},
@@ -69,11 +67,9 @@
 	"initializeCommand": "cp ./.env.devcontainer ./.env",
 	"name": "talawa_api",
 	"overrideCommand": true,
-	"postCreateCommand": "fnm install && fnm use && corepack enable && corepack enable npm && corepack install && pnpm install --frozen-lockfile",
-	// "remoteUser": "talawa",
-	"remoteUser": "vscode",
+	"postCreateCommand": "fnm install && fnm use && corepack enable npm && corepack enable && corepack install",
+	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",
-	// "workspaceFolder": "/home/talawa/api",
-	"workspaceFolder": "/home/vscode/api"
+	"workspaceFolder": "/home/talawa/api"
 }

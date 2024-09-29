@@ -1,7 +1,8 @@
 import type { FastifyPluginAsync } from "fastify";
 
 /**
- * This fastify route plugin is used to expose a healthcheck endpoint for docker to make healthcheck requests against.
+ * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
+ * and handles the configuration for it.
  */
 export const route: FastifyPluginAsync = async (fastify) => {
 	fastify.get("/health", async (_request, reply) =>

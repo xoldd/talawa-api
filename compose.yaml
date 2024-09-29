@@ -18,20 +18,21 @@ services:
       context: ./
       # https://docs.docker.com/reference/compose-file/build/#dockerfile
       dockerfile: ./Containerfile
+      # https://docs.docker.com/reference/compose-file/build/#target
       target: production
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:
       minio:
         condition: service_healthy
-        # Should be set to false when a third party minio service could be used in the api service and the minio compose profile is disabled.
+        # Should be set to false when a third party minio service could be used in the api service and the `minio` compose profile is disabled.
         required: false
       postgres:
         condition: service_healthy
-        # Should be set to false when a third party postgres service could be used in the api service the and postgres compose profile is disabled.
+        # Should be set to false when a third party postgres service could be used in the api service the and the `postgres` compose profile is disabled.
         required: false
       redis:
         condition: service_healthy
-        # Should be set to false when a third party redis service could be in the api service and the redis compose profile is disabled.
+        # Should be set to false when a third party redis service could be used in the api service and the `redis` compose profile is disabled.
         required: false
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
@@ -64,7 +65,7 @@ services:
       retries: 3
       start_interval: 1s
       start_period: 5s
-      test: ["CMD-SHELL", "node $${HOME}/api/api_compose_service_healthcheck.js"]
+      test: ["CMD-SHELL", "node /home/talawa/api/scripts/api_compose_service_healthcheck.js"]
       timeout: 10s
     # https://docs.docker.com/reference/compose-file/services/#init
     # https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
@@ -188,7 +189,7 @@ services:
       timeout: 10s
     # https://docs.docker.com/reference/compose-file/services/#image
     # https://hub.docker.com/_/postgres
-    image: postgres:16.4-alpine3.20
+    image: postgres:17.0-alpine3.20
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - postgres

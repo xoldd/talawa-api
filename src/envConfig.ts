@@ -1,11 +1,13 @@
 import { type Static, Type } from "@sinclair/typebox";
+import ajvFormats from "ajv-formats";
+import envSchema from "env-schema";
 
 /**
  * THIS FILE CONTAINS JSON SCHEMA DEFINITIONS FOR ALL ENVIRONMENT VARIABLES PASSED TO THE EXECUTION CONTEXT OF TALAWA API FOR CONFIGURING IT.
  */
 
 /**
- * JSON schema of a record of minio client environment variables accessible to the application at runtime.
+ * JSON schema of a record of minio client environment variables accessible to the talawa api at runtime.
  */
 export const minioClientEnvConfigSchema = Type.Object({
 	/**
@@ -36,7 +38,7 @@ export const minioClientEnvConfigSchema = Type.Object({
 export type MinioClientEnvConfig = Static<typeof minioClientEnvConfigSchema>;
 
 /**
- * JSON schema of a record of postgres client environment variables accessible to the application at runtime.
+ * JSON schema of a record of postgres client environment variables accessible to the talawa api at runtime.
  */
 export const postgresClientEnvConfigSchema = Type.Object({
 	/**
@@ -86,7 +88,7 @@ export type PostgresClientEnvConfig = Static<
 >;
 
 /**
- * JSON schema of a record of redis client environment variables accessible to the application at runtime.
+ * JSON schema of a record of redis client environment variables accessible to the talawa api at runtime.
  */
 export const redisClientEnvConfigSchema = Type.Object({
 	/**
@@ -105,7 +107,7 @@ export const redisClientEnvConfigSchema = Type.Object({
 export type RedisClientEnvConfig = Static<typeof redisClientEnvConfigSchema>;
 
 /**
- * JSON schema of a record of environment variables accessible to the application at runtime.
+ * JSON schema of a record of environment variables accessible to the talawa api at runtime.
  */
 export const envConfigSchema = Type.Composite([
 	minioClientEnvConfigSchema,
@@ -117,7 +119,7 @@ export const envConfigSchema = Type.Composite([
 		//  */
 		// ACCESS_TOKEN_SECRET: Type.String(),
 		/**
-		 * Used for providing the environment in which this application is running on.
+		 * Used for providing the environment in which talawa api should run on.
 		 */
 		API_ENVIRONMENT: Type.Enum(
 			{
@@ -129,13 +131,13 @@ export const envConfigSchema = Type.Composite([
 			},
 		),
 		/**
-		 * Used for providing the host of the domain on which the server will run.
+		 * Used for providing the host of the domain on which talawa api will run.
 		 */
 		API_HOST: Type.String({
 			default: "127.0.0.1",
 		}),
 		/**
-		 * Used for providing the log level for the logger used in this application.
+		 * Used for providing the log level for the logger used in talawa api.
 		 *
 		 * @privateRemarks
 		 * Log levels should only be changed when the developers know what they're doing. Otherwise
@@ -176,7 +178,7 @@ export const envConfigSchema = Type.Composite([
 		// }),
 		// /**
 		//  * Used for providing an email that would designnate and ensure the existence of at least
-		//  * one super-admin in the application whenever it is started.
+		//  * one super-admin in the talawa api whenever it is started.
 		//  */
 		// LAST_RESORT_SUPERADMIN_EMAIL: Type.String({
 		// 	format: "email",
@@ -229,3 +231,17 @@ export const envConfigSchema = Type.Composite([
  * Type of the object containing parsed configuration environment variables.
  */
 export type EnvConfig = Static<typeof envConfigSchema>;
+
+export const getEnvConfig = (): EnvConfig => {
+	return envSchema<EnvConfig>({
+		ajv: {
+			customOptions: (ajv) => {
+				ajvFormats(ajv, {
+					formats: ["email", "uri"],
+				});
+				return ajv;
+			},
+		},
+		schema: envConfigSchema,
+	});
+};

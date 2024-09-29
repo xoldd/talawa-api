@@ -1,4 +1,4 @@
-import { createPubSub } from "graphql-yoga";
+import type { PubSub } from "graphql-yoga";
 
 /**
  * This file is to be used to define the publish/subscribe module used in the graphQL
@@ -10,10 +10,11 @@ import { createPubSub } from "graphql-yoga";
  * need to be extended with fields and maintained as graphQL subscriptions functionality is added
  * to the graphQL server. More information can be found here:- {@link https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#topics}
  */
-export type PubSubPublishArgsByKey = Record<string, never>;
+export type TalawaPubSubPublishArgsByKey = {
+	[key: string]: [] | [unknown] | [number | string, unknown];
+};
 
 /**
- * This is the default in-memory publish-subscribe bus used in the graphQL subscriptions.
- * This can be replaced with an external publish-subscribe module like redis as well.
+ * Type of the publish and subscribe bus object used for publishing and subscribing to talawa events.
  */
-export const pubSub = createPubSub<PubSubPublishArgsByKey>({});
+export type TalawaPubSub = PubSub<TalawaPubSubPublishArgsByKey>;

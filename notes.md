@@ -1,23 +1,15 @@
 # Files and folders left to migrate:-
 
-.dockerignore
 .github
 .husky
-.node-version
 .pylintrc
-codegen.ts
 config
-docker-compose.dev.yaml
-docker-compose.prod.yaml
-Containerfile.dev
-Containerfile.prod
 docs
 images
 locales
 logs
 requirements.txt
 sample_data
-schema.graphql
 scripts
 setup.ts
 talawa-api-docs
@@ -59,6 +51,13 @@ run a background task that produces and stores values for the currently null `fi
 once the previous task is complete and no null `firstname` and `lastname` columns remain update the server code to stop writing to the `name` column and start reading from the `firstname` and `lastname` columns
 
 once the previous task is complete remove the `name` column from the database
+
+# docker compose
+
+validate compose files:
+```
+docker compose config --quiet
+```
 
 # To write documentation about:-
 

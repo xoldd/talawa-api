@@ -1,3 +1,3 @@
 # About this directory
 
-This directory contains drizzle-orm schema files for the postgres database.
+This directory contains drizzle-orm schema definitions for the postgres database.

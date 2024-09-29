@@ -2,7 +2,7 @@ import { type PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
 // import { migrate } from "drizzle-orm/postgres-js/migrator";
 import fastifyPlugin from "fastify-plugin";
 import postgres from "postgres";
-import * as schema from "../drizzle/schema";
+import * as schema from "~/src/drizzle/schema.js";
 
 /**
  * This plugin handles integrating a drizzle client instance on a namespace `drizzleClient`

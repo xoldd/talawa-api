@@ -3,10 +3,10 @@
 
 export type introspection_types = {
     'Boolean': unknown;
-    'ID': unknown;
-    'Query': { kind: 'OBJECT'; name: 'Query'; fields: { 'user': { name: 'user'; type: { kind: 'OBJECT'; name: 'User'; ofType: null; } }; }; };
+    'Int': unknown;
+    'Mutation': { kind: 'OBJECT'; name: 'Mutation'; fields: { 'increaseCountByOne': { name: 'increaseCountByOne'; type: { kind: 'SCALAR'; name: 'Int'; ofType: null; } }; }; };
+    'Query': { kind: 'OBJECT'; name: 'Query'; fields: { 'count': { name: 'count'; type: { kind: 'SCALAR'; name: 'Int'; ofType: null; } }; }; };
     'String': unknown;
-    'User': { kind: 'OBJECT'; name: 'User'; fields: { 'id': { name: 'id'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'ID'; ofType: null; }; } }; 'name': { name: 'name'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; }; };
 };
 
 /** An IntrospectionQuery representation of your schema.
@@ -20,7 +20,7 @@ export type introspection_types = {
 export type introspection = {
   name: never;
   query: 'Query';
-  mutation: never;
+  mutation: 'Mutation';
   subscription: never;
   types: introspection_types;
 };

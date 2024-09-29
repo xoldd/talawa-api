@@ -6,33 +6,24 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
 // import fastifyStatic from "@fastify/static";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import ajvFormats from "ajv-formats";
-import envSchema from "env-schema";
 // import { readFileSync } from "node:fs";
 import Fastify from "fastify";
-import { type EnvConfig, envConfigSchema } from "./env_config_schema.js";
-import drizzleClientPlugin from "./plugins/drizzle_client.js";
-import minioClientPlugin from "./plugins/minio_client.js";
-// import nodemailerPlugin from "./plugins/nodemailer";
-import redisClientPlugin from "./plugins/redis_client.js";
+import type { EnvConfig } from "./envConfig.js";
+import drizzleClientPlugin from "./plugins/drizzleClient.js";
+import minioClientPlugin from "./plugins/minioClient.js";
+import redisClientPlugin from "./plugins/redisClient.js";
+// import nodemailerPlugin from "./plugins/nodemailer.js";
+import graphqlRoute from "./routes/graphql.js";
 import healthRoute from "./routes/health.js";
 
 /**
  * This function is used to set up the fastify server.
  */
-export const initializeFastify = async () => {
-	const envConfig = envSchema<EnvConfig>({
-		// ajv: {
-		// 	customOptions: (ajv) => {
-		// 		ajvFormats(ajv, {
-		// 			formats: ["email", "uri"],
-		// 		});
-		// 		return ajv;
-		// 	},
-		// },
-		schema: envConfigSchema,
-	});
-
+export const initializeFastify = async ({
+	envConfig,
+}: {
+	envConfig: EnvConfig;
+}) => {
 	/**
 	 * This is the root fastify instance. It could be considered as the root node of a directed acyclic graph(DAG) of fastify plugins.
 	 */
@@ -75,7 +66,9 @@ export const initializeFastify = async () => {
 
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 
-	// More information at this link:- {@link https://github.com/fastify/fastify-rate-limit}
+	/**
+	 * More information at this link:- {@link https://github.com/fastify/fastify-rate-limit}
+	 */
 	fastify.register(fastifyRateLimit, {});
 
 	/**
@@ -86,7 +79,12 @@ export const initializeFastify = async () => {
 	/**
 	 * More information at this link:- {@link https://github.com/fastify/fastify-helmet}
 	 */
-	fastify.register(fastifyHelmet, {});
+	fastify.register(fastifyHelmet, {
+		/**
+		 * This field is set to `false` for graphiql to work.
+		 */
+		contentSecurityPolicy: false,
+	});
 
 	// TODO:- AUTHORIZATION FOR STATIC FILE ACCESS NEEDS TO BE IMPLEMENTED
 
@@ -103,11 +101,13 @@ export const initializeFastify = async () => {
 	// 	root: join(import.meta.dirname, "../videos"),
 	// });
 
-	fastify.register(drizzleClientPlugin, {});
+	// fastify.register(drizzleClientPlugin, {});
 
-	fastify.register(minioClientPlugin, {});
+	// fastify.register(minioClientPlugin, {});
 
-	fastify.register(redisClientPlugin, {});
+	// fastify.register(redisClientPlugin, {});
+
+	fastify.register(graphqlRoute, {});
 
 	fastify.register(healthRoute, {});
 
@@ -133,8 +133,6 @@ export const initializeFastify = async () => {
 
 	return fastify;
 };
-
-export default initializeFastify;
 
 declare module "fastify" {
 	interface FastifyInstance {
