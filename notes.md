@@ -72,3 +72,14 @@ gql.tada
 devcontainer
 testing infrastructure
 type safe graphql documents in integration tests with gql.tada
+
+# mercurius fixes required
+
+mercurius context type has incorrect typings for the following fields for all operations queries/mutations/subscriptions 
+
+{
+    operationsCount?: number;
+    operationId?: number;
+}
+
+and many typings don't exist in the mercurius context type but are present in the context at runtime

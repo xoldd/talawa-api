@@ -7,15 +7,15 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { iso3166Alpha2CountryCodePgEnum } from "../enums/iso_3166_alpha_2_country_code.js";
-import { actionCategoriesPgTable } from "./action_categories.js";
+import { iso3166Alpha2CountryCodePgEnum } from "../enums/iso3166Alpha2CountryCode.js";
+import { actionCategoriesPgTable } from "./actionCategories.js";
 import { actionsPgTable } from "./actions.js";
 import { advertisementsPgTable } from "./advertisements.js";
 import { familiesPgTable } from "./families.js";
 import { fundsPgTable } from "./funds.js";
-import { organizationMembershipsPgTable } from "./organization_memberships.js";
+import { organizationMembershipsPgTable } from "./organizationMemberships.js";
 import { postsPgTable } from "./posts.js";
-import { tagFoldersPgTable } from "./tag_folders.js";
+import { tagFoldersPgTable } from "./tagFolders.js";
 import { tagsPgTable } from "./tags.js";
 import { usersPgTable } from "./users.js";
 import { venuesPgTable } from "./venues.js";
@@ -27,7 +27,7 @@ export const organizationsPgTable = pgTable(
 
 		addressLine2: text("address_line_2"),
 
-		avatarUri: text("avatar_uri"),
+		avatarURI: text("avatar_uri"),
 
 		city: text("city"),
 

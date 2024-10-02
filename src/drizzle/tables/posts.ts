@@ -2,8 +2,8 @@ import { type InferSelectModel, relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { commentsPgTable } from "./comments.js";
 import { organizationsPgTable } from "./organizations.js";
-import { postAttachmentsPgTable } from "./post_attachments.js";
-import { postVotesPgTable } from "./post_votes.js";
+import { postAttachmentsPgTable } from "./postAttachments.js";
+import { postVotesPgTable } from "./postVotes.js";
 import { usersPgTable } from "./users.js";
 
 export const postsPgTable = pgTable(

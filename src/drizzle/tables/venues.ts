@@ -10,8 +10,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { organizationsPgTable } from "./organizations.js";
 import { usersPgTable } from "./users.js";
-import { venueAttachmentsPgTable } from "./venue_attachments.js";
-import { venueBookingsPgTable } from "./venue_bookings.js";
+import { venueAttachmentsPgTable } from "./venueAttachments.js";
+import { venueBookingsPgTable } from "./venueBookings.js";
 
 export const venuesPgTable = pgTable(
 	"venues",

@@ -7,7 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { actionCategoriesPgTable } from "./action_categories.js";
+import { actionCategoriesPgTable } from "./actionCategories.js";
 import { eventsPgTable } from "./events.js";
 import { organizationsPgTable } from "./organizations.js";
 import { usersPgTable } from "./users.js";

@@ -7,7 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { commentVotesPgTable } from "./comment_votes.js";
+import { commentVotesPgTable } from "./commentVotes.js";
 import { postsPgTable } from "./posts.js";
 import { usersPgTable } from "./users.js";
 

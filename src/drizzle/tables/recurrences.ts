@@ -7,7 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { recurrenceTypePgEnum } from "../enums/recurrence_type.js";
+import { recurrenceTypePgEnum } from "../enums/recurrenceType.js";
 import { eventsPgTable } from "./events.js";
 import { usersPgTable } from "./users.js";
 

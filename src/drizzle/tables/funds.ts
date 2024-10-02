@@ -8,7 +8,7 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { fundraisingCampaignsPgTable } from "./fundraising_campaigns.js";
+import { fundraisingCampaignsPgTable } from "./fundraisingCampaigns.js";
 import { organizationsPgTable } from "./organizations.js";
 import { usersPgTable } from "./users.js";
 

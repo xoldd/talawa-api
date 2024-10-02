@@ -7,8 +7,8 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { advertisementTypePgEnum } from "../enums/advertisement_type.js";
-import { advertisementAttachmentsPgTable } from "./advertisement_attachments.js";
+import { advertisementTypePgEnum } from "../enums/advertisementType.js";
+import { advertisementAttachmentsPgTable } from "./advertisementAttachments.js";
 import { organizationsPgTable } from "./organizations.js";
 import { usersPgTable } from "./users.js";
 

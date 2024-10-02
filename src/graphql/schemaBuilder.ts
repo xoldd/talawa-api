@@ -4,15 +4,11 @@ import SchemaBuilder from "@pothos/core";
 // import WithInputPlugin from "@pothos/plugin-with-input";
 // import ZodPlugin from "@pothos/plugin-zod";
 import type { GraphQLContext } from "~/src/graphql/createContext.js";
+import type { Scalars } from "./scalars/index.js";
 
 export const builder = new SchemaBuilder<{
 	Context: GraphQLContext;
-	// Scalars: {
-	// 	PositiveInt: {
-	// 		Input: number;
-	// 		Output: number;
-	// 	};
-	// };
+	Scalars: Scalars;
 }>({
 	// complexity: {},
 	// plugins: [ComplexityPlugin, RelayPlugin, WithInputPlugin, ZodPlugin],

@@ -17,7 +17,7 @@ services:
       # https://docs.docker.com/reference/compose-file/build/#context
       context: ./
       # https://docs.docker.com/reference/compose-file/build/#dockerfile
-      dockerfile: ./Containerfile
+      dockerfile: ./docker/api.Containerfile
       # https://docs.docker.com/reference/compose-file/build/#target
       target: production
     # https://docs.docker.com/reference/compose-file/services/#depends_on
@@ -125,9 +125,13 @@ services:
       - source: caddy_data
         target: /data
         type: volume
-      - source: ./Caddyfile
+      - source: ./docker/Caddyfile
         target: /etc/caddy/Caddyfile
         type: bind
+      #   # for serving talawa admin using caddy
+      # - source: ./docker/admin
+      #   target: /srv
+      #   type: bind
   minio:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment

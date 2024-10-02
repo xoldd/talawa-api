@@ -9,38 +9,38 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { iso3166Alpha2CountryCodePgEnum } from "../enums/iso_3166_alpha_2_country_code.js";
-import { userEducationGradePgEnum } from "../enums/user_education_grade.js";
-import { userEmploymentStatusPgEnum } from "../enums/user_employment_status.js";
-import { userMaritalStatusPgEnum } from "../enums/user_marital_status.js";
-import { userNatalSexPgEnum } from "../enums/user_natal_sex.js";
-import { actionCategoriesPgTable } from "./action_categories.js";
+import { iso3166Alpha2CountryCodePgEnum } from "../enums/iso3166Alpha2CountryCode.js";
+import { userEducationGradePgEnum } from "../enums/userEducationGrade.js";
+import { userEmploymentStatusPgEnum } from "../enums/userEmploymentStatus.js";
+import { userMaritalStatusPgEnum } from "../enums/userMaritalStatus.js";
+import { userNatalSexPgEnum } from "../enums/userNatalSex.js";
+import { actionCategoriesPgTable } from "./actionCategories.js";
 import { actionsPgTable } from "./actions.js";
-import { advertisementAttachmentsPgTable } from "./advertisement_attachments.js";
+import { advertisementAttachmentsPgTable } from "./advertisementAttachments.js";
 import { advertisementsPgTable } from "./advertisements.js";
-import { agendaSectionsPgTable } from "./agenda_sections.js";
-import { commentVotesPgTable } from "./comment_votes.js";
+import { agendaSectionsPgTable } from "./agendaSections.js";
+import { commentVotesPgTable } from "./commentVotes.js";
 import { commentsPgTable } from "./comments.js";
-import { eventAttachmentsPgTable } from "./event_attachments.js";
+import { eventAttachmentsPgTable } from "./eventAttachments.js";
 import { eventsPgTable } from "./events.js";
 import { familiesPgTable } from "./families.js";
-import { familyMembershipsPgTable } from "./family_memberships.js";
-import { fundraisingCampaignsPgTable } from "./fundraising_campaigns.js";
+import { familyMembershipsPgTable } from "./familyMemberships.js";
+import { fundraisingCampaignsPgTable } from "./fundraisingCampaigns.js";
 import { fundsPgTable } from "./funds.js";
-import { organizationMembershipsPgTable } from "./organization_memberships.js";
+import { organizationMembershipsPgTable } from "./organizationMemberships.js";
 import { organizationsPgTable } from "./organizations.js";
 import { pledgesPgTable } from "./pledges.js";
-import { postAttachmentsPgTable } from "./post_attachments.js";
-import { postVotesPgTable } from "./post_votes.js";
+import { postAttachmentsPgTable } from "./postAttachments.js";
+import { postVotesPgTable } from "./postVotes.js";
 import { postsPgTable } from "./posts.js";
-import { tagAssignmentsPgTable } from "./tag_assignments.js";
-import { tagFoldersPgTable } from "./tag_folders.js";
+import { tagAssignmentsPgTable } from "./tagAssignments.js";
+import { tagFoldersPgTable } from "./tagFolders.js";
 import { tagsPgTable } from "./tags.js";
-import { venueAttachmentsPgTable } from "./venue_attachments.js";
-import { venueBookingsPgTable } from "./venue_bookings.js";
+import { venueAttachmentsPgTable } from "./venueAttachments.js";
+import { venueBookingsPgTable } from "./venueBookings.js";
 import { venuesPgTable } from "./venues.js";
-import { volunteerGroupAssignmentsPgTable } from "./volunteer_group_assignments.js";
-import { volunteerGroupsPgTable } from "./volunteer_groups.js";
+import { volunteerGroupAssignmentsPgTable } from "./volunteerGroupAssignments.js";
+import { volunteerGroupsPgTable } from "./volunteerGroups.js";
 
 export const usersPgTable = pgTable(
 	"user",
@@ -49,7 +49,7 @@ export const usersPgTable = pgTable(
 
 		addressLine2: text("address_line_2"),
 
-		avatarUri: text("avatar_uri"),
+		avatarURI: text("avatar_uri"),
 
 		birthDate: date("birth_date"),
 

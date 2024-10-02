@@ -8,8 +8,8 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { organizationsPgTable } from "./organizations.js";
-import { tagAssignmentsPgTable } from "./tag_assignments.js";
-import { tagFoldersPgTable } from "./tag_folders.js";
+import { tagAssignmentsPgTable } from "./tagAssignments.js";
+import { tagFoldersPgTable } from "./tagFolders.js";
 import { usersPgTable } from "./users.js";
 
 export const tagsPgTable = pgTable(

@@ -1,7 +1,11 @@
 type Mutation {
-  increaseCountByOne: Int
+  mutateCount(toMutateBy: Int!): Int
 }
 
 type Query {
   count: Int
+}
+
+type Subscription {
+  countMutated: Int
 }

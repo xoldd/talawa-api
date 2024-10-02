@@ -11,13 +11,13 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { actionsPgTable } from "./actions.js";
-import { agendaSectionsPgTable } from "./agenda_sections.js";
-import { eventAttachmentsPgTable } from "./event_attachments.js";
-import { eventAttendancesPgTable } from "./event_attendances.js";
+import { agendaSectionsPgTable } from "./agendaSections.js";
+import { eventAttachmentsPgTable } from "./eventAttachments.js";
+import { eventAttendancesPgTable } from "./eventAttendances.js";
 import { organizationsPgTable } from "./organizations.js";
 import { usersPgTable } from "./users.js";
-import { venueBookingsPgTable } from "./venue_bookings.js";
-import { volunteerGroupsPgTable } from "./volunteer_groups.js";
+import { venueBookingsPgTable } from "./venueBookings.js";
+import { volunteerGroupsPgTable } from "./volunteerGroups.js";
 
 export const eventsPgTable = pgTable(
 	"events",

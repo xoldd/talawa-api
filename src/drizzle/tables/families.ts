@@ -7,7 +7,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { familyMembershipsPgTable } from "./family_memberships.js";
+import { familyMembershipsPgTable } from "./familyMemberships.js";
 import { organizationsPgTable } from "./organizations.js";
 import { usersPgTable } from "./users.js";
 

@@ -20,6 +20,8 @@
 		// https://swc.rs/docs/configuration/compilation#jsctarget
 		"target": "esnext"
 	},
+	// https://swc.rs/docs/configuration/minification
+	"minify": true,
 	// https://swc.rs/docs/configuration/modules
 	"module": {
 		// https://swc.rs/docs/configuration/modules#resolvefully

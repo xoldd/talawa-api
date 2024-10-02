@@ -6,7 +6,7 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v4
       - name: Build talawa api non production environment docker image
-        uses: docker buildx build --file ./Containerfile --tag talawa_api --target non_production ./
+        uses: docker buildx build -f ./docker/Containerfile -t talawa_api --target non_production ./
       - name: Check linting and formatting
         run: docker container run -i --rm talawa_api pnpm check_code_quality
   check_type_errors:
@@ -16,17 +16,17 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v4
       - name: Build talawa api non production environment docker image
-        uses: docker buildx build -file ./Containerfile --tag talawa_api --target non_production .
+        uses: docker buildx build -f ./docker/Containerfile -t talawa_api --target non_production ./
       - name: Check type errors
         uses: docker container run -i --rm talawa_api pnpm check_type_errors
-  check_dockerfile_linting:
-    name: Check Dockerfile linting
+  check_api_containerfile_linting:
+    name: Check talawa api Containerfile linting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4
       - with:
-          dockerfile: ./Containerfile
+          dockerfile: ./docker/api.Containerfile
         uses: hadolint/hadolint-action@v3.1.0
   run_api_tests:
     name: Run api tests
@@ -34,9 +34,9 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4
-      - name: Create `.env` file for api testing
-        run: cp ./.env.testing ./.env
-      - name: Build talawa api non production compose testing environment
+      - name: Create `.env` file for talawa api testing environment
+        run: cp ./.env_files/.env.testing ./.env
+      - name: Build talawa api compose testing environment
         run: docker compose build
       - name: Run api tests
         run: docker compose up
