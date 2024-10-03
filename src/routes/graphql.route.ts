@@ -8,9 +8,9 @@ import { mercurius } from "mercurius";
 import {
 	// type GraphQLContext
 	createContext,
-} from "~/src/graphql/createContext.js";
+} from "~/src/graphQL/createContext.js";
 // import type { TalawaPubSubPublishArgsByKey } from "~/src/graphql/pubSub.js";
-import { schema } from "~/src/graphql/schema.js";
+import { schema } from "~/src/graphQL/schema.js";
 
 // /**
 //  * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
