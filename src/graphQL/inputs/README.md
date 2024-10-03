@@ -1,6 +1,6 @@
 # About this directory
 
-This directory is intended for storing the pothos schema definitions for graphQL inputs used in talawa api's graphQL implementation.
+This directory is intended for storing the pothos schema definitions for graphQL inputs used in talawa api's graphQL implementation. More about implementing graphQL inputs with pothos at [this](https://pothos-graphql.dev/docs/guide/inputs) link.
 
 # Conventions
 

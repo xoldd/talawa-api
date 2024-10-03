@@ -6,7 +6,7 @@ This directory is intended for storing the pothos schema definitions for the gra
 
 The following coventions are to be followed within this directory: 
 
-1. The sdl name of a graphQL enum must follow the `PascalCase` naming convention consisting of a root keyword that represents the entity to which the enum is associated to and a suffix keyword that represents which aspect of that entity the enum contains the variants of.
+1. The sdl name of a graphQL enum must follow the `PascalCase` naming convention consisting of a root keyword that represents the entity to which the enum is associated to and a suffix keyword that represents which aspect of that entity the enum contains the variants of. More about implementing graphQL enums with pothos at [this](https://pothos-graphql.dev/docs/guide/enums) link.
 
 2. The file containing the pothos schema definition of a graphQL enum must be named the same as the sdl name of that graphQL enum.
 
