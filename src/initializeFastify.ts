@@ -13,10 +13,13 @@ import fastifyRedis from "@fastify/redis";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { type PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
 import Fastify from "fastify";
+import mercurius from "mercurius";
 import type { Client as MinioClient } from "minio";
 import postgres from "postgres";
 import type * as drizzleSchema from "./drizzle/schema.js";
 import type { EnvConfig } from "./envConfig.js";
+import { type Message, createContext } from "./graphql/createContext.js";
+import { schema } from "./graphql/schema.js";
 import routes from "./routes/index.js";
 
 /**
@@ -244,7 +247,58 @@ export const initializeFastify = async ({
 	// 	}
 	// });
 
-	fastify.register(routes, {});
+	// fastify.register(routes, {});
+
+	const messages: Message[] = [];
+
+	fastify.register(mercurius, {
+		context: (request, reply) =>
+			createContext({
+				drizzleClient: fastify.drizzleClient,
+				envConfig: fastify.envConfig,
+				isSubscription: false,
+				log: fastify.log,
+				messages,
+				minioClient: fastify.minioClient,
+				request,
+				reply,
+			}),
+		graphiql: {
+			enabled: fastify.envConfig.API_ENVIRONMENT !== "production",
+		},
+		path: "/graphql",
+		schema,
+		subscription: {
+			context: async (socket, request) =>
+				await createContext({
+					drizzleClient: fastify.drizzleClient,
+					envConfig: fastify.envConfig,
+					isSubscription: true,
+					log: fastify.log,
+					messages,
+					minioClient: fastify.minioClient,
+					request,
+					socket,
+				}),
+			/**
+			 * Intervals in milli seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
+			 */
+			keepAlive: 1000 * 30,
+			// onConnect: (data) => {
+			// 	console.log("===========onConnect==============");
+			// 	console.log(data);
+			// 	console.log("===========onConnect==============");
+			// },
+			// onDisconnect: async (context) => {
+			// 	console.log("===========onDisconnect==============");
+			// 	console.log(context);
+			// 	console.log("===========onDisconnect==============");
+			// },
+			verifyClient: (info, next) => {
+				next(true);
+			},
+		},
+	});
 
 	// /**
 	//  * Registers the fastify route plugins.

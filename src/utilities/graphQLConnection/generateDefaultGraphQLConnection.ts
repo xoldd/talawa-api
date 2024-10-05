@@ -1,7 +1,7 @@
 import type { ConnectionPageInfo } from "../../types/generatedGraphQLTypes";
 
 /**
- * This is typescript type of a base graphQL connection edge object. This connection edge object
+ * This is typescript type of a base graphql connection edge object. This connection edge object
  * can be extended to create a custom connection edge object as long as the new connection edge
  * object adheres to the default type of this base connection edge object.
  */
@@ -11,7 +11,7 @@ export type DefaultGraphQLConnectionEdge<T0> = {
 };
 
 /**
- * This is typescript type of a base graphQL connection object. This connection object can be
+ * This is typescript type of a base graphql connection object. This connection object can be
  * extended to create a custom connnection object as long as the new connection object adheres
  * to the default type of this base connection object.
  */

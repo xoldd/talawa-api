@@ -45,7 +45,7 @@ export type ParseGraphQLConnectionArgumentsWithWhereResult<T0, T1> = Promise<
 >;
 
 /**
- * This function handles validating and transforming arguments for a custom graphQL connection
+ * This function handles validating and transforming arguments for a custom graphql connection
  * that also provides filtering capabilities.
  * @example
  * const result = await parseGraphQLConnectionArgumentsWithSortedBy(\{

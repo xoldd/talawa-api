@@ -45,7 +45,7 @@ export type ParseGraphQLConnectionArgumentsWithSortedByResult<T0, T1> = Promise<
 >;
 
 /**
- * This function is used for validating and transforming arguments for a graphQL connection that
+ * This function is used for validating and transforming arguments for a graphql connection that
  * also provides sorting capabilities.
  * @example
  * const result = await parseGraphQLConnectionArgumentsWithSortedBy(\{

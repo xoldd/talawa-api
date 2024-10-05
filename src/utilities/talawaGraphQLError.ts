@@ -2,7 +2,7 @@ import { GraphQLError, type GraphQLErrorOptions } from "graphql";
 
 /**
  * The term action used below is used to refer to CRUD(Create/Read/Update/Delete) operations performed
- * by the clients. In the context of a graphQL server query, mutation and subscription are the three
+ * by the clients. In the context of a graphql server query, mutation and subscription are the three
  * possible ways to perform these actions.
  *
  * The term resource used below is used to refer to any entity that the client can perform an action
@@ -165,7 +165,7 @@ type TalawaGraphQLErrorExtensions =
  *
  * This also standardizes the errors that the client developers using talawa api can expect in the graphql responses, helping them design better UI experiences for end users.
  *
- * If necessary, the localization of the error messages(i18n) can be done within the graphQL resolvers where this function is used.
+ * If necessary, the localization of the error messages(i18n) can be done within the graphql resolvers where this function is used.
  *
  * The following example shows the usage of `createTalawaGraphQLError` function within a graphql resolver for resolving the user record of the best friend of a user:
  * @example

@@ -42,7 +42,7 @@ export type ParseGraphQLConnectionArgumentsWithSortedByAndWhereResult<
 >;
 
 /**
- * This function is used for validating and transforming arguments for a custom graphQL
+ * This function is used for validating and transforming arguments for a custom graphql
  * connection that also provides filtering and sorting capabilities.
  * @example
  * const result = await parseGraphQLConnectionArgumentsWithSortedBy(\{

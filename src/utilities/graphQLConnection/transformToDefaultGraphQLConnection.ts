@@ -24,11 +24,11 @@ export type TransformToDefaultGraphQLConnectionArguments<T0, T1, T2> = {
 };
 
 /**
- * This function is used to transform a list of objects to a standard graphQL connection object.
+ * This function is used to transform a list of objects to a standard graphql connection object.
  * @remarks
- * The logic used in this function is common to almost all graphQL connection creation flows,
+ * The logic used in this function is common to almost all graphql connection creation flows,
  * abstracting that away into this function lets developers use a declarative way to create the
- * graphQL connection object they want and prevents code duplication.
+ * graphql connection object they want and prevents code duplication.
  * @example
  * const [objectList, totalCount] = await Promise.all([
  *   User.find(filter)
@@ -60,7 +60,7 @@ export function transformToDefaultGraphQLConnection<
 	/**
 	 * If no custom callback function `createCursor` is provided by the function caller, the default
 	 * function defined below will execute, the assumption is that `_id` is to be used as the
-	 * cursor for the graphQL connection edges list.
+	 * cursor for the graphql connection edges list.
 	 */
 	createCursor = (object): string => object._id.toString(),
 	/**
@@ -115,7 +115,7 @@ export function transformToDefaultGraphQLConnection<
 			// Removal of 1 extra object contained in the `objectList`.
 			objectList.pop();
 		}
-		// Order of the `objectList` must be reversed when the graphQL connection is to be traversed
+		// Order of the `objectList` must be reversed when the graphql connection is to be traversed
 		// is opposite of the expected direction, More information at this link:-
 		// https://relay.dev/graphql/connections.htm#sec-Pagination-algorithm
 		objectList = objectList.reverse();

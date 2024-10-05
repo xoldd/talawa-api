@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import graphQLRoute from "./graphql.route.js";
-import healthRoute from "./health.route.js";
+import graphqlRoute from "./graphql.js";
+import healthRoute from "./health.js";
 
 /**
  * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
@@ -8,7 +8,7 @@ import healthRoute from "./health.route.js";
  */
 export const route: FastifyPluginAsync = async (fastify) => {
 	fastify.register(healthRoute);
-	fastify.register(graphQLRoute);
+	fastify.register(graphqlRoute);
 };
 
 export default route;

@@ -842,7 +842,7 @@ There is one event inside the `The Unity Foundation`
 
 Talawa-api development server runs two processes simultaneously in the background. They are:
 
-1. `GraphQL code generator:` This watches for changes in the graphQL type definition files and generates corresponding typescript types in the background. This results in good code editor experience with typescript.
+1. `GraphQL code generator:` This watches for changes in the graphql type definition files and generates corresponding typescript types in the background. This results in good code editor experience with typescript.
 
 2. `Talawa-api server:` This runs talawa-api directly transpiling the typescript files and running them without emitting as javascript files. It also watches for changes in the code files and restarts the server if it detects any changes.
 
@@ -872,7 +872,7 @@ These are some important URLs for coding and troubleshooting :
      {"talawa-version":"v1","status":"healthy"}
      ```
 
-2. The graphQL endpoint for handling `queries` and `mutations` is this:
+2. The graphql endpoint for handling `queries` and `mutations` is this:
 
    ```
    http://localhost:4000/graphql/

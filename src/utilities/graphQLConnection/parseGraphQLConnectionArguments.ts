@@ -65,7 +65,7 @@ export type ParseGraphQLConnectionArgumentsResult<T0> =
 	  };
 
 /**
- * This function handles validating and transforming arguments of a base graphQL connection.
+ * This function handles validating and transforming arguments of a base graphql connection.
  * @example
  * const result = await parseGraphQLConnectionArguments(\{
  *   args: \{

@@ -15,7 +15,7 @@ type CommmonGraphQLConnectionSort =
  * This function is used to get an object containing common mongoose sorting logic.
  * @remarks
  * Here are a few assumptions this function makes which are common to most of the
- * graphQL connections.
+ * graphql connections.
  *
  * The entity that has the latest creation datetime must appear at the top of the connection. This
  * means the default sorting logic would be sorting in descending order by the time of creation of
