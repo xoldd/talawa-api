@@ -1,6 +1,6 @@
 import { type Static, Type } from "@sinclair/typebox";
 import envSchema from "env-schema";
-import { envSchemaAjv, getEnvConfig } from "~/src/envConfig.js";
+import { envSchemaAjv } from "~/src/envSchema.js";
 import { initializeFastify } from "~/src/initializeFastify.js";
 
 const overrideEnvConfigSchema = Type.Object({
@@ -17,7 +17,6 @@ const overrideEnvConfig = envSchema<Static<typeof overrideEnvConfigSchema>>({
 
 export const fastify = await initializeFastify({
 	envConfig: {
-		...getEnvConfig(),
 		/**
 		 * This makes the fastify test instance connect to the minio test server.
 		 */

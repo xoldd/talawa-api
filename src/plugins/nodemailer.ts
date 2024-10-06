@@ -68,7 +68,6 @@
 // 		fastify.decorate("nodemailer", transporter);
 // 	},
 // 	{
-// 		encapsulate: false,
 // 		name: "nodemailer",
 // 	},
 // );

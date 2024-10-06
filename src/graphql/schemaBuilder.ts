@@ -3,7 +3,7 @@ import SchemaBuilder from "@pothos/core";
 // import RelayPlugin from "@pothos/plugin-relay";
 // import WithInputPlugin from "@pothos/plugin-with-input";
 // import ZodPlugin from "@pothos/plugin-zod";
-import type { GraphQLContext } from "~/src/graphql/createContext.js";
+import type { GraphQLContext } from "~/src/graphql/context.js";
 import type { Scalars } from "./scalars/index.js";
 
 /**

@@ -53,6 +53,5 @@
 // };
 
 // export default fastifyPlugin(plugin, {
-// 	encapsulate: false,
 // 	name: "initialBootSetup",
 // });

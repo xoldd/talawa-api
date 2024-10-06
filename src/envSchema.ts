@@ -1,6 +1,6 @@
 import { type Static, Type } from "@sinclair/typebox";
 import ajvFormats from "ajv-formats";
-import { type EnvSchemaOpt, envSchema } from "env-schema";
+import type { EnvSchemaOpt } from "env-schema";
 
 /**
  * THIS FILE CONTAINS JSON SCHEMA DEFINITIONS FOR ALL ENVIRONMENT VARIABLES PASSED TO THE EXECUTION CONTEXT OF TALAWA API FOR CONFIGURING IT.
@@ -228,6 +228,11 @@ export const envConfigSchema = Type.Composite([
 ]);
 
 /**
+ * Type of the object containing parsed configuration environment variables.
+ */
+export type EnvConfig = Static<typeof envConfigSchema>;
+
+/**
  * The `@sinclair/typebox` package doesn't do format validation by itself and requires custom validators for it. The `ajv-formats` package provides this functionality and this object below is used to provide the talawa api specific configuration for the `ajv` property accepted by `envSchema` to define those custom format validators.
  */
 export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
@@ -237,17 +242,4 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 		});
 		return ajvInstance;
 	},
-};
-
-/**
- * Type of the object containing parsed configuration environment variables.
- */
-export type EnvConfig = Static<typeof envConfigSchema>;
-
-export const getEnvConfig = (): EnvConfig => {
-	return envSchema<EnvConfig>({
-		ajv: envSchemaAjv,
-		dotenv: true,
-		schema: envConfigSchema,
-	});
 };

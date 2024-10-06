@@ -31,6 +31,7 @@
 		"graphql-scalars": "^1.23.0",
 		"mercurius": "^15.0.0",
 		"minio": "^8.0.1",
+		"mqemitter-redis": "^6.0.0",
 		"postgres": "^3.4.4",
 		"zod": "^3.23.8"
 	},

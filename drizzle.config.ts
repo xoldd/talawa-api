@@ -4,7 +4,7 @@
 import type { Static } from "@sinclair/typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
-import { postgresClientEnvConfigSchema } from "./src/envConfig.js";
+import { postgresClientEnvConfigSchema } from "./src/envSchema.js";
 
 const envConfig = envSchema<Static<typeof postgresClientEnvConfigSchema>>({
 	dotenv: true,

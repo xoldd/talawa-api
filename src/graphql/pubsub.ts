@@ -1,14 +1,15 @@
 import type { Readable } from "node:stream";
-import type { Message } from "./createContext.js";
-/**
- * This file is to be used to define the types for making the event based publish/subscribe module used in the graphql resolvers type-safe.
- */
+import type { Message } from "./context.js";
+
+// This file is to be used to define the types for making the event based publish/subscribe module used in the graphql resolvers type-safe.
+
+type MessageId = string;
 
 /**
  * Type of the events in the publish-subscribe bus and the values they will resolve to. This would need to be extended with fields and maintained as graphql subscriptions functionality is added to the graphql server. More information can be found here:- {@link https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#topics}
  */
 export type TalawaPubSubPublishArgsByKey = {
-	[key: `messageUpdated:${string}`]: Message;
+	[key: `messageUpdated:${MessageId}`]: Message;
 };
 
 /**

@@ -1,10 +1,9 @@
 import closeWithGrace from "close-with-grace";
-import { getEnvConfig } from "./envConfig.js";
 import { initializeFastify } from "./initializeFastify.js";
 
-const fastify = await initializeFastify({
-	envConfig: getEnvConfig(),
-});
+const fastify = await initializeFastify();
+
+await fastify.ready();
 
 /**
  * Makes sure that the server exits gracefully without pending tasks and memory leaks.

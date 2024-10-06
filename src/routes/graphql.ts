@@ -2,22 +2,244 @@
 // import { makeHandler } from "graphql-ws/lib/use/@fastify/websocket";
 // import { createRedisEventTarget } from "@graphql-yoga/redis-event-target";
 // import { EnvelopArmor } from "@escape.tech/graphql-armor";
-import type { FastifyPluginAsync } from "fastify";
-// import { createPubSub, createYoga } from "graphql-yoga";
-import { mercurius } from "mercurius";
-import {
-	type Message,
-	// type GraphQLContext
-	createContext,
-} from "~/src/graphql/createContext.js";
 // import type { TalawaPubSubPublishArgsByKey } from "~/src/graphql/pubSub.js";
+// import { createPubSub, createYoga, type PubSub, type YogaInitialContext, type YogaLogger } from "graphql-yoga";
+// import type { TalawaPubSubPublishArgsByKey } from "~/src/graphql/pubSub.js";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
+import fastifyPlugin from "fastify-plugin";
+import { mercurius } from "mercurius";
+import type { Client as MinioClient } from "minio";
+import type * as drizzleSchema from "~/src/drizzle/schema.js";
+import type { EnvConfig } from "~/src/envSchema.js";
+import type { ExplicitGraphQLContext, Message } from "~/src/graphql/context.js";
 import { schema } from "~/src/graphql/schema.js";
+
+/**
+ * Type of the initial context argument provided to the createContext function by the graphql server.
+ */
+type InitialContext = {
+	drizzleClient: PostgresJsDatabase<typeof drizzleSchema>;
+	envConfig: EnvConfig;
+	log: FastifyBaseLogger;
+	messages: Message[];
+	minioClient: MinioClient;
+	request: FastifyRequest;
+} & (
+	| {
+			isSubscription: false;
+			reply: FastifyReply;
+	  }
+	| {
+			isSubscription: true;
+			socket: WebSocket;
+	  }
+);
+
+export const createContext = async ({
+	drizzleClient,
+	messages,
+	minioClient,
+}: InitialContext): Promise<ExplicitGraphQLContext> => {
+	// /**
+	//  * As this function is traversed, this object will be mutated accordingly.
+	//  */
+	// const authContext: CurrentClientAuthContext = {
+	// 	expired: undefined,
+	// 	isAuth: false,
+	// 	userId: undefined,
+	// };
+
+	// const authorizationHeader = request.headers.get("Authorization");
+
+	// if (authorizationHeader !== null) {
+	// 	const token = authorizationHeader.split(" ")[1];
+
+	// 	if (token !== undefined && token !== "") {
+	// 		try {
+	// 			const decodedToken = verify(
+	// 				token,
+	// 				envConfig.ACCESS_TOKEN_SECRET,
+	// 			) as InterfaceJwtTokenPayload;
+
+	// 			authContext.expired = false;
+	// 			authContext.userId = decodedToken.userId;
+	// 		} catch (error) {
+	// 			if (error instanceof TokenExpiredError) {
+	// 				authContext.expired = true;
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// return {
+	// 	// ...authContext,
+	// 	// pubSub,
+	// };
+
+	return {
+		drizzleClient,
+		messages,
+		minioClient,
+	};
+};
+
+/**
+ * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
+ * and handles the configuration for it.
+ */
+export const graphql = fastifyPlugin(async (fastify) => {
+	const messages: Message[] = [];
+
+	fastify.register(mercurius, {
+		context: (request, reply) =>
+			createContext({
+				drizzleClient: fastify.drizzleClient,
+				envConfig: fastify.envConfig,
+				isSubscription: false,
+				log: fastify.log,
+				messages,
+				minioClient: fastify.minioClient,
+				request,
+				reply,
+			}),
+		graphiql: {
+			enabled: fastify.envConfig.API_ENVIRONMENT !== "production",
+		},
+		path: "/graphql",
+		schema,
+		subscription: {
+			context: async (socket, request) =>
+				await createContext({
+					drizzleClient: fastify.drizzleClient,
+					envConfig: fastify.envConfig,
+					isSubscription: true,
+					log: fastify.log,
+					messages,
+					minioClient: fastify.minioClient,
+					request,
+					socket,
+				}),
+			/**
+			 * Intervals in milli seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
+			 */
+			keepAlive: 1000 * 30,
+			// onConnect: (data) => {
+			// 	console.log("===========onConnect==============");
+			// 	console.log(data);
+			// 	console.log("===========onConnect==============");
+			// },
+			// onDisconnect: async (context) => {
+			// 	console.log("===========onDisconnect==============");
+			// 	console.log(context);
+			// 	console.log("===========onDisconnect==============");
+			// },
+			verifyClient: (info, next) => {
+				next(true);
+			},
+		},
+	});
+}, {});
+
+export default graphql;
+
+// /**
+//  * Type of authentication context of a client making a request to the graphql server.
+//  *
+//  * @privateRemarks This type has unintuitive fields and will be changed in the future.
+//  */
+// export type CurrentClientAuthContext = {
+// 	expired: boolean | undefined;
+// 	isAuth: false;
+// 	userId: string | undefined;
+// };
+
+// /**
+//  * Type of the initial context argument provided to the createContext function by the
+//  * graphql server.
+//  */
+// type InitialContext = YogaInitialContext & {
+// 	envConfig: EnvConfig;
+// 	log: YogaLogger;
+// 	pubSub: PubSub<TalawaPubSubPublishArgsByKey>;
+// };
+
+// type Count = {
+// 	value: number;
+// };
+
+// /**
+//  * Type of the context passed to the graphql resolvers on each request.
+//  */
+// export type GraphQLContext = {
+// 	pubsub: MercuriusPubSub;
+// 	pubSub: PubSub<TalawaPubSubPublishArgsByKey>;
+// };
+// // } & CurrentClientAuthContext;
+
+// /**
+//  * This function is responsible for creating a new graphql context that is scoped to each
+//  * instance of a graphql request that a client makes to the graphql server. The context
+//  * returned from this function is passed as the third argument to the graphql resolvers.
+//  * This function should be designed carefully as to not let the HTTP framework specific
+//  * details permeate into the graphql resolvers. This avoids coupling the graphql layer
+//  * with the HTTP framework that is being used to serve the graphql server. It should also
+//  * be made sure that the context returned from this function is not mutable because it is
+//  * a piece of shared state between all the graphql resolvers and could introduce weird,
+//  * hard to detect bugs and anomalies at runtime. More information about the graphql context
+//  * can be found here:- {@link https://the-guild.dev/graphql/yoga-server/docs/features/context#extending-the-initial-context}
+//  */
+// export const createContext = async ({
+// 	envConfig,
+// 	log,
+// 	params,
+// 	pubSub,
+// 	// request,
+// 	// reply,
+// 	waitUntil,
+// }: InitialContext): Promise<GraphQLContext> => {
+// 	// /**
+// 	//  * As this function is traversed, this object will be mutated accordingly.
+// 	//  */
+// 	// const authContext: CurrentClientAuthContext = {
+// 	// 	expired: undefined,
+// 	// 	isAuth: false,
+// 	// 	userId: undefined,
+// 	// };
+
+// 	// const authorizationHeader = request.headers.get("Authorization");
+
+// 	// if (authorizationHeader !== null) {
+// 	// 	const token = authorizationHeader.split(" ")[1];
+
+// 	// 	if (token !== undefined && token !== "") {
+// 	// 		try {
+// 	// 			const decodedToken = verify(
+// 	// 				token,
+// 	// 				envConfig.ACCESS_TOKEN_SECRET,
+// 	// 			) as InterfaceJwtTokenPayload;
+
+// 	// 			authContext.expired = false;
+// 	// 			authContext.userId = decodedToken.userId;
+// 	// 		} catch (error) {
+// 	// 			if (error instanceof TokenExpiredError) {
+// 	// 				authContext.expired = true;
+// 	// 			}
+// 	// 		}
+// 	// 	}
+// 	// }
+
+// 	return {
+// 		// ...authContext,
+// 		pubSub,
+// 	};
+// };
 
 // /**
 //  * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
 //  * and handles the configuration for it.
 //  */
-// export const route: FastifyPluginAsync = async (fastify) => {
+// export const graphql = fastifyPlugin(async (fastify) => {
 // 	/**
 // 	 * This module handles many issues related to graphql security. More info can be found
 // 	 * here:- {@link https://escape.tech/graphql-armor/}. It has default configurations for
@@ -158,63 +380,4 @@ import { schema } from "~/src/graphql/schema.js";
 // 		// 	schema,
 // 		// }),
 // 	});
-// };
-
-/**
- * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
- * and handles the configuration for it.
- */
-export const route: FastifyPluginAsync = async (fastify) => {
-	const messages: Message[] = [];
-
-	fastify.register(mercurius, {
-		context: (request, reply) =>
-			createContext({
-				drizzleClient: fastify.drizzleClient,
-				envConfig: fastify.envConfig,
-				isSubscription: false,
-				log: fastify.log,
-				messages,
-				minioClient: fastify.minioClient,
-				request,
-				reply,
-			}),
-		graphiql: {
-			enabled: fastify.envConfig.API_ENVIRONMENT !== "production",
-		},
-		path: "/graphql",
-		schema,
-		subscription: {
-			context: async (socket, request) =>
-				await createContext({
-					drizzleClient: fastify.drizzleClient,
-					envConfig: fastify.envConfig,
-					isSubscription: true,
-					log: fastify.log,
-					messages,
-					minioClient: fastify.minioClient,
-					request,
-					socket,
-				}),
-			/**
-			 * Intervals in milli seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
-			 */
-			keepAlive: 1000 * 30,
-			// onConnect: (data) => {
-			// 	console.log("===========onConnect==============");
-			// 	console.log(data);
-			// 	console.log("===========onConnect==============");
-			// },
-			// onDisconnect: async (context) => {
-			// 	console.log("===========onDisconnect==============");
-			// 	console.log(context);
-			// 	console.log("===========onDisconnect==============");
-			// },
-			verifyClient: (info, next) => {
-				next(true);
-			},
-		},
-	});
-};
-
-export default route;
+// });
