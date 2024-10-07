@@ -99,6 +99,10 @@ export const redisClientEnvConfigSchema = Type.Object({
 	 * More information at this link: {@link https://github.com/redis/ioredis?tab=readme-ov-file#connect-to-redis}
 	 */
 	API_REDIS_PORT: Type.Number(),
+	/**
+	 * More information at this link: {@link https://redis.io/docs/latest/operate/oss_and_stack/management/security/#authentication}
+	 */
+	API_REDIS_PASSWORD: Type.String(),
 });
 
 /**

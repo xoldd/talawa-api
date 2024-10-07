@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "vitest";
-import { expectToBeNonNullish } from "../../helpers.js";
+import { assertToBeNonNullish } from "../../helpers.js";
 import { gql, mercuriusClient } from "../client.js";
 
 test("Query test", async () => {
@@ -23,7 +23,7 @@ test("Query test", async () => {
 	);
 
 	expect(createMessageMutationResult.errors).toEqual(undefined);
-	expectToBeNonNullish(createMessageMutationResult.data?.createMessage);
+	assertToBeNonNullish(createMessageMutationResult.data?.createMessage);
 
 	const messageQueryDoc = gql(`query messageQuery($id: ID!) {
     	message(id: $id) {
@@ -39,7 +39,7 @@ test("Query test", async () => {
 	});
 
 	expect(messageQueryResult.errors).toEqual(undefined);
-	expectToBeNonNullish(messageQueryResult.data.message);
+	assertToBeNonNullish(messageQueryResult.data.message);
 	expect(messageQueryResult.data.message).toEqual(
 		createMessageMutationResult.data.createMessage,
 	);

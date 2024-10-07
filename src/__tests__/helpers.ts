@@ -6,8 +6,15 @@ import { isDeepStrictEqual } from "node:util";
  * {@link https://github.com/vitest-dev/vitest/issues/2883#issuecomment-2176048122}
  *
  * {@link https://github.com/vitest-dev/vitest/issues/5702#issuecomment-2176048295}
+ *
+ * @example
+ *
+ * const func = (name: string | null | undefined) => {
+ * 	assertToBeNonNullish(name);
+ * 	console.log(name.length);
+ * }
  */
-export function expectToBeNonNullish<T>(
+export function assertToBeNonNullish<T>(
 	value: T | null | undefined,
 ): asserts value is T {
 	if (value === undefined || value === null) {

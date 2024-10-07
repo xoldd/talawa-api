@@ -1,0 +1,138 @@
+##############################################################################
+##############################################################################
+#
+# NOTE!
+#
+# Please read the README.md file in this directory that defines what should
+# be placed in this file.
+#
+##############################################################################
+##############################################################################
+
+name: Pull request workflow
+
+on:
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  check_code_quality:
+    name: Check code quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Build talawa api non production environment docker image
+        uses: docker buildx build -f ./docker/Containerfile -t talawa_api --target non_production ./
+
+      - name: Check code quality
+        run: docker container run -i --rm talawa_api pnpm check_code_quality
+
+  check_containerfile_linting:
+    name: Check talawa api Containerfile linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Check talawa api Containerfile linting
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ./docker/api.Containerfile
+
+  check_file_changes_count:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - id: changed_files
+        name: Check file changes
+        uses: tj-actions/changed-files@v45
+
+      - if: steps.changed_files.outputs.all_changed_files_count > 100
+        name: Check if the total count of changed files is greater than 100
+        run: |
+          echo "Error: Changes detected in more than 100 files. Please recheck your pull request and submit smaller, easily reviewable pull reqeusts."
+          echo "Possible issues: "
+          echo "- The pull request's source branch might be based off of a branch different from the target branch."
+
+  check_graphql_schema_breaking_changes:
+    name: Check graphql schema breaking changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: kamilkisiela/graphql-inspector@master
+        with:
+          name: Check graphql schema breaking changes
+          schema: "${{ github.base_ref }}:schema.graphql"
+
+  check_type_errors:
+    name: Check type errors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Build talawa api non production environment docker image
+        uses: docker buildx build -f ./docker/Containerfile -t talawa_api --target non_production ./
+
+      - name: Check type errors
+        uses: docker container run -i --rm talawa_api pnpm check_type_errors
+
+  check_unauthorized_file_changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - id: changed_files
+        name: Check unauthorized file changes
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            .coderabbit.yaml
+            .devcontainer/**
+            .dockerignore
+            .env_files/**
+            .github/**
+            .gitignore
+            .swcrc
+            biome.jsonc
+            compose.yaml
+            docker/**
+            drizzle_migrations/**
+            drizzle.config.ts
+            scripts/**
+            tsconfig.json
+            vitest.config.ts
+
+      - env:
+          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+        if: steps.changed_files.outputs.any_changed == "true" || steps.changed_files.outputs.any_deleted == "true"
+        name: List all unauthorized file changes
+        run: |
+          for file in ${CHANGED_FILES}; do
+            echo "Unauthorized changes/deletion to the file: ${file}"
+          done
+          exit 1
+
+  run_tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Create `.env` file for talawa api testing environment
+        run: cp ./.env_files/.env.testing ./.env
+
+      - name: Build talawa api compose testing environment
+        run: docker compose build
+
+      - name: Run tests
+        run: docker compose up

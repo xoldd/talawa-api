@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout } from "node:timers/promises";
 import { expect, test } from "vitest";
-import { expectToBeNonNullish, isSubSequence } from "../../helpers.js";
+import { assertToBeNonNullish, isSubSequence } from "../../helpers.js";
 import { type ResultOf, gql, mercuriusClient } from "../client.js";
 
 test("Subscription test", async () => {
@@ -24,7 +24,7 @@ test("Subscription test", async () => {
 	);
 
 	expect(createMessageMutationResult.errors).toBeUndefined();
-	expectToBeNonNullish(createMessageMutationResult.data.createMessage);
+	assertToBeNonNullish(createMessageMutationResult.data.createMessage);
 
 	const messageUpdatedSubscriptionDoc = gql(`subscription messageUpdatedSubscription($id: ID!) {
 		messageUpdated(id: $id) {
@@ -40,7 +40,7 @@ test("Subscription test", async () => {
 	const { unsubscribe } = await mercuriusClient.subscribe({
 		onData: (result) => {
 			expect(result.errors).toBeUndefined();
-			expectToBeNonNullish(result.data.messageUpdated);
+			assertToBeNonNullish(result.data.messageUpdated);
 			messageUpdatedSubscriptionDataList.push(result.data.messageUpdated);
 		},
 		query: messageUpdatedSubscriptionDoc,
@@ -71,7 +71,7 @@ test("Subscription test", async () => {
 	);
 
 	expect(updateMessageMutationResult0.errors).toEqual(undefined);
-	expectToBeNonNullish(updateMessageMutationResult0.data.updateMessage);
+	assertToBeNonNullish(updateMessageMutationResult0.data.updateMessage);
 	updateMessageMutationDataList.push(
 		updateMessageMutationResult0.data.updateMessage,
 	);
@@ -87,7 +87,7 @@ test("Subscription test", async () => {
 	);
 
 	expect(updateMessageMutationResult1.errors).toEqual(undefined);
-	expectToBeNonNullish(updateMessageMutationResult1.data.updateMessage);
+	assertToBeNonNullish(updateMessageMutationResult1.data.updateMessage);
 	updateMessageMutationDataList.push(
 		updateMessageMutationResult1.data.updateMessage,
 	);

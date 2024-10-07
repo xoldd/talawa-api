@@ -2,10 +2,10 @@
 name: Build Container
 
 on:
-  # makes this workflow trigger only on a git push to the main branch and changes to the "Containerfile" file 
+  # makes this workflow trigger only on a git push to the main branch and changes to the "./docker/api.Containerfile" file 
   push:
     branches: [main]
-    paths: [Containerfile]
+    paths: [./docker/api.Containerfile]
   # used to manually trigger the workflow
   workflow_dispatch:
 

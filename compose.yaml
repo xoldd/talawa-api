@@ -53,6 +53,7 @@ services:
       - API_POSTGRES_SSL_MODE=${API_POSTGRES_SSL_MODE:?error}
       - API_POSTGRES_USER=${API_POSTGRES_USER:?error}
       - API_REDIS_HOST=${API_REDIS_HOST:?error}
+      - API_REDIS_PASSWORD=${API_REDIS_PASSWORD:?error}
       - API_REDIS_PORT=${API_REDIS_PORT:?error}
     # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
     # https://docs.docker.com/reference/compose-file/build/#publishing-built-images
@@ -65,7 +66,7 @@ services:
       retries: 3
       start_interval: 1s
       start_period: 5s
-      test: ["CMD-SHELL", "node /home/talawa/api/scripts/api_compose_service_healthcheck.js"]
+      test: ["CMD-SHELL", "node /home/talawa/api/docker/api_healthcheck.js"]
       timeout: 10s
     # https://docs.docker.com/reference/compose-file/services/#init
     # https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
@@ -208,8 +209,14 @@ services:
         target: /var/lib/postgresql/data
         type: volume
   redis:
-    # # https://docs.docker.com/reference/dockerfile/#healthcheck
-    # # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#command
+    command: /bin/sh -c "redis-server --appendonly yes --requirepass $${REDIS_PASSWORD}"
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?error}
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
     healthcheck:
       interval: 10s
       retries: 3

@@ -85,7 +85,7 @@ RUN pnpm install --frozen-lockfile --offline --prod
 
 # This build stage is used to create the container image for production environment of talawa api.
 FROM base AS production
-COPY --from=production_code /home/talawa/api/scripts/api_compose_service_healthcheck.js ./scripts/api_compose_service_healthcheck.js
+COPY --from=production_code /home/talawa/api/docker/api_healthcheck.js ./docker/api_healthcheck.js
 COPY --from=production_code /home/talawa/api/dist ./dist
 COPY --from=production_code /home/talawa/api/drizzle_migrations ./drizzle_migrations
 COPY --from=production_code /home/talawa/api/package.json ./package.json
