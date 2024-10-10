@@ -8,13 +8,9 @@
 		"node": "22.9.0"
 	},
 	"homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
-	"keywords": [
-		"chats",
-		"community",
-		"events",
-		"organization"
-	],
+	"keywords": ["chats", "community", "events", "organization"],
 	"license": "GNU General Public License v3.0",
+	"main": "./dist/index.js",
 	"name": "talawa-api",
 	"packageManager": "pnpm@9.12.1",
 	"repository": {
@@ -22,6 +18,7 @@
 		"url": "https://github.com/PalisadoesFoundation/talawa-api"
 	},
 	"scripts": {
+		"build_production": "swc ./src/ --ignore \"**/*.spec.ts,**/*.test.ts\" --out-dir ./dist/ --strip-leading-paths",
 		"check_code_quality": "biome check --error-on-warnings",
 		"check_type_errors": "tsc",
 		"fix_code_quality": "biome check --error-on-warnings --write"
@@ -30,6 +27,8 @@
 	"version": "1.0.0",
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.3",
+		"@swc/cli": "0.4.1-nightly.20240914",
+		"@swc/core": "^1.7.35",
 		"@types/node": "^22.7.5",
 		"tsx": "^4.19.1",
 		"typescript": "^5.6.3"
