@@ -8,7 +8,12 @@
 		"node": "22.9.0"
 	},
 	"homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
-	"keywords": ["chats", "community", "events", "organization"],
+	"keywords": [
+		"chats",
+		"community",
+		"events",
+		"organization"
+	],
 	"license": "GNU General Public License v3.0",
 	"name": "talawa-api",
 	"packageManager": "pnpm@9.12.1",
@@ -17,11 +22,14 @@
 		"url": "https://github.com/PalisadoesFoundation/talawa-api"
 	},
 	"scripts": {
-		"check_type_errors": "tsc"
+		"check_code_quality": "biome check --error-on-warnings",
+		"check_type_errors": "tsc",
+		"fix_code_quality": "biome check --error-on-warnings --write"
 	},
 	"type": "module",
 	"version": "1.0.0",
 	"devDependencies": {
+		"@biomejs/biome": "^1.9.3",
 		"@types/node": "^22.7.5",
 		"tsx": "^4.19.1",
 		"typescript": "^5.6.3"
