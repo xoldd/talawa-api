@@ -3,35 +3,46 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { volunteerGroupAssignmentInviteStatusPgEnum } from "../enums/volunteerGroupAssignmentInviteStatus.js";
-import { usersPgTable } from "./users.js";
-import { volunteerGroupsPgTable } from "./volunteerGroups.js";
+import { volunteerGroupAssignmentInviteStatusEnum } from "~/src/drizzle/enums.js";
+import { usersTable } from "./users.js";
+import { volunteerGroupsTable } from "./volunteerGroups.js";
 
-export const volunteerGroupAssignmentsPgTable = pgTable(
+export const volunteerGroupAssignmentsTable = pgTable(
 	"volunteer_group_assignments",
 	{
 		assigneeId: uuid("assignee_id")
 			.notNull()
-			.references(() => usersPgTable.id, {}),
+			.references(() => usersTable.id, {}),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		groupId: uuid("group_id")
 			.notNull()
-			.references(() => volunteerGroupsPgTable.id, {}),
+			.references(() => volunteerGroupsTable.id, {}),
 
-		inviteStatus: volunteerGroupAssignmentInviteStatusPgEnum("invite_status"),
+		inviteStatus: text("invite_status", {
+			enum: volunteerGroupAssignmentInviteStatusEnum.options,
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		compositePrimaryKey: primaryKey({
@@ -44,33 +55,33 @@ export const volunteerGroupAssignmentsPgTable = pgTable(
 );
 
 export type VolunteerGroupAssignmentPgType = InferSelectModel<
-	typeof volunteerGroupAssignmentsPgTable
+	typeof volunteerGroupAssignmentsTable
 >;
 
-export const volunteerGroupAssignmentsPgTableRelations = relations(
-	volunteerGroupAssignmentsPgTable,
+export const volunteerGroupAssignmentsTableRelations = relations(
+	volunteerGroupAssignmentsTable,
 	({ one }) => ({
-		assignee: one(usersPgTable, {
-			fields: [volunteerGroupAssignmentsPgTable.assigneeId],
-			references: [usersPgTable.id],
+		assignee: one(usersTable, {
+			fields: [volunteerGroupAssignmentsTable.assigneeId],
+			references: [usersTable.id],
 			relationName: "users.id:volunteer_group_assignments.assignee_id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [volunteerGroupAssignmentsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [volunteerGroupAssignmentsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "users.id:volunteer_group_assignments.creator_id",
 		}),
 
-		group: one(volunteerGroupsPgTable, {
-			fields: [volunteerGroupAssignmentsPgTable.groupId],
-			references: [volunteerGroupsPgTable.id],
+		group: one(volunteerGroupsTable, {
+			fields: [volunteerGroupAssignmentsTable.groupId],
+			references: [volunteerGroupsTable.id],
 			relationName: "volunteer_group_assignments.group_id:volunteer_groups.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [volunteerGroupAssignmentsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [volunteerGroupAssignmentsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "users.id:volunteer_group_assignments.updater_id",
 		}),
 	}),

@@ -8,21 +8,27 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { organizationsPgTable } from "./organizations.js";
-import { usersPgTable } from "./users.js";
-import { venueAttachmentsPgTable } from "./venueAttachments.js";
-import { venueBookingsPgTable } from "./venueBookings.js";
+import { organizationsTable } from "./organizations.js";
+import { usersTable } from "./users.js";
+import { venueAttachmentsTable } from "./venueAttachments.js";
+import { venueBookingsTable } from "./venueBookings.js";
 
-export const venuesPgTable = pgTable(
+export const venuesTable = pgTable(
 	"venues",
 	{
 		capacity: integer("capacity").notNull(),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		description: text("description", {}),
 
@@ -32,11 +38,13 @@ export const venuesPgTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id),
+			.references(() => organizationsTable.id),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -47,35 +55,32 @@ export const venuesPgTable = pgTable(
 	}),
 );
 
-export type VenuePgType = InferSelectModel<typeof venuesPgTable>;
+export type VenuePgType = InferSelectModel<typeof venuesTable>;
 
-export const venuesPgTableRelations = relations(
-	venuesPgTable,
-	({ many, one }) => ({
-		creator: one(usersPgTable, {
-			fields: [venuesPgTable.creatorId],
-			references: [usersPgTable.id],
-			relationName: "users.id:venues.creator_id",
-		}),
-
-		organization: one(organizationsPgTable, {
-			fields: [venuesPgTable.organizationId],
-			references: [organizationsPgTable.id],
-			relationName: "organizations.id:venues.organization_id",
-		}),
-
-		updater: one(usersPgTable, {
-			fields: [venuesPgTable.updaterId],
-			references: [usersPgTable.id],
-			relationName: "users.id:venues.updater_id",
-		}),
-
-		venueAttachmentsWhereVenue: many(venueAttachmentsPgTable, {
-			relationName: "venue_attachments.venue_id:venues.id",
-		}),
-
-		venueBookingsWhereVenue: many(venueBookingsPgTable, {
-			relationName: "venue_bookings.venue_id:venues.id",
-		}),
+export const venuesTableRelations = relations(venuesTable, ({ many, one }) => ({
+	creator: one(usersTable, {
+		fields: [venuesTable.creatorId],
+		references: [usersTable.id],
+		relationName: "users.id:venues.creator_id",
 	}),
-);
+
+	organization: one(organizationsTable, {
+		fields: [venuesTable.organizationId],
+		references: [organizationsTable.id],
+		relationName: "organizations.id:venues.organization_id",
+	}),
+
+	updater: one(usersTable, {
+		fields: [venuesTable.updaterId],
+		references: [usersTable.id],
+		relationName: "users.id:venues.updater_id",
+	}),
+
+	venueAttachmentsWhereVenue: many(venueAttachmentsTable, {
+		relationName: "venue_attachments.venue_id:venues.id",
+	}),
+
+	venueBookingsWhereVenue: many(venueBookingsTable, {
+		relationName: "venue_bookings.venue_id:venues.id",
+	}),
+}));

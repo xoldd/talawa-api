@@ -8,18 +8,24 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { fundraisingCampaignsPgTable } from "./fundraisingCampaigns.js";
-import { organizationsPgTable } from "./organizations.js";
-import { usersPgTable } from "./users.js";
+import { fundraisingCampaignsTable } from "./fundraisingCampaigns.js";
+import { organizationsTable } from "./organizations.js";
+import { usersTable } from "./users.js";
 
-export const fundsPgTable = pgTable(
+export const fundsTable = pgTable(
 	"funds",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
@@ -33,11 +39,13 @@ export const fundsPgTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id),
+			.references(() => organizationsTable.id),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -48,31 +56,28 @@ export const fundsPgTable = pgTable(
 	}),
 );
 
-export type FundPgType = InferSelectModel<typeof fundsPgTable>;
+export type FundPgType = InferSelectModel<typeof fundsTable>;
 
-export const fundsPgTableRelations = relations(
-	fundsPgTable,
-	({ one, many }) => ({
-		creator: one(usersPgTable, {
-			fields: [fundsPgTable.creatorId],
-			references: [usersPgTable.id],
-			relationName: "funds.creator_id:users.id",
-		}),
-
-		fundraisingCampaignsWhereFund: many(fundraisingCampaignsPgTable, {
-			relationName: "fundraising_campaigns.fund_id:funds.id",
-		}),
-
-		organization: one(organizationsPgTable, {
-			fields: [fundsPgTable.organizationId],
-			references: [organizationsPgTable.id],
-			relationName: "funds.organization_id:organizations.id",
-		}),
-
-		updater: one(usersPgTable, {
-			fields: [fundsPgTable.updaterId],
-			references: [usersPgTable.id],
-			relationName: "funds.updater_id:users.id",
-		}),
+export const fundsTableRelations = relations(fundsTable, ({ one, many }) => ({
+	creator: one(usersTable, {
+		fields: [fundsTable.creatorId],
+		references: [usersTable.id],
+		relationName: "funds.creator_id:users.id",
 	}),
-);
+
+	fundraisingCampaignsWhereFund: many(fundraisingCampaignsTable, {
+		relationName: "fundraising_campaigns.fund_id:funds.id",
+	}),
+
+	organization: one(organizationsTable, {
+		fields: [fundsTable.organizationId],
+		references: [organizationsTable.id],
+		relationName: "funds.organization_id:organizations.id",
+	}),
+
+	updater: one(usersTable, {
+		fields: [fundsTable.updaterId],
+		references: [usersTable.id],
+		relationName: "funds.updater_id:users.id",
+	}),
+}));

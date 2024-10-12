@@ -525,7 +525,6 @@ This `.env` file must be populated with the following environment variables for 
 
 | Variable                     | Description                                                               |
 | ---------------------------- | ------------------------------------------------------------------------- |
-| API_ENVIRONMENT                     | Used for providing the environment in which the the talawa-api is running |
 | SERVER_PORT                  | Used for specifying the port on which the talawa-api is running           |
 | ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                                     |
 | REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                                     |

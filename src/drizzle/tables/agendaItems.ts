@@ -8,19 +8,25 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { agendaItemTypePgEnum } from "../enums/agendaItemType.js";
-import { agendaSectionsPgTable } from "./agendaSections.js";
-import { eventsPgTable } from "./events.js";
-import { usersPgTable } from "./users.js";
+import { agendaItemTypeEnum } from "~/src/drizzle/enums.js";
+import { agendaSectionsTable } from "./agendaSections.js";
+import { eventsTable } from "./events.js";
+import { usersTable } from "./users.js";
 
-export const agendaItemsPgTable = pgTable(
+export const agendaItemsTable = pgTable(
 	"agenda_items",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		description: text("description"),
 
@@ -28,7 +34,7 @@ export const agendaItemsPgTable = pgTable(
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsPgTable.id),
+			.references(() => eventsTable.id),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
@@ -40,13 +46,17 @@ export const agendaItemsPgTable = pgTable(
 
 		sectionId: uuid("section_id")
 			.notNull()
-			.references(() => agendaSectionsPgTable.id),
+			.references(() => agendaSectionsTable.id),
 
-		type: agendaItemTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: agendaItemTypeEnum.options,
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -65,32 +75,32 @@ export const agendaItemsPgTable = pgTable(
 	}),
 );
 
-export type AgendaItemPgType = InferSelectModel<typeof agendaItemsPgTable>;
+export type AgendaItemPgType = InferSelectModel<typeof agendaItemsTable>;
 
-export const agendaItemsPgTableRelations = relations(
-	agendaItemsPgTable,
+export const agendaItemsTableRelations = relations(
+	agendaItemsTable,
 	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [agendaItemsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [agendaItemsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "agenda_items.creator_id:users.id",
 		}),
 
-		event: one(eventsPgTable, {
-			fields: [agendaItemsPgTable.eventId],
-			references: [eventsPgTable.id],
+		event: one(eventsTable, {
+			fields: [agendaItemsTable.eventId],
+			references: [eventsTable.id],
 			relationName: "agenda_items.event_id:events.id",
 		}),
 
-		section: one(agendaSectionsPgTable, {
-			fields: [agendaItemsPgTable.sectionId],
-			references: [agendaSectionsPgTable.id],
+		section: one(agendaSectionsTable, {
+			fields: [agendaItemsTable.sectionId],
+			references: [agendaSectionsTable.id],
 			relationName: "agenda_items.section_id:agenda_sections.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [agendaItemsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [agendaItemsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "agenda_items.updater_id:users.id",
 		}),
 	}),

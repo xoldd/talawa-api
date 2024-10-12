@@ -8,30 +8,40 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { postAttachmentTypePgEnum } from "../enums/postAttachmentType.js";
-import { postsPgTable } from "./posts.js";
-import { usersPgTable } from "./users.js";
+import { postAttachmentTypeEnum } from "~/src/drizzle/enums.js";
+import { postsTable } from "./posts.js";
+import { usersTable } from "./users.js";
 
-export const postAttachmentsPgTable = pgTable(
+export const postAttachmentsTable = pgTable(
 	"post_attachments",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		position: integer("position").notNull(),
 
 		postId: uuid("post_id")
 			.notNull()
-			.references(() => postsPgTable.id),
+			.references(() => postsTable.id),
 
-		type: postAttachmentTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: postAttachmentTypeEnum.options,
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		uri: text("uri", {}).notNull(),
 	},
@@ -44,27 +54,27 @@ export const postAttachmentsPgTable = pgTable(
 );
 
 export type PostAttachmentPgType = InferSelectModel<
-	typeof postAttachmentsPgTable
+	typeof postAttachmentsTable
 >;
 
-export const postAttachmentsPgTableRelations = relations(
-	postAttachmentsPgTable,
+export const postAttachmentsTableRelations = relations(
+	postAttachmentsTable,
 	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [postAttachmentsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [postAttachmentsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "[post_attachments.creator_id:users.id",
 		}),
 
-		post: one(postsPgTable, {
-			fields: [postAttachmentsPgTable.postId],
-			references: [postsPgTable.id],
+		post: one(postsTable, {
+			fields: [postAttachmentsTable.postId],
+			references: [postsTable.id],
 			relationName: "post_attachments.post_id:posts.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [postAttachmentsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [postAttachmentsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "[post_attachments.updater_id:users.id",
 		}),
 	}),

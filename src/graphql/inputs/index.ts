@@ -1,1 +1,1 @@
-import { builder } from "~/src/graphql/schemaBuilder.js";
+export * from "./CreateUserInput.js";

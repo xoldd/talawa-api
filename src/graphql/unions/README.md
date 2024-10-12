@@ -8,14 +8,14 @@ The following coventions are to be followed within this directory:
 
 1. The sdl name of a graphql union must follow the `PascalCase` naming convention.
 
-2. The file containing the pothos schema definition for a graphql union must be named the same as the sdl name of that graphql union.
+2. The file containing the pothos schema definition for a graphql union must be named the same as the sdl name of that graphql union and it must be exported through the `./index.ts` file in the same directory for pothos's executable schema builder to work.
 
 3. The object reference to the pothos schema definition for a graphql union must be a named export named the same as the sdl name of that graphql union.
 
 Here's an example depicting these rules: 
 
 ```typescript
-// CreatePostResult.ts
+// ~/src/graphql/unions/CreatePostResult.ts
 import { builder } from "~/src/graphql/schemaBuilder.js";
 
 const UserRef = builder.objectRef<{ age: number; }>("User");
@@ -32,11 +32,14 @@ export const CreateUserResult = builder.unionType("CreateUserResult", {
     }
 });
 ```
-
+```typescript
+// ~/src/graphql/unions/index.ts
+export * from "./CreatePostResult.js";
+```
 In this example: 
 
 1. The sdl name of the graphql union is `CreateUserResult` which follows the `PascalCase` naming convention.
 
-2. The file containing the pothos schema definition of the graphql union is named `CreatePostResult.ts` which is the same as the sdl name of that graphql union.
+2. The file containing the pothos schema definition of the graphql union is named `CreatePostResult.ts` which is the same as the sdl name of that graphql union and it is exported through the `./index.ts` file in the same directory.
 
 3. The object reference to the pothos schema definition for the graphql union is a named export named `CreateUserResult` which is the same as the sdl name of that graphql union.

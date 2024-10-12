@@ -8,18 +8,24 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { organizationsPgTable } from "./organizations.js";
-import { tagsPgTable } from "./tags.js";
-import { usersPgTable } from "./users.js";
+import { organizationsTable } from "./organizations.js";
+import { tagsTable } from "./tags.js";
+import { usersTable } from "./users.js";
 
-export const tagFoldersPgTable = pgTable(
+export const tagFoldersTable = pgTable(
 	"tag_folders",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
@@ -27,15 +33,17 @@ export const tagFoldersPgTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id, {}),
+			.references(() => organizationsTable.id, {}),
 
 		parentFolderId: uuid("parent_folder_id").references(
-			(): AnyPgColumn => tagFoldersPgTable.id,
+			(): AnyPgColumn => tagFoldersTable.id,
 		),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -46,40 +54,40 @@ export const tagFoldersPgTable = pgTable(
 	}),
 );
 
-export type TagFolderPgType = InferSelectModel<typeof tagFoldersPgTable>;
+export type TagFolderPgType = InferSelectModel<typeof tagFoldersTable>;
 
-export const tagFoldersPgTableRelations = relations(
-	tagFoldersPgTable,
+export const tagFoldersTableRelations = relations(
+	tagFoldersTable,
 	({ many, one }) => ({
-		creator: one(usersPgTable, {
-			fields: [tagFoldersPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [tagFoldersTable.creatorId],
+			references: [usersTable.id],
 			relationName: "tag_folders.creator_id:users.id",
 		}),
 
-		organization: one(organizationsPgTable, {
-			fields: [tagFoldersPgTable.organizationId],
-			references: [organizationsPgTable.id],
+		organization: one(organizationsTable, {
+			fields: [tagFoldersTable.organizationId],
+			references: [organizationsTable.id],
 			relationName: "organizations.id:tag_folders.organization_id",
 		}),
 
-		parentFolder: one(tagFoldersPgTable, {
-			fields: [tagFoldersPgTable.parentFolderId],
-			references: [tagFoldersPgTable.id],
+		parentFolder: one(tagFoldersTable, {
+			fields: [tagFoldersTable.parentFolderId],
+			references: [tagFoldersTable.id],
 			relationName: "tag_folders.id:tag_folders.parent_folder_id",
 		}),
 
-		tagFoldersWhereParentFolder: many(tagFoldersPgTable, {
+		tagFoldersWhereParentFolder: many(tagFoldersTable, {
 			relationName: "tag_folders.id:tag_folders.parent_folder_id",
 		}),
 
-		tagsWhereFolder: many(tagsPgTable, {
+		tagsWhereFolder: many(tagsTable, {
 			relationName: "tag_folders.id:tags.folder_id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [tagFoldersPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [tagFoldersTable.updaterId],
+			references: [usersTable.id],
 			relationName: "tag_folders.updater_id:users.id",
 		}),
 	}),

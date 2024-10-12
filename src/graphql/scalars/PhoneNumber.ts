@@ -1,5 +1,5 @@
 import { PhoneNumberResolver } from "graphql-scalars";
-import { builder } from "~/src/graphql/schemaBuilder.js";
+import { builder } from "~/src/graphql/builder.js";
 
 /**
  * More information at this link: {@link https://the-guild.dev/graphql/scalars/docs/scalars/phone-number}

@@ -3,31 +3,40 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { commentVoteTypePgEnum } from "../enums/commentVoteType.js";
-import { commentsPgTable } from "./comments.js";
-import { usersPgTable } from "./users.js";
+import { commmentVoteTypeEnum } from "~/src/drizzle/enums.js";
+import { commentsTable } from "./comments.js";
+import { usersTable } from "./users.js";
 
-export const commentVotesPgTable = pgTable(
+export const commentVotesTable = pgTable(
 	"comment_votes",
 	{
 		commentId: uuid("comment_id")
 			.notNull()
-			.references(() => commentsPgTable.id, {}),
+			.references(() => commentsTable.id, {}),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		type: commentVoteTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: commmentVoteTypeEnum.options,
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updated_id").references(() => usersPgTable.id),
+		updaterId: uuid("updated_id").references(() => usersTable.id),
 
-		voterId: uuid("voter_id").references(() => usersPgTable.id),
+		voterId: uuid("voter_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		compositePrimaryKey: primaryKey({
@@ -41,32 +50,32 @@ export const commentVotesPgTable = pgTable(
 	}),
 );
 
-export type CommentVotePgType = InferSelectModel<typeof commentVotesPgTable>;
+export type CommentVotePgType = InferSelectModel<typeof commentVotesTable>;
 
-export const commentVotesPgTableRelations = relations(
-	commentVotesPgTable,
+export const commentVotesTableRelations = relations(
+	commentVotesTable,
 	({ one }) => ({
-		comment: one(commentsPgTable, {
-			fields: [commentVotesPgTable.commentId],
-			references: [commentsPgTable.id],
+		comment: one(commentsTable, {
+			fields: [commentVotesTable.commentId],
+			references: [commentsTable.id],
 			relationName: "comment_votes.comment_id:comments.id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [commentVotesPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [commentVotesTable.creatorId],
+			references: [usersTable.id],
 			relationName: "comment_votes.creator_id:users.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [commentVotesPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [commentVotesTable.updaterId],
+			references: [usersTable.id],
 			relationName: "comment_votes.updater_id:users.id",
 		}),
 
-		voter: one(usersPgTable, {
-			fields: [commentVotesPgTable.voterId],
-			references: [usersPgTable.id],
+		voter: one(usersTable, {
+			fields: [commentVotesTable.voterId],
+			references: [usersTable.id],
 			relationName: "comment_votes.voter_id:users.id",
 		}),
 	}),

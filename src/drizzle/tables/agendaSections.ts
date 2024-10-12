@@ -9,36 +9,44 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { agendaItemsPgTable } from "./agendaItems.js";
-import { eventsPgTable } from "./events.js";
-import { usersPgTable } from "./users.js";
+import { agendaItemsTable } from "./agendaItems.js";
+import { eventsTable } from "./events.js";
+import { usersTable } from "./users.js";
 
-export const agendaSectionsPgTable = pgTable(
+export const agendaSectionsTable = pgTable(
 	"agenda_sections",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsPgTable.id),
+			.references(() => eventsTable.id),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
 		name: text("name", {}).notNull(),
 
 		parentSectionId: uuid("parent_section_id").references(
-			(): AnyPgColumn => agendaSectionsPgTable.id,
+			(): AnyPgColumn => agendaSectionsTable.id,
 		),
 
 		position: integer("position").notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -51,42 +59,40 @@ export const agendaSectionsPgTable = pgTable(
 	}),
 );
 
-export type AgendaSectionPgType = InferSelectModel<
-	typeof agendaSectionsPgTable
->;
+export type AgendaSectionPgType = InferSelectModel<typeof agendaSectionsTable>;
 
-export const agendaSectionsPgTableRelations = relations(
-	agendaSectionsPgTable,
+export const agendaSectionsTableRelations = relations(
+	agendaSectionsTable,
 	({ many, one }) => ({
-		agendaItemsWhereSection: many(agendaItemsPgTable, {
+		agendaItemsWhereSection: many(agendaItemsTable, {
 			relationName: "agenda_items.section_id:agenda_sections.id",
 		}),
 
-		agendaSectionsWhereParentSection: many(agendaSectionsPgTable, {
+		agendaSectionsWhereParentSection: many(agendaSectionsTable, {
 			relationName: "agenda_sections.id:agenda_sections.parent_section_id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [agendaSectionsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [agendaSectionsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "agenda_sections.creator_id:users.id",
 		}),
 
-		event: one(eventsPgTable, {
-			fields: [agendaSectionsPgTable.eventId],
-			references: [eventsPgTable.id],
+		event: one(eventsTable, {
+			fields: [agendaSectionsTable.eventId],
+			references: [eventsTable.id],
 			relationName: "agenda_sections.event_id:events.id",
 		}),
 
-		parentSection: one(agendaSectionsPgTable, {
-			fields: [agendaSectionsPgTable.parentSectionId],
-			references: [agendaSectionsPgTable.id],
+		parentSection: one(agendaSectionsTable, {
+			fields: [agendaSectionsTable.parentSectionId],
+			references: [agendaSectionsTable.id],
 			relationName: "agenda_sections.id:agenda_sections.parent_section_id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [agendaSectionsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [agendaSectionsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "agenda_sections.updater_id:users.id",
 		}),
 	}),

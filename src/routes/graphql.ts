@@ -12,7 +12,7 @@ import { mercurius } from "mercurius";
 import type { Client as MinioClient } from "minio";
 import mqemitterRedis from "mqemitter-redis";
 import type * as drizzleSchema from "~/src/drizzle/schema.js";
-import type { EnvConfig } from "~/src/envSchema.js";
+import type { EnvConfig } from "~/src/envConfigSchema.js";
 import type { ExplicitGraphQLContext, Message } from "~/src/graphql/context.js";
 import { schema } from "~/src/graphql/schema.js";
 
@@ -92,14 +92,14 @@ export const createContext = async ({
 export const graphql = fastifyPlugin(async (fastify) => {
 	const messages: Message[] = [];
 
-	/**
-	 * More information at this link: {@link https://mercurius.dev/#/docs/subscriptions?id=subscription-support-with-redis}
-	 */
-	const emitter = mqemitterRedis.default({
-		host: fastify.envConfig.API_REDIS_HOST,
-		password: fastify.envConfig.API_REDIS_PASSWORD,
-		port: fastify.envConfig.API_REDIS_PORT,
-	});
+	// /**
+	//  * More information at this link: {@link https://mercurius.dev/#/docs/subscriptions?id=subscription-support-with-redis}
+	//  */
+	// const emitter = mqemitterRedis.default({
+	// 	host: fastify.envConfig.API_REDIS_HOST,
+	// 	password: fastify.envConfig.API_REDIS_PASSWORD,
+	// 	port: fastify.envConfig.API_REDIS_PORT,
+	// });
 
 	fastify.register(mercurius, {
 		context: (request, reply) =>
@@ -114,7 +114,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				reply,
 			}),
 		graphiql: {
-			enabled: fastify.envConfig.API_ENVIRONMENT !== "production",
+			enabled: fastify.envConfig.API_IS_GRAPHIQL,
 		},
 		path: "/graphql",
 		schema,
@@ -130,10 +130,10 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					request,
 					socket,
 				}),
-			/**
-			 * More information at this link: {@link https://mercurius.dev/#/docs/subscriptions?id=subscription-support-with-redis}
-			 */
-			emitter,
+			// /**
+			//  * More information at this link: {@link https://mercurius.dev/#/docs/subscriptions?id=subscription-support-with-redis}
+			//  */
+			// emitter,
 			/**
 			 * Intervals in milli seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
 			 */
@@ -267,7 +267,7 @@ export default graphql;
 // 			/**
 // 			 * Having field suggestions in development environment is safe.
 // 			 */
-// 			enabled: fastify.envConfig.API_ENVIRONMENT === "production",
+// 			enabled: fastify.envConfig.API_IS_GRAPHIQL,
 // 		},
 // 	});
 
@@ -296,9 +296,9 @@ export default graphql;
 // 		/**
 // 		 * Configurtion for the graphiql web-based IDE.
 // 		 */
-// 		graphiql: fastify.envConfig.API_ENVIRONMENT !== "production",
+// 		graphiql: fastify.envConfig.API_IS_GRAPHIQL,
 // 		// graphiql:
-// 		// 	envConfig.API_ENVIRONMENT === "production"
+// 		// 	envConfig.API_IS_GRAPHIQL
 // 		// 		? false
 // 		// 		: {
 // 		// 				subscriptionsProtocol: "WS",

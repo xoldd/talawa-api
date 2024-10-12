@@ -8,25 +8,33 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { fundraisingCampaignsPgTable } from "./fundraisingCampaigns.js";
-import { usersPgTable } from "./users.js";
+import { fundraisingCampaignsTable } from "./fundraisingCampaigns.js";
+import { usersTable } from "./users.js";
 
-export const pledgesPgTable = pgTable(
+export const pledgesTable = pgTable(
 	"pledges",
 	{
 		amount: integer("amount").notNull(),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
-		endAt: timestamp("end_at", {}).notNull(),
+		endAt: timestamp("end_at", {
+			mode: "date",
+		}).notNull(),
 
 		fundraisingCampaignId: uuid("fundraising_campaign_id")
 			.notNull()
-			.references(() => fundraisingCampaignsPgTable.id),
+			.references(() => fundraisingCampaignsTable.id),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
@@ -34,13 +42,17 @@ export const pledgesPgTable = pgTable(
 
 		notes: text("notes"),
 
-		pledgerId: uuid("pledger_id").references(() => usersPgTable.id),
+		pledgerId: uuid("pledger_id").references(() => usersTable.id),
 
-		startAt: timestamp("start_at", {}).notNull(),
+		startAt: timestamp("start_at", {
+			mode: "date",
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -52,30 +64,30 @@ export const pledgesPgTable = pgTable(
 	}),
 );
 
-export type PledgePgType = InferSelectModel<typeof pledgesPgTable>;
+export type PledgePgType = InferSelectModel<typeof pledgesTable>;
 
-export const pledgesPgTableRelations = relations(pledgesPgTable, ({ one }) => ({
-	creator: one(usersPgTable, {
-		fields: [pledgesPgTable.creatorId],
-		references: [usersPgTable.id],
+export const pledgesTableRelations = relations(pledgesTable, ({ one }) => ({
+	creator: one(usersTable, {
+		fields: [pledgesTable.creatorId],
+		references: [usersTable.id],
 		relationName: "pledges.creator_id:users.id",
 	}),
 
-	fundraisingCampaign: one(fundraisingCampaignsPgTable, {
-		fields: [pledgesPgTable.fundraisingCampaignId],
-		references: [fundraisingCampaignsPgTable.id],
+	fundraisingCampaign: one(fundraisingCampaignsTable, {
+		fields: [pledgesTable.fundraisingCampaignId],
+		references: [fundraisingCampaignsTable.id],
 		relationName: "fundraising_campaigns.id:pledges.fundraising_campaign_id",
 	}),
 
-	pledger: one(usersPgTable, {
-		fields: [pledgesPgTable.pledgerId],
-		references: [usersPgTable.id],
+	pledger: one(usersTable, {
+		fields: [pledgesTable.pledgerId],
+		references: [usersTable.id],
 		relationName: "pledges.pledger_id:users.id",
 	}),
 
-	updater: one(usersPgTable, {
-		fields: [pledgesPgTable.updaterId],
-		references: [usersPgTable.id],
+	updater: one(usersTable, {
+		fields: [pledgesTable.updaterId],
+		references: [usersTable.id],
 		relationName: "pledges.updater_id:users.id",
 	}),
 }));

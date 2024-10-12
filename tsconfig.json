@@ -1,4 +1,4 @@
-// More information at this link:- https://www.typescriptlang.org/tsconfig/
+// More information at this link: https://www.typescriptlang.org/tsconfig/
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
@@ -117,8 +117,8 @@
 				"schema": "./schema.graphql" /* https://gql-tada.0no.co/reference/config-format#schema */,
 				"shouldCheckForColocatedFragments": false /* https://gql-tada.0no.co/reference/config-format#shouldcheckforcolocatedfragments */,
 				"trackFieldUsage": false /* https://gql-tada.0no.co/reference/config-format#trackfieldusage */,
-				"tadaOutputLocation": "./src/__tests__/graphql/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
-				"tadaTurboLocation": "./src/__tests__/graphql/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
+				"tadaOutputLocation": "./test/graphql/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
+				"tadaTurboLocation": "./test/graphql/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
 			}
 		]
 	}

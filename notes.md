@@ -1,33 +1,19 @@
-# Files and folders left to migrate:-
+# backlog
 
-.github
-.husky
-.pylintrc
-config
-docs
-images
-locales
-logs
-requirements.txt
-sample_data
-scripts
-setup.ts
-talawa-api-docs
-videos
+1. Mend renovate integration
+2. Synchronizing node.js version across configurations
+3. Devcontainer host-container ignored paths bi-directional mounting fix
 
-# To research about:-
+# to research about:-
 
-Both host and container based reproducible development environment setup with live refresh and hot-module replacement functionality. Code editor should be on host system but everything else should be containerized. Possible solutions:-
-1. Dev containers, test containers:- Code editor should be on the host system but everything else should be containerized. The code editor workspace context would be inside the containers. [Devpod](https://devpod.sh/) is one way to do this.
-2. Nix flakes:- Code editor should be on the host system along with everything else. The code editor workspace context would be on the host system as well.
-
-SQL migrations version control.
-
-# Setup testing environments
-
-https://github.com/goldbergyoni/nodebestpractices
-https://github.com/goldbergyoni/javascript-testing-best-practices
-https://github.com/testjavascript/nodejs-integration-tests-best-practices
+1. Reproducible development environment with as much as possible automated replication of production dependencies/services on the local system. Research about docker, docker compose. devcontainers, nix flakes etc.
+2. SQL migrations version control. Research about handling sql migrations in github.
+3. Database migrations without corruption and downtime. Research about expand and contract database migration pattern.
+4. Software testing patterns. Black box testing preferred as the fundamental testing pattern. Reference, [node best practices](https://github.com/goldbergyoni/nodebestpractices), [javascript testing best practices](https://github.com/goldbergyoni/javascript-testing-best-practices), [nodejs integration tests best practices](https://github.com/testjavascript/nodejs-integration-tests-best-practices).
+5. documentatation about docker, docker compose, api.Containerfile, compose files
+6. documentatation about environment variables
+7. documentatation about gql.tada
+8, documentatation about workflow commands
 
 # devcontainers
 
@@ -42,15 +28,13 @@ THE DOCKER VOLUMES ARE OWNED BY THE ROOT USER BY DEFAULT, MUST BE CHANGED TO BE 
 
 # expand and contract database migrations
 
-name -> firstname, lastname
+Let's say we want to extract out the `firstName` and `lastName` values from the `name` column of a database table and store them in their own columns. Here's the steps to do this with expand and contract database migration pattern:
 
-add nullable `firstname` and `lastname` columns to the database, update the server code to write to `name`, `firstname` and `lastname` columns but still read from the `name` column
-
-run a background task that produces and stores values for the currently null `firstname` and `lastname` columns from the `name` column
-
-once the previous task is complete and no null `firstname` and `lastname` columns remain update the server code to stop writing to the `name` column and start reading from the `firstname` and `lastname` columns
-
-once the previous task is complete remove the `name` column from the database
+1. Add nullable `firstname` and `lastname` columns to the database.
+2. Update the server code to write new values to `name`, `firstname` and `lastname` columns but still read values from the `name` column.
+3. Run a background task that populates the currently `null` `firstname` and `lastname` columns with corresponding values from the `name` column.
+4. Once the previous task is complete and all the `null` `firstname` and `lastname` have been populated update the server code to stop writing to the `name` column and start reading from the `firstname` and `lastname` columns.
+5. Once the previous task is complete remove the `name` column from the database.
 
 # docker compose
 
@@ -58,14 +42,6 @@ validate compose files:
 ```
 docker compose config --quiet
 ```
-
-# To write documentation about:-
-
-write code in a way that considers environment variables passed dynamically
-docker
-docker compose
-different environments for talawa api
-gql.tada
 
 # presentation
 
@@ -75,11 +51,12 @@ type safe graphql documents in integration tests with gql.tada
 
 # mercurius fixes required
 
-mercurius context type has incorrect typings for the following fields for all operations queries/mutations/subscriptions 
+The official mercurius context type has incorrect typings for the following fields for all operations queries/mutations/subscriptions 
 
+```ts
 {
     operationsCount?: number;
     operationId?: number;
 }
-
-and many typings don't exist in the mercurius context type but are present in the context at runtime
+```
+and many typings don't exist in the mercurius context type but are present in the context at runtime.

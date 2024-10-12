@@ -28,6 +28,14 @@ This environment variable is used to configure the host ip that can access the h
 
 When talawa api is run within a container environment this variable must be assigned a value of `0.0.0.0` for the host system to have access to the port talawa api listens on within the container at runtime.
 
+## API_IS_GRAPHIQL
+
+This environment variable is used to enable or disable serving the graphiql web client from the taalwa api server.
+
+## API_IS_PINO_PRETTY
+
+This environment variable is used to enable or disable pretty logging for the talawa api server.
+
 ## API_LOG_LEVEL
 
 This environment variable is used to configure the [log level](https://github.com/pinojs/pino/blob/main/docs/api.md#logger-level) for talawa api's [pino.js](https://github.com/pinojs/pino) logger. Possible values are `debug`, `error`, `fatal`, `info`, `trace` and `warn`. More information can be found at [this](https://github.com/pinojs/pino/blob/main/docs/api.md#logger-level) link.
@@ -52,10 +60,6 @@ This environment variable is used to configure the secret key to the minio serve
 ## API_MINIO_USE_SSL
 
 This environment variable is used to configure the ssl mode on the connection between minio server and talawa api's minio client. More information can be found at [this](https://min.io/docs/minio/linux/developers/javascript/API.html#constructor) link.
-
-## API_ENVIRONMENT
-
-This environment variable is used to configure the runtime environment for talawa api. Possible values are `production` and `non_production`.
 
 ## API_PORT
 

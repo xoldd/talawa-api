@@ -8,18 +8,18 @@ The following coventions are to be followed within this directory:
 
 1. The sdl name of a graphql type must follow the `PascalCase` naming convention.
 
-2. The file containing the pothos schema definition for a graphql type must be named the same as the sdl name of that graphql type.
+2. The file containing the pothos schema definition for a graphql type must be named the same as the sdl name for that graphql type and it must be exported through the `./index.ts` file in the same directory for pothos's executable schema builder to work.
 
-3. All the fields of a graphql type must follow the `snakeCase` naming convention.
+3. All the fields of a graphql type must follow the `camelCase` naming convention.
 
 4. The object reference to the pothos schema definition for a graphql type must be a pothos `objectRef` named export named the same as the sdl name of that graphql type suffixed with the keyword `Ref`.
 
-5. If a single file for a graphql type gets enormous in size, create a directory that is named the same as the sdl name of that graphql type and an `index.ts` file within it that exports the object reference mentioned in the previous convention. Now within this directory extract the fields of that graphql type into files that are named the same as their graphql sdl name and make sure to import them all in the `index.ts` file.
+5. If a single file for a graphql type gets enormous in size, create a directory that is named the same as the sdl name of that graphql type and within it follow all the previous steps.
 
 Here's an example depicting these rules: 
 
 ```typescript
-// User.ts
+// ~/src/graphql/types/User/User.ts
 import { builder } from "~/src/graphql/schemaBuilder.js";
 
 type User = {
@@ -37,9 +37,12 @@ UserRef.implement({
 });
 ```
 ```typescript
-// Post/index.ts
+// ~/src/graphql/types/User/index.ts
+export * from "./User.js";
+```
+```typescript
+// ~/src/graphql/types/Post/Post.ts
 import { builder } from "~/src/graphql/schemaBuilder.js";
-import "./Poster.js";
 
 type Post = {
 	body: string;
@@ -57,10 +60,10 @@ PostRef.implement({
 });
 ```
 ```typescript
-// Post/poster.ts
+// ~/src/graphql/types/Post/poster.ts
 import { builder } from "~/src/graphql/schemaBuilder.js";
-import { UserRef } from "~/src/graphql/types/User.js";
-import { PostRef } from "./index.js";
+import { UserRef } from "~/src/graphql/types/User/User.js";
+import { PostRef } from "./Post.js";
 
 PostRef.implement({
 	fields: (t) => ({
@@ -77,14 +80,24 @@ PostRef.implement({
 	}),
 });
 ```
+```typescript
+// ~/src/graphql/types/Post/index.ts
+export * from "./Post.js";
+export * from "./poster.js";
+```
+```typescript
+// ~/src/graphql/types/index.ts
+export * from "./Post/index.js";
+export * from "./User/index.js";
+```
 In this example: 
 
 1. The sdl name of the graphql type is `User` which follows the `PascalCase` naming convention.
 
-2. The file containing the pothos schema definition of the graphql type is named `User.ts` which is the same as the sdl name `User` of that graphql interface.
+2. The file containing the pothos schema definition of the graphql type is named `User.ts` which is the same as the sdl name `User` of that graphql type and it is exported through the `./index.ts` file in the same directory.
 
-3. The fields of the graphql type are `age` and `name` which follow the `snakeCase` naming convention.
+3. The fields of the graphql type are `age` and `name` which follow the `camelCase` naming convention.
 
 4. The object reference to the pothos schema definition for the graphql type is a named export named `UserRef` which is the same as the sdl name of that graphql type suffixed with the keyword `Ref`.
 
-5. A directory named `Post` is created for the graphql type `Post` with two files named `index.ts` and `poster.ts` where `index.ts` exports the object reference to the pothos schema definition for the `Post` graphql type and `poster.ts` is used to define pothos schema for the `poster` field of the `Post` graphql type.
+5. A directory named `Post` is created for the graphql type `Post` and all the previous steps are followed in this directory.

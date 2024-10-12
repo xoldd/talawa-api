@@ -28,7 +28,7 @@ import type { _URL } from "./URL.js";
 import type { UTCOffset } from "./UTCOffset.js";
 
 /**
- * Map of scalar types used in talawa api from pothos schema's perspective for usage in pothos schema builder intiializer.
+ * Map of scalar types used in talawa api used to annotate the type of those scalars to the pothos schema builder intiializer for type-safe usage of those scalars in the pothos schema definitions.
  */
 export type Scalars = {
 	CountryCode: CountryCode;
@@ -59,40 +59,6 @@ export type Scalars = {
 	Timestamp: Timestamp;
 	URL: _URL;
 	UTCOffset: UTCOffset;
-};
-
-/**
- * Map of scalar types used in talawa api from a client's perspective.
- */
-export type ClientScalars = {
-	CountryCode: string;
-	Currency: string;
-	Date: string;
-	DateTime: string;
-	Duration: string;
-	EmailAddress: string;
-	HexColorCode: string;
-	IP: string;
-	IPv4: string;
-	IPv6: string;
-	JSONObject: string;
-	Latitude: number;
-	Longitude: number;
-	NegativeFloat: number;
-	NegativeInt: number;
-	NonEmptyString: string;
-	NonNegativeFloat: number;
-	NonNegativeInt: number;
-	NonPostitiveFloat: number;
-	NonPositiveInt: number;
-	PhoneNumber: string;
-	PositiveFloat: number;
-	PositiveInt: number;
-	Time: string;
-	Timestamp: string;
-	TimeZone: string;
-	URL: string;
-	UTCOffset: string;
 };
 
 export * from "./CountryCode.js";

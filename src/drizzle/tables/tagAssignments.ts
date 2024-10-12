@@ -6,27 +6,35 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { tagsPgTable } from "./tags.js";
-import { usersPgTable } from "./users.js";
+import { tagsTable } from "./tags.js";
+import { usersTable } from "./users.js";
 
-export const tagAssignmentsPgTable = pgTable(
+export const tagAssignmentsTable = pgTable(
 	"tag_assignments",
 	{
 		assigneeId: uuid("assignee_id")
 			.notNull()
-			.references(() => usersPgTable.id, {}),
+			.references(() => usersTable.id, {}),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
-		tagId: uuid("tag_id").references(() => tagsPgTable.id),
+		tagId: uuid("tag_id").references(() => tagsTable.id),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		compositePrimaryKey: primaryKey({
@@ -39,34 +47,32 @@ export const tagAssignmentsPgTable = pgTable(
 	}),
 );
 
-export type TagAssignmentPgType = InferSelectModel<
-	typeof tagAssignmentsPgTable
->;
+export type TagAssignmentPgType = InferSelectModel<typeof tagAssignmentsTable>;
 
-export const tagAssignmentsPgTableRelations = relations(
-	tagAssignmentsPgTable,
+export const tagAssignmentsTableRelations = relations(
+	tagAssignmentsTable,
 	({ one }) => ({
-		assignee: one(usersPgTable, {
-			fields: [tagAssignmentsPgTable.assigneeId],
-			references: [usersPgTable.id],
+		assignee: one(usersTable, {
+			fields: [tagAssignmentsTable.assigneeId],
+			references: [usersTable.id],
 			relationName: "tag_assignments.assignee_id:users.id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [tagAssignmentsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [tagAssignmentsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "tag_assignments.creator_id:users.id",
 		}),
 
-		tag: one(tagsPgTable, {
-			fields: [tagAssignmentsPgTable.tagId],
-			references: [tagsPgTable.id],
+		tag: one(tagsTable, {
+			fields: [tagAssignmentsTable.tagId],
+			references: [tagsTable.id],
 			relationName: "tag_assignments.tag_id:tags.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [tagAssignmentsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [tagAssignmentsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "tag_assignments.updater_id:users.id",
 		}),
 	}),

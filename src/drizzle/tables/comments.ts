@@ -7,41 +7,51 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { commentVotesPgTable } from "./commentVotes.js";
-import { postsPgTable } from "./posts.js";
-import { usersPgTable } from "./users.js";
+import { commentVotesTable } from "./commentVotes.js";
+import { postsTable } from "./posts.js";
+import { usersTable } from "./users.js";
 
-export const commentsPgTable = pgTable(
+export const commentsTable = pgTable(
 	"comments",
 	{
 		body: text("body").notNull(),
 
-		commenterId: uuid("commenter_id").references(() => usersPgTable.id, {}),
+		commenterId: uuid("commenter_id").references(() => usersTable.id, {}),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
 		parentCommentId: uuid("parent_comment_id").references(
-			(): AnyPgColumn => commentsPgTable.id,
+			(): AnyPgColumn => commentsTable.id,
 			{},
 		),
 
-		pinnedAt: timestamp("pinned_at", {}),
+		pinnedAt: timestamp("pinned_at", {
+			mode: "date",
+		}),
 
-		pinnerId: uuid("pinner_id").references(() => usersPgTable.id, {}),
+		pinnerId: uuid("pinner_id").references(() => usersTable.id, {}),
 
 		postId: uuid("post_id")
 			.notNull()
-			.references(() => postsPgTable.id, {}),
+			.references(() => postsTable.id, {}),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		index0: index().on(self.commenterId),
@@ -53,52 +63,52 @@ export const commentsPgTable = pgTable(
 	}),
 );
 
-export type CommentPgType = InferSelectModel<typeof commentsPgTable>;
+export type CommentPgType = InferSelectModel<typeof commentsTable>;
 
-export const commentsPgTableRelations = relations(
-	commentsPgTable,
+export const commentsTableRelations = relations(
+	commentsTable,
 	({ many, one }) => ({
-		childCommentsWhereParentComment: many(commentsPgTable, {
+		childCommentsWhereParentComment: many(commentsTable, {
 			relationName: "comments.id:comments.parent_comment_id",
 		}),
 
-		commenter: one(usersPgTable, {
-			fields: [commentsPgTable.commenterId],
-			references: [usersPgTable.id],
+		commenter: one(usersTable, {
+			fields: [commentsTable.commenterId],
+			references: [usersTable.id],
 			relationName: "comments.commenter_id:users.id",
 		}),
 
-		commentVotesWhereComment: many(commentVotesPgTable, {
+		commentVotesWhereComment: many(commentVotesTable, {
 			relationName: "comment_votes.comment_id:comments.id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [commentsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [commentsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "comments.creator_id:users.id",
 		}),
 
-		parentComment: one(commentsPgTable, {
-			fields: [commentsPgTable.parentCommentId],
-			references: [commentsPgTable.id],
+		parentComment: one(commentsTable, {
+			fields: [commentsTable.parentCommentId],
+			references: [commentsTable.id],
 			relationName: "comments.id:comments.parent_comment_id",
 		}),
 
-		pinner: one(usersPgTable, {
-			fields: [commentsPgTable.pinnerId],
-			references: [usersPgTable.id],
+		pinner: one(usersTable, {
+			fields: [commentsTable.pinnerId],
+			references: [usersTable.id],
 			relationName: "comments.pinner_id:users.id",
 		}),
 
-		post: one(postsPgTable, {
-			fields: [commentsPgTable.postId],
-			references: [postsPgTable.id],
+		post: one(postsTable, {
+			fields: [commentsTable.postId],
+			references: [postsTable.id],
 			relationName: "comments.post_id:posts.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [commentsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [commentsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "comments.updater_id:users.id",
 		}),
 	}),

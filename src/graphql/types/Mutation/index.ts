@@ -1,5 +1,9 @@
-import { builder } from "~/src/graphql/schemaBuilder.js";
-import "./createMessage.js";
-import "./updateMessage.js";
-
-builder.mutationType({});
+export * from "./Mutation.js";
+export * from "./createUser.js";
+export * from "./createUsers.js";
+export * from "./deleteUser.js";
+export * from "./deleteUsers.js";
+export * from "./signIn.js";
+export * from "./signUp.js";
+export * from "./updateUser.js";
+export * from "./updateUsers.js";

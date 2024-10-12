@@ -1,33 +1,47 @@
 import { type InferSelectModel, relations } from "drizzle-orm";
-import { index, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
-import { eventAttendeeRegistrationInviteStatusPgEnum } from "../enums/eventAttendeeRegistrationInviteStatus.js";
-import { eventsPgTable } from "./events.js";
-import { usersPgTable } from "./users.js";
+import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
-export const eventAttendancesPgTable = pgTable(
+import { eventAttendeeRegistrationInviteStatusEnum } from "~/src/drizzle/enums.js";
+import { eventsTable } from "./events.js";
+import { usersTable } from "./users.js";
+export const eventAttendancesTable = pgTable(
 	"event_attendances",
 	{
-		attendeeId: uuid("attendee_id").references(() => usersPgTable.id),
+		attendeeId: uuid("attendee_id").references(() => usersTable.id),
 
-		checkInAt: timestamp("check_in_at"),
+		checkInAt: timestamp("check_in_at", {
+			mode: "date",
+		}),
 
-		checkOutAt: timestamp("check_out_at"),
+		checkOutAt: timestamp("check_out_at", {
+			mode: "date",
+		}),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsPgTable.id),
+			.references(() => eventsTable.id),
 
-		inviteStatus: eventAttendeeRegistrationInviteStatusPgEnum("invite_status"),
+		inviteStatus: text("invite_status", {
+			enum: eventAttendeeRegistrationInviteStatusEnum.options,
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		index0: index().on(self.attendeeId),
@@ -41,33 +55,33 @@ export const eventAttendancesPgTable = pgTable(
 );
 
 export type EventAttendancePgType = InferSelectModel<
-	typeof eventAttendancesPgTable
+	typeof eventAttendancesTable
 >;
 
-export const eventAttendancesPgTableRelations = relations(
-	eventAttendancesPgTable,
+export const eventAttendancesTableRelations = relations(
+	eventAttendancesTable,
 	({ one }) => ({
-		attendee: one(usersPgTable, {
-			fields: [eventAttendancesPgTable.attendeeId],
-			references: [usersPgTable.id],
+		attendee: one(usersTable, {
+			fields: [eventAttendancesTable.attendeeId],
+			references: [usersTable.id],
 			relationName: "event_attendances.attendee_id:users.id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [eventAttendancesPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [eventAttendancesTable.creatorId],
+			references: [usersTable.id],
 			relationName: "event_attendances.creator_id:users.id",
 		}),
 
-		event: one(eventsPgTable, {
-			fields: [eventAttendancesPgTable.eventId],
-			references: [eventsPgTable.id],
+		event: one(eventsTable, {
+			fields: [eventAttendancesTable.eventId],
+			references: [eventsTable.id],
 			relationName: "event_attendances.event_id:events.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [eventAttendancesPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [eventAttendancesTable.updaterId],
+			references: [usersTable.id],
 			relationName: "event_attendances.updater_id:users.id",
 		}),
 	}),

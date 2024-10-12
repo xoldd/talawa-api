@@ -9,40 +9,42 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { iso3166Alpha2CountryCodePgEnum } from "../enums/iso3166Alpha2CountryCode.js";
-import { userEducationGradePgEnum } from "../enums/userEducationGrade.js";
-import { userEmploymentStatusPgEnum } from "../enums/userEmploymentStatus.js";
-import { userMaritalStatusPgEnum } from "../enums/userMaritalStatus.js";
-import { userNatalSexPgEnum } from "../enums/userNatalSex.js";
-import { actionCategoriesPgTable } from "./actionCategories.js";
-import { actionsPgTable } from "./actions.js";
-import { advertisementAttachmentsPgTable } from "./advertisementAttachments.js";
-import { advertisementsPgTable } from "./advertisements.js";
-import { agendaSectionsPgTable } from "./agendaSections.js";
-import { commentVotesPgTable } from "./commentVotes.js";
-import { commentsPgTable } from "./comments.js";
-import { eventAttachmentsPgTable } from "./eventAttachments.js";
-import { eventsPgTable } from "./events.js";
-import { familiesPgTable } from "./families.js";
-import { familyMembershipsPgTable } from "./familyMemberships.js";
-import { fundraisingCampaignsPgTable } from "./fundraisingCampaigns.js";
-import { fundsPgTable } from "./funds.js";
-import { organizationMembershipsPgTable } from "./organizationMemberships.js";
-import { organizationsPgTable } from "./organizations.js";
-import { pledgesPgTable } from "./pledges.js";
-import { postAttachmentsPgTable } from "./postAttachments.js";
-import { postVotesPgTable } from "./postVotes.js";
-import { postsPgTable } from "./posts.js";
-import { tagAssignmentsPgTable } from "./tagAssignments.js";
-import { tagFoldersPgTable } from "./tagFolders.js";
-import { tagsPgTable } from "./tags.js";
-import { venueAttachmentsPgTable } from "./venueAttachments.js";
-import { venueBookingsPgTable } from "./venueBookings.js";
-import { venuesPgTable } from "./venues.js";
-import { volunteerGroupAssignmentsPgTable } from "./volunteerGroupAssignments.js";
-import { volunteerGroupsPgTable } from "./volunteerGroups.js";
+import {
+	iso3166Alpha2CountryCodeEnum,
+	userEducationGradeEnum,
+	userEmploymentStatusEnum,
+	userMaritalStatusEnum,
+	userNatalSexEnum,
+} from "~/src/drizzle/enums.js";
+import { actionCategoriesTable } from "./actionCategories.js";
+import { actionsTable } from "./actions.js";
+import { advertisementAttachmentsTable } from "./advertisementAttachments.js";
+import { advertisementsTable } from "./advertisements.js";
+import { agendaSectionsTable } from "./agendaSections.js";
+import { commentVotesTable } from "./commentVotes.js";
+import { commentsTable } from "./comments.js";
+import { eventAttachmentsTable } from "./eventAttachments.js";
+import { eventsTable } from "./events.js";
+import { familiesTable } from "./families.js";
+import { familyMembershipsTable } from "./familyMemberships.js";
+import { fundraisingCampaignsTable } from "./fundraisingCampaigns.js";
+import { fundsTable } from "./funds.js";
+import { organizationMembershipsTable } from "./organizationMemberships.js";
+import { organizationsTable } from "./organizations.js";
+import { pledgesTable } from "./pledges.js";
+import { postAttachmentsTable } from "./postAttachments.js";
+import { postVotesTable } from "./postVotes.js";
+import { postsTable } from "./posts.js";
+import { tagAssignmentsTable } from "./tagAssignments.js";
+import { tagFoldersTable } from "./tagFolders.js";
+import { tagsTable } from "./tags.js";
+import { venueAttachmentsTable } from "./venueAttachments.js";
+import { venueBookingsTable } from "./venueBookings.js";
+import { venuesTable } from "./venues.js";
+import { volunteerGroupAssignmentsTable } from "./volunteerGroupAssignments.js";
+import { volunteerGroupsTable } from "./volunteerGroups.js";
 
-export const usersPgTable = pgTable(
+export const usersTable = pgTable(
 	"user",
 	{
 		addressLine1: text("address_line_1"),
@@ -51,29 +53,41 @@ export const usersPgTable = pgTable(
 
 		avatarURI: text("avatar_uri"),
 
-		birthDate: date("birth_date"),
+		birthDate: date("birth_date", {
+			mode: "date",
+		}),
 
 		city: text("city"),
 
-		countryCode: iso3166Alpha2CountryCodePgEnum("country_code"),
+		countryCode: text("country_code", {
+			enum: iso3166Alpha2CountryCodeEnum.options,
+		}),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(
-			(): AnyPgColumn => usersPgTable.id,
-		),
+		creatorId: uuid("creator_id").references((): AnyPgColumn => usersTable.id),
 
 		description: text("description"),
 
-		educationGrade: userEducationGradePgEnum("education_grade"),
+		educationGrade: text("education_grade", {
+			enum: userEducationGradeEnum.options,
+		}),
+
+		state: text("state"),
 
 		email: text("email").notNull().unique(),
 
-		employmentStatus: userEmploymentStatusPgEnum("employment_status"),
+		employmentStatus: text("employment_status", {
+			enum: userEmploymentStatusEnum.options,
+		}),
 
 		firstName: text("first_name"),
 
-		home_phone_number: text("home_phone_number"),
+		homePhoneNumber: text("home_phone_number"),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
@@ -83,25 +97,27 @@ export const usersPgTable = pgTable(
 
 		lastName: text("last_name"),
 
-		maritalStatus: userMaritalStatusPgEnum("marital_status"),
+		maritalStatus: text("marital_status", {
+			enum: userMaritalStatusEnum.options,
+		}),
 
 		mobilePhoneNumber: text("mobile_phone_number"),
 
 		name: text("name").unique(),
 
-		natalSex: userNatalSexPgEnum("natal_sex"),
+		natalSex: text("natal_sex", {
+			enum: userNatalSexEnum.options,
+		}),
 
 		passwordHash: text("password_hash"),
 
 		postalCode: text("postal_code"),
 
-		state: text("state"),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updatedAt: timestamp("updated_at", {}),
-
-		updaterId: uuid("updater_id").references(
-			(): AnyPgColumn => usersPgTable.id,
-		),
+		updaterId: uuid("updater_id").references((): AnyPgColumn => usersTable.id),
 
 		workPhoneNumber: text("work_phone_number"),
 	},
@@ -111,283 +127,274 @@ export const usersPgTable = pgTable(
 	}),
 );
 
-export type UserPgType = InferSelectModel<typeof usersPgTable>;
+export type UserPgType = InferSelectModel<typeof usersTable>;
 
-export const usersPgTableRelations = relations(usersPgTable, ({ many }) => ({
-	actionsWhereAssignee: many(actionsPgTable, {
+export const usersTableRelations = relations(usersTable, ({ many }) => ({
+	actionsWhereAssignee: many(actionsTable, {
 		relationName: "actions.assignee_id:users.id",
 	}),
 
-	actionsWhereCreator: many(actionsPgTable, {
+	actionsWhereCreator: many(actionsTable, {
 		relationName: "actions.creator_id:users.id",
 	}),
 
-	actionsWhereUpdater: many(actionsPgTable, {
+	actionsWhereUpdater: many(actionsTable, {
 		relationName: "actions.updater_id:users.id",
 	}),
 
-	actionCategoriesWhereCreator: many(actionCategoriesPgTable, {
+	actionCategoriesWhereCreator: many(actionCategoriesTable, {
 		relationName: "action_categories.creator_id:users.id",
 	}),
 
-	actionCategoriesWhereUpdater: many(actionCategoriesPgTable, {
+	actionCategoriesWhereUpdater: many(actionCategoriesTable, {
 		relationName: "action_categories.updater_id:users.id",
 	}),
 
-	advertisementAttachmentsWhereCreator: many(advertisementAttachmentsPgTable, {
+	advertisementAttachmentsWhereCreator: many(advertisementAttachmentsTable, {
 		relationName: "advertisement_attachments.creator_id:users.id",
 	}),
 
-	advertisementAttachmentsWhereUpdater: many(advertisementAttachmentsPgTable, {
+	advertisementAttachmentsWhereUpdater: many(advertisementAttachmentsTable, {
 		relationName: "advertisement_attachments.updater_id:users.id",
 	}),
 
-	advertisementsWhereCreator: many(advertisementsPgTable, {
+	advertisementsWhereCreator: many(advertisementsTable, {
 		relationName: "advertisements.creator_id:users.id",
 	}),
 
-	advertisementsWhereUpdater: many(advertisementsPgTable, {
+	advertisementsWhereUpdater: many(advertisementsTable, {
 		relationName: "advertisements.updater_id:users.id",
 	}),
 
-	agendaSectionsWhereCreator: many(agendaSectionsPgTable, {
+	agendaSectionsWhereCreator: many(agendaSectionsTable, {
 		relationName: "agenda_sections.creator_id:users.id",
 	}),
 
-	agendaSectionsWhereUpdater: many(agendaSectionsPgTable, {
+	agendaSectionsWhereUpdater: many(agendaSectionsTable, {
 		relationName: "agenda_sections.updater_id:users.id",
 	}),
 
-	commentsWhereCommenter: many(commentsPgTable, {
+	commentsWhereCommenter: many(commentsTable, {
 		relationName: "comments.commenter_id:users.id",
 	}),
 
-	commentsWhereCreator: many(commentsPgTable, {
+	commentsWhereCreator: many(commentsTable, {
 		relationName: "comments.creator_id:users.id",
 	}),
 
-	commentsWherePinner: many(commentsPgTable, {
+	commentsWherePinner: many(commentsTable, {
 		relationName: "comments.pinner_id:users.id",
 	}),
 
-	commentsWhereUpdater: many(commentsPgTable, {
+	commentsWhereUpdater: many(commentsTable, {
 		relationName: "comments.updater_id:users.id",
 	}),
 
-	commentVotesWhereCreator: many(commentVotesPgTable, {
+	commentVotesWhereCreator: many(commentVotesTable, {
 		relationName: "comment_votes.creator_id:users.id",
 	}),
 
-	commentVotesWhereUpdater: many(commentVotesPgTable, {
+	commentVotesWhereUpdater: many(commentVotesTable, {
 		relationName: "comment_votes.updater_id:users.id",
 	}),
 
-	commentVotesWhereVoter: many(commentVotesPgTable, {
+	commentVotesWhereVoter: many(commentVotesTable, {
 		relationName: "comment_votes.voter_id:users.id",
 	}),
 
-	eventsWhereCreator: many(eventsPgTable, {
+	eventsWhereCreator: many(eventsTable, {
 		relationName: "events.creator_id:users.id",
 	}),
 
-	eventsWhereUpdater: many(eventsPgTable, {
+	eventsWhereUpdater: many(eventsTable, {
 		relationName: "events.updater_id:users.id",
 	}),
 
-	eventAttachmentsWhereCreator: many(eventAttachmentsPgTable, {
+	eventAttachmentsWhereCreator: many(eventAttachmentsTable, {
 		relationName: "event_attachments.creator_id:users.id",
 	}),
 
-	eventAttachmentsWhereUpdater: many(eventAttachmentsPgTable, {
+	eventAttachmentsWhereUpdater: many(eventAttachmentsTable, {
 		relationName: "event_attachments.updater_id:users.id",
 	}),
 
-	familiesWhereCreator: many(familiesPgTable, {
+	familiesWhereCreator: many(familiesTable, {
 		relationName: "families.creator_id:users.id",
 	}),
 
-	familiesWhereUpdater: many(familiesPgTable, {
+	familiesWhereUpdater: many(familiesTable, {
 		relationName: "families.updater_id:users.id",
 	}),
 
-	familyMembershipsWhereCreator: many(familyMembershipsPgTable, {
+	familyMembershipsWhereCreator: many(familyMembershipsTable, {
 		relationName: "family_memberships.creator_id:users.id",
 	}),
 
-	familyMembershipsWhereMember: many(familyMembershipsPgTable, {
+	familyMembershipsWhereMember: many(familyMembershipsTable, {
 		relationName: "family_memberships.member_id:users.id",
 	}),
 
-	familyMembershipsWhereUpdater: many(familyMembershipsPgTable, {
+	familyMembershipsWhereUpdater: many(familyMembershipsTable, {
 		relationName: "family_memberships.updater_id:users.id",
 	}),
 
-	fundraisingCampaignsWhereCreator: many(fundraisingCampaignsPgTable, {
+	fundraisingCampaignsWhereCreator: many(fundraisingCampaignsTable, {
 		relationName: "fundraising_campaigns.creator_id:users.id",
 	}),
 
-	fundraisingCampaignsWhereUpdater: many(fundraisingCampaignsPgTable, {
+	fundraisingCampaignsWhereUpdater: many(fundraisingCampaignsTable, {
 		relationName: "fundraising_campaigns.updater_id:users.id",
 	}),
 
-	fundsWhereCreator: many(fundsPgTable, {
+	fundsWhereCreator: many(fundsTable, {
 		relationName: "funds.creator_id:users.id",
 	}),
 
-	fundsWhereUpdater: many(fundsPgTable, {
+	fundsWhereUpdater: many(fundsTable, {
 		relationName: "funds.updater_id:users.id",
 	}),
 
-	organizationsWhereCreator: many(organizationsPgTable, {
+	organizationsWhereCreator: many(organizationsTable, {
 		relationName: "organizations.creator_id:users.id",
 	}),
 
-	organizationsWhereUpdater: many(organizationsPgTable, {
+	organizationsWhereUpdater: many(organizationsTable, {
 		relationName: "organizations.updater_id:users.id",
 	}),
 
-	organizationMembershipsWhereCreator: many(organizationMembershipsPgTable, {
+	organizationMembershipsWhereCreator: many(organizationMembershipsTable, {
 		relationName: "organization_memberships.creator_id:users.id",
 	}),
 
-	organizationMembershipsWhereMember: many(organizationMembershipsPgTable, {
+	organizationMembershipsWhereMember: many(organizationMembershipsTable, {
 		relationName: "organization_memberships.member_id:users.id",
 	}),
 
-	organizationMembershipsWhereUpdator: many(organizationMembershipsPgTable, {
+	organizationMembershipsWhereUpdator: many(organizationMembershipsTable, {
 		relationName: "organization_memberships.updater_id:users.id",
 	}),
 
-	pledgesWhereCreator: many(pledgesPgTable, {
+	pledgesWhereCreator: many(pledgesTable, {
 		relationName: "pledges.creator_id:users.id",
 	}),
 
-	pledgesWherePledger: many(pledgesPgTable, {
+	pledgesWherePledger: many(pledgesTable, {
 		relationName: "pledges.pledger_id:users.id",
 	}),
 
-	pledgesWhereUpdater: many(pledgesPgTable, {
+	pledgesWhereUpdater: many(pledgesTable, {
 		relationName: "pledges.updater_id:users.id",
 	}),
 
-	postsWhereCreator: many(postsPgTable, {
+	postsWhereCreator: many(postsTable, {
 		relationName: "posts.creator_id:users.id",
 	}),
 
-	postsWherePinner: many(postsPgTable, {
+	postsWherePinner: many(postsTable, {
 		relationName: "posts.pinner_id:users.id",
 	}),
 
-	postsWherePoster: many(postsPgTable, {
+	postsWherePoster: many(postsTable, {
 		relationName: "posts.poster_id:users.id",
 	}),
 
-	postsWhereUpdater: many(postsPgTable, {
+	postsWhereUpdater: many(postsTable, {
 		relationName: "posts.updater_id:users.id",
 	}),
 
-	postAttachmentsWhereCreator: many(postAttachmentsPgTable, {
+	postAttachmentsWhereCreator: many(postAttachmentsTable, {
 		relationName: "post_attachments.creator_id:users.id",
 	}),
 
-	postAttachmentsWhereUpdater: many(postAttachmentsPgTable, {
+	postAttachmentsWhereUpdater: many(postAttachmentsTable, {
 		relationName: "post_attachments.updater_id:users.id",
 	}),
 
-	postVotesWhereCreator: many(postVotesPgTable, {
+	postVotesWhereCreator: many(postVotesTable, {
 		relationName: "post_votes.creator_id:users.id",
 	}),
 
-	postVotesWhereUpdater: many(postVotesPgTable, {
+	postVotesWhereUpdater: many(postVotesTable, {
 		relationName: "post_votes.updater_id:users.id",
 	}),
 
-	postVotesWhereVoter: many(postVotesPgTable, {
+	postVotesWhereVoter: many(postVotesTable, {
 		relationName: "post_votes.voter_id:users.id",
 	}),
 
-	tagsWhereCreator: many(tagsPgTable, {
+	tagsWhereCreator: many(tagsTable, {
 		relationName: "tags.creator_id:users.id",
 	}),
 
-	tagsWhereUpdater: many(tagsPgTable, {
+	tagsWhereUpdater: many(tagsTable, {
 		relationName: "tags.updater_id:users.id",
 	}),
 
-	tagAssignmentsWhereAssignee: many(tagAssignmentsPgTable, {
+	tagAssignmentsWhereAssignee: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.assignee_id:tags.id",
 	}),
 
-	tagAssignmentsWhereCreator: many(tagAssignmentsPgTable, {
+	tagAssignmentsWhereCreator: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.creator_id:users.id",
 	}),
 
-	tagAssignmentsWhereUpdater: many(tagAssignmentsPgTable, {
+	tagAssignmentsWhereUpdater: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.updater_id:users.id",
 	}),
 
-	tagFoldersWhereCreator: many(tagFoldersPgTable, {
+	tagFoldersWhereCreator: many(tagFoldersTable, {
 		relationName: "tag_folders.creator_id:users.id",
 	}),
 
-	tagFoldersWhereUpdater: many(tagFoldersPgTable, {
+	tagFoldersWhereUpdater: many(tagFoldersTable, {
 		relationName: "tag_folders.updater_id:users.id",
 	}),
 
-	venuesWhereCreator: many(venuesPgTable, {
+	venuesWhereCreator: many(venuesTable, {
 		relationName: "users.id:venues.creator_id",
 	}),
 
-	venuesWhereUpdater: many(venuesPgTable, {
+	venuesWhereUpdater: many(venuesTable, {
 		relationName: "users.id:venues.updater_id",
 	}),
 
-	venueAttachmentsWhereCreator: many(venueAttachmentsPgTable, {
+	venueAttachmentsWhereCreator: many(venueAttachmentsTable, {
 		relationName: "users.id:venue_attachments.creator_id",
 	}),
 
-	venueAttachmentsWhereUpdater: many(venueAttachmentsPgTable, {
+	venueAttachmentsWhereUpdater: many(venueAttachmentsTable, {
 		relationName: "users.id:venue_attachments.updater_id",
 	}),
 
-	venueBookingsWhereCreator: many(venueBookingsPgTable, {
+	venueBookingsWhereCreator: many(venueBookingsTable, {
 		relationName: "users.id:venue_bookings.creator_id",
 	}),
 
-	venueBookingsWhereUpdater: many(venueBookingsPgTable, {
+	venueBookingsWhereUpdater: many(venueBookingsTable, {
 		relationName: "users.id:venue_bookings.updater_id",
 	}),
 
-	volunteerGroupsWhereCreator: many(volunteerGroupsPgTable, {
+	volunteerGroupsWhereCreator: many(volunteerGroupsTable, {
 		relationName: "users.id:volunteer_groups.creator_id",
 	}),
 
-	volunteerGroupsWhereLeader: many(volunteerGroupsPgTable, {
+	volunteerGroupsWhereLeader: many(volunteerGroupsTable, {
 		relationName: "users.id:volunteer_groups.leader_id",
 	}),
 
-	volunteerGroupsWhereUpdater: many(volunteerGroupsPgTable, {
+	volunteerGroupsWhereUpdater: many(volunteerGroupsTable, {
 		relationName: "users.id:volunteer_groups.updater_id",
 	}),
 
-	volunteerGroupAssignmentsWhereAssignee: many(
-		volunteerGroupAssignmentsPgTable,
-		{
-			relationName: "users.id:volunteer_group_assignments.assignee_id",
-		},
-	),
+	volunteerGroupAssignmentsWhereAssignee: many(volunteerGroupAssignmentsTable, {
+		relationName: "users.id:volunteer_group_assignments.assignee_id",
+	}),
 
-	volunteerGroupAssignmentsWhereCreator: many(
-		volunteerGroupAssignmentsPgTable,
-		{
-			relationName: "users.id:volunteer_group_assignments.creator_id",
-		},
-	),
+	volunteerGroupAssignmentsWhereCreator: many(volunteerGroupAssignmentsTable, {
+		relationName: "users.id:volunteer_group_assignments.creator_id",
+	}),
 
-	volunteerGroupAssignmentsWhereUpdater: many(
-		volunteerGroupAssignmentsPgTable,
-		{
-			relationName: "users.id:volunteer_group_assignments.updater_id",
-		},
-	),
+	volunteerGroupAssignmentsWhereUpdater: many(volunteerGroupAssignmentsTable, {
+		relationName: "users.id:volunteer_group_assignments.updater_id",
+	}),
 }));

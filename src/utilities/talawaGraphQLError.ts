@@ -16,12 +16,12 @@ import { GraphQLError, type GraphQLErrorOptions } from "graphql";
  * @example
  * throw new TalawaGraphQLError("Post not found.", {
  *  argumentPath: ["input", "postId"],
- *  code: "ARGUMENT_ASSOCIATED_RESOURCE_NOT_FOUND"
+ *  code: "argument_associated_resource_not_found"
  * })
  */
 type ArgumentAssociatedResourceNotFound = {
 	argumentPath: (string | number)[];
-	code: "ARGUMENT_ASSOCIATED_RESOURCE_NOT_FOUND";
+	code: "argument_associated_resource_not_found";
 };
 
 /**
@@ -31,11 +31,11 @@ type ArgumentAssociatedResourceNotFound = {
  * @example
  * throw new TalawaGraphQLError("You can only claim your yearly award once per year.",
  * {
- *  code: "FORBIDDEN_ACTION"
+ *  code: "forbidden_action"
  * })
  */
 type ForbiddenAction = {
-	code: "FORBIDDEN_ACTION";
+	code: "forbidden_action";
 };
 
 /**
@@ -46,12 +46,12 @@ type ForbiddenAction = {
  * @example
  * throw new TalawaGraphQLError("You cannot follow your own user account.", {
  *  argumentPath: ["id"],
- *  code: "FORBIDDEN_ACTION_ON_ARGUMENT_ASSOCIATED_RESOURCE"
+ *  code: "forbidden_action_on_argument_associated_resource"
  * })
  */
 type ForbiddenActionOnArgumentAssociatedResource = {
 	argumentPath: (string | number)[];
-	code: "FORBIDDEN_ACTION_ON_ARGUMENT_ASSOCIATED_RESOURCE";
+	code: "forbidden_action_on_argument_associated_resource";
 };
 
 /**
@@ -59,11 +59,11 @@ type ForbiddenActionOnArgumentAssociatedResource = {
  *
  * @example
  * throw new TalawaGraphQLError("You must be authenticated to create a post.", {
- *  code: "UNAUTHENTICATED"
+ *  code: "unauthenticated"
  * })
  */
 type Unauthenticated = {
-	code: "UNAUTHENTICATED";
+	code: "unauthenticated";
 };
 
 /**
@@ -71,7 +71,7 @@ type Unauthenticated = {
  *
  * @example
  * throw new TalawaGraphQLError("Invalid arguments provided.", {
- *  code: "INVALID_ARGUMENTS",
+ *  code: "invalid_arguments",
  *  issues: [
  *      {
  *          argumentPath: ["input", "age"],
@@ -89,7 +89,7 @@ type Unauthenticated = {
  * })
  */
 type InvalidArguments = {
-	code: "INVALID_ARGUMENTS";
+	code: "invalid_arguments";
 	issues: {
 		argumentPath: (string | number)[];
 		message: string;
@@ -101,11 +101,11 @@ type InvalidArguments = {
  *
  * @example
  * throw new TalawaGraphQLError("Post creator not found.", {
- *  code: "RESOURCE_NOT_FOUND"
+ *  code: "resource_not_found"
  * })
  */
 type ResourceNotFound = {
-	code: "RESOURCE_NOT_FOUND";
+	code: "resource_not_found";
 };
 
 /**
@@ -113,11 +113,11 @@ type ResourceNotFound = {
  *
  * @example
  * throw new TalawaGraphQLError("Your account does not meet the minimum requirements to create posts.", {
- *  code: "UNAUTHORIZED_ACTION"
+ *  code: "unauthorized_action"
  * })
  */
 type UnauthorizedAction = {
-	code: "UNAUTHORIZED_ACTION";
+	code: "unauthorized_action";
 };
 
 /**
@@ -126,12 +126,12 @@ type UnauthorizedAction = {
  * @example
  * throw new TalawaGraphQLError("You must be an approved member of this community to access it.", {
  *  argumentPath: ["id"],
- *  code: "UNAUTHORIZED_ACTION_ON_ARGUMENT_ASSOCIATED_RESOURCE"
+ *  code: "unauthorized_action_on_argument_associated_resource"
  * })
  */
 type UnauthorizedActionOnArgumentAssociatedResource = {
 	argumentPath: (string | number)[];
-	code: "UNAUTHORIZED_ACTION_ON_ARGUMENT_ASSOCIATED_RESOURCE";
+	code: "unauthorized_action_on_argument_associated_resource";
 };
 
 /**
@@ -140,11 +140,11 @@ type UnauthorizedActionOnArgumentAssociatedResource = {
  *
  * @example
  * throw new TalawaGraphQLError("Something went wrong. Please try again later.", {
- *  code: "UNEXPECTED"
+ *  code: "unexpected"
  * })
  */
 type Unexpected = {
-	code: "UNEXPECTED";
+	code: "unexpected";
 };
 
 type TalawaGraphQLErrorExtensions =
@@ -178,7 +178,7 @@ type TalawaGraphQLErrorExtensions =
  *
  *  if (user === undefined) {
  *      throw createTalawaGraphQLError("Best friend not found", {
- *          code: "RESOURCE_NOT_FOUND"
+ *          code: "resource_not_found"
  *      })
  *  }
  *

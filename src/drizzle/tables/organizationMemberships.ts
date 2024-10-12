@@ -8,15 +8,19 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { organizationsPgTable } from "./organizations.js";
-import { usersPgTable } from "./users.js";
+import { organizationsTable } from "./organizations.js";
+import { usersTable } from "./users.js";
 
-export const organizationMembershipsPgTable = pgTable(
+export const organizationMembershipsTable = pgTable(
 	"organization_memberships",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
 		isAdministrator: boolean("is_administrator").notNull().default(false),
 
@@ -28,15 +32,17 @@ export const organizationMembershipsPgTable = pgTable(
 
 		memberId: uuid("member_id")
 			.notNull()
-			.references(() => usersPgTable.id, {}),
+			.references(() => usersTable.id, {}),
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id, {}),
+			.references(() => organizationsTable.id, {}),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		compositePrimaryKey: primaryKey({
@@ -53,34 +59,34 @@ export const organizationMembershipsPgTable = pgTable(
 );
 
 export type OrganizationMembershipPgType = InferSelectModel<
-	typeof organizationMembershipsPgTable
+	typeof organizationMembershipsTable
 >;
 
-export const organizationMembershipsPgTableRelations = relations(
-	organizationMembershipsPgTable,
+export const organizationMembershipsTableRelations = relations(
+	organizationMembershipsTable,
 	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [organizationMembershipsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [organizationMembershipsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "organization_memberships.creator_id:users.id",
 		}),
 
-		member: one(usersPgTable, {
-			fields: [organizationMembershipsPgTable.memberId],
-			references: [usersPgTable.id],
+		member: one(usersTable, {
+			fields: [organizationMembershipsTable.memberId],
+			references: [usersTable.id],
 			relationName: "organization_memberships.member_id:users.id",
 		}),
 
-		organization: one(organizationsPgTable, {
-			fields: [organizationMembershipsPgTable.organizationId],
-			references: [organizationsPgTable.id],
+		organization: one(organizationsTable, {
+			fields: [organizationMembershipsTable.organizationId],
+			references: [organizationsTable.id],
 			relationName:
 				"organization_memberships.organization_id:organizations.id:",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [organizationMembershipsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [organizationMembershipsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "organization_memberships.updater_id:users.id",
 		}),
 	}),

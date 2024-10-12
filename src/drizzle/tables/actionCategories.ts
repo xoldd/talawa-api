@@ -8,18 +8,24 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { actionsPgTable } from "./actions.js";
-import { organizationsPgTable } from "./organizations.js";
-import { usersPgTable } from "./users.js";
+import { actionsTable } from "./actions.js";
+import { organizationsTable } from "./organizations.js";
+import { usersTable } from "./users.js";
 
-export const actionCategoriesPgTable = pgTable(
+export const actionCategoriesTable = pgTable(
 	"action_categories",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		description: text("description"),
 
@@ -31,11 +37,13 @@ export const actionCategoriesPgTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id),
+			.references(() => organizationsTable.id),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -46,31 +54,31 @@ export const actionCategoriesPgTable = pgTable(
 );
 
 export type ActionCategoryPgType = InferSelectModel<
-	typeof actionCategoriesPgTable
+	typeof actionCategoriesTable
 >;
 
-export const actionCategoriesPgTableRelations = relations(
-	actionCategoriesPgTable,
+export const actionCategoriesTableRelations = relations(
+	actionCategoriesTable,
 	({ many, one }) => ({
-		actionsWhereCategory: many(actionsPgTable, {
+		actionsWhereCategory: many(actionsTable, {
 			relationName: "action_categories.id:actions.category_id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [actionCategoriesPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [actionCategoriesTable.creatorId],
+			references: [usersTable.id],
 			relationName: "action_categories.creator_id:users.id",
 		}),
 
-		organization: one(organizationsPgTable, {
-			fields: [actionCategoriesPgTable.organizationId],
-			references: [organizationsPgTable.id],
+		organization: one(organizationsTable, {
+			fields: [actionCategoriesTable.organizationId],
+			references: [organizationsTable.id],
 			relationName: "action_categories.organization_id:organizations.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [actionCategoriesPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [actionCategoriesTable.updaterId],
+			references: [usersTable.id],
 			relationName: "action_categories.updater_id:users.id",
 		}),
 	}),

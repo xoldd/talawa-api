@@ -116,7 +116,7 @@ export function transformToDefaultGraphQLConnection<
 			objectList.pop();
 		}
 		// Order of the `objectList` must be reversed when the graphql connection is to be traversed
-		// is opposite of the expected direction, More information at this link:-
+		// is opposite of the expected direction, More information at this link:
 		// https://relay.dev/graphql/connections.htm#sec-Pagination-algorithm
 		objectList = objectList.reverse();
 	} else {

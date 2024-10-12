@@ -8,32 +8,42 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { venueAttachmentTypePgEnum } from "../enums/venueAttachmentType.js";
-import { usersPgTable } from "./users.js";
-import { venuesPgTable } from "./venues.js";
+import { venueAttachmentTypeEnum } from "~/src/drizzle/enums.js";
+import { usersTable } from "./users.js";
+import { venuesTable } from "./venues.js";
 
-export const venueAttachmentsPgTable = pgTable(
+export const venueAttachmentsTable = pgTable(
 	"venue_attachments",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		position: integer("position").notNull(),
 
-		type: venueAttachmentTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: venueAttachmentTypeEnum.options,
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		uri: text("uri", {}).notNull(),
 
 		venueId: uuid("venue_id")
 			.notNull()
-			.references(() => venuesPgTable.id),
+			.references(() => venuesTable.id),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -44,27 +54,27 @@ export const venueAttachmentsPgTable = pgTable(
 );
 
 export type VenueAttachmentPgType = InferSelectModel<
-	typeof venueAttachmentsPgTable
+	typeof venueAttachmentsTable
 >;
 
-export const venueAttachmentsPgTableRelations = relations(
-	venueAttachmentsPgTable,
+export const venueAttachmentsTableRelations = relations(
+	venueAttachmentsTable,
 	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [venueAttachmentsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [venueAttachmentsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "users.id:venue_attachments.creator_id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [venueAttachmentsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [venueAttachmentsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "users.id:venue_attachments.updater_id",
 		}),
 
-		venue: one(venuesPgTable, {
-			fields: [venueAttachmentsPgTable.venueId],
-			references: [venuesPgTable.id],
+		venue: one(venuesTable, {
+			fields: [venueAttachmentsTable.venueId],
+			references: [venuesTable.id],
 			relationName: "venue_attachments.venue_id:venues.id",
 		}),
 	}),

@@ -1,37 +1,47 @@
 import { type InferSelectModel, relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { commentsPgTable } from "./comments.js";
-import { organizationsPgTable } from "./organizations.js";
-import { postAttachmentsPgTable } from "./postAttachments.js";
-import { postVotesPgTable } from "./postVotes.js";
-import { usersPgTable } from "./users.js";
+import { commentsTable } from "./comments.js";
+import { organizationsTable } from "./organizations.js";
+import { postAttachmentsTable } from "./postAttachments.js";
+import { postVotesTable } from "./postVotes.js";
+import { usersTable } from "./users.js";
 
-export const postsPgTable = pgTable(
+export const postsTable = pgTable(
 	"posts",
 	{
 		caption: text("caption").notNull(),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id, {}),
+			.references(() => organizationsTable.id, {}),
 
-		pinnedAt: timestamp("pinned_at", {}),
+		pinnedAt: timestamp("pinned_at", {
+			mode: "date",
+		}),
 
-		pinnerId: uuid("pinner_id").references(() => usersPgTable.id, {}),
+		pinnerId: uuid("pinner_id").references(() => usersTable.id, {}),
 
-		posterId: uuid("poster_id").references(() => usersPgTable.id, {}),
+		posterId: uuid("poster_id").references(() => usersTable.id, {}),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -42,51 +52,48 @@ export const postsPgTable = pgTable(
 	}),
 );
 
-export type PostPgType = InferSelectModel<typeof postsPgTable>;
+export type PostPgType = InferSelectModel<typeof postsTable>;
 
-export const postsPgTableRelations = relations(
-	postsPgTable,
-	({ many, one }) => ({
-		commentsWherePost: many(commentsPgTable, {
-			relationName: "comments.post_id:posts.id",
-		}),
-
-		creator: one(usersPgTable, {
-			fields: [postsPgTable.creatorId],
-			references: [usersPgTable.id],
-			relationName: "posts.creator_id:users.id",
-		}),
-
-		organization: one(organizationsPgTable, {
-			fields: [postsPgTable.organizationId],
-			references: [organizationsPgTable.id],
-			relationName: "organizations.id:posts.organization_id",
-		}),
-
-		pinner: one(usersPgTable, {
-			fields: [postsPgTable.pinnerId],
-			references: [usersPgTable.id],
-			relationName: "posts.pinner_id:users.id",
-		}),
-
-		poster: one(usersPgTable, {
-			fields: [postsPgTable.posterId],
-			references: [usersPgTable.id],
-			relationName: "posts.poster_id:users.id",
-		}),
-
-		postAttachmentsWherePost: many(postAttachmentsPgTable, {
-			relationName: "post_attachments.post_id:posts.id",
-		}),
-
-		postVotesWherePost: many(postVotesPgTable, {
-			relationName: "post_votes.post_id:posts.id",
-		}),
-
-		updater: one(usersPgTable, {
-			fields: [postsPgTable.updaterId],
-			references: [usersPgTable.id],
-			relationName: "posts.updater_id:users.id",
-		}),
+export const postsTableRelations = relations(postsTable, ({ many, one }) => ({
+	commentsWherePost: many(commentsTable, {
+		relationName: "comments.post_id:posts.id",
 	}),
-);
+
+	creator: one(usersTable, {
+		fields: [postsTable.creatorId],
+		references: [usersTable.id],
+		relationName: "posts.creator_id:users.id",
+	}),
+
+	organization: one(organizationsTable, {
+		fields: [postsTable.organizationId],
+		references: [organizationsTable.id],
+		relationName: "organizations.id:posts.organization_id",
+	}),
+
+	pinner: one(usersTable, {
+		fields: [postsTable.pinnerId],
+		references: [usersTable.id],
+		relationName: "posts.pinner_id:users.id",
+	}),
+
+	poster: one(usersTable, {
+		fields: [postsTable.posterId],
+		references: [usersTable.id],
+		relationName: "posts.poster_id:users.id",
+	}),
+
+	postAttachmentsWherePost: many(postAttachmentsTable, {
+		relationName: "post_attachments.post_id:posts.id",
+	}),
+
+	postVotesWherePost: many(postVotesTable, {
+		relationName: "post_votes.post_id:posts.id",
+	}),
+
+	updater: one(usersTable, {
+		fields: [postsTable.updaterId],
+		references: [usersTable.id],
+		relationName: "posts.updater_id:users.id",
+	}),
+}));

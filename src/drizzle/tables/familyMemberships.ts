@@ -3,33 +3,44 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { familyMembershipRolePgEnum } from "../enums/familyMembershipRole.js";
-import { familiesPgTable } from "./families.js";
-import { usersPgTable } from "./users.js";
+import { familyMembershipRoleEnum } from "~/src/drizzle/enums.js";
+import { familiesTable } from "./families.js";
+import { usersTable } from "./users.js";
 
-export const familyMembershipsPgTable = pgTable(
+export const familyMembershipsTable = pgTable(
 	"family_memberships",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		familyId: uuid("family_id")
 			.notNull()
-			.references(() => familiesPgTable.id),
+			.references(() => familiesTable.id),
 
-		memberId: uuid("member_id").references(() => usersPgTable.id),
+		memberId: uuid("member_id").references(() => usersTable.id),
 
-		role: familyMembershipRolePgEnum("role").notNull(),
+		role: text("role", {
+			enum: familyMembershipRoleEnum.options,
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		compositePrimaryKey: primaryKey({
@@ -43,33 +54,33 @@ export const familyMembershipsPgTable = pgTable(
 );
 
 export type FamilyMembershipPgType = InferSelectModel<
-	typeof familyMembershipsPgTable
+	typeof familyMembershipsTable
 >;
 
-export const familyMembershipsPgTableRelations = relations(
-	familyMembershipsPgTable,
+export const familyMembershipsTableRelations = relations(
+	familyMembershipsTable,
 	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [familyMembershipsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [familyMembershipsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "family_memberships.creator_id:users.id",
 		}),
 
-		family: one(familiesPgTable, {
-			fields: [familyMembershipsPgTable.familyId],
-			references: [familiesPgTable.id],
+		family: one(familiesTable, {
+			fields: [familyMembershipsTable.familyId],
+			references: [familiesTable.id],
 			relationName: "families.id:family_memberships.family_id",
 		}),
 
-		member: one(usersPgTable, {
-			fields: [familyMembershipsPgTable.memberId],
-			references: [usersPgTable.id],
+		member: one(usersTable, {
+			fields: [familyMembershipsTable.memberId],
+			references: [usersTable.id],
 			relationName: "family_memberships.member_id:users.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [familyMembershipsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [familyMembershipsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "family_memberships.updater_id:users.id",
 		}),
 	}),

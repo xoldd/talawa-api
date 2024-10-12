@@ -101,3 +101,30 @@ fastify.register(fastifyAutoload, {
 ```
 
 The variable `PATH_TO_THIS_DIRECTORY` is the address to this directory. The regex pattern used as the value for `matchFilter` field is what is responsible for enforcing the `route.ts` route plugin file naming convention. Other than that `@fastify/autoload` by default follows the convention of prefixing the routes with name of the parent directories.
+
+A great pattern would be to synchronize the directory and file names with the route segments. Here's an example:
+
+```
+/
+/healthcheck
+/graphql
+/organizations/:id
+/organizations/:id/members
+
+|__/healthcheck.ts
+|__/graphql.ts
+|__/index.ts
+|__/organizations
+                |__/index.ts
+                |__/$id
+                       |__/index.ts
+                       |__/members.ts
+```
+
+In this diagram:
+
+1. `/` corresponds to `/index.ts`
+2. `/healthcheck` and `/graphql` correspond to `/healthcheck.ts` and `/graphql.ts` respectively.
+3. `/organizations` corresponds to `/organizations`.
+4. `/organizations/:id` corresponds to `/organizations/$id/index.ts`.
+5. `/organizations/:id/members` corresponds to `/organizations/$id/members`.

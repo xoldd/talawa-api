@@ -3,31 +3,40 @@ import {
 	index,
 	pgTable,
 	primaryKey,
+	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { postVoteTypePgEnum } from "../enums/postVoteType.js";
-import { postsPgTable } from "./posts.js";
-import { usersPgTable } from "./users.js";
+import { postVoteTypeEnum } from "~/src/drizzle/enums.js";
+import { postsTable } from "./posts.js";
+import { usersTable } from "./users.js";
 
-export const postVotesPgTable = pgTable(
+export const postVotesTable = pgTable(
 	"post_votes",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
 		postId: uuid("post_id")
 			.notNull()
-			.references(() => postsPgTable.id, {}),
+			.references(() => postsTable.id, {}),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updated_id").references(() => usersPgTable.id),
+		updaterId: uuid("updated_id").references(() => usersTable.id),
 
-		type: postVoteTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: postVoteTypeEnum.options,
+		}).notNull(),
 
-		voterId: uuid("voter_id").references(() => usersPgTable.id),
+		voterId: uuid("voter_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		compositePrimaryKey: primaryKey({
@@ -41,33 +50,30 @@ export const postVotesPgTable = pgTable(
 	}),
 );
 
-export type PostVotePgType = InferSelectModel<typeof postVotesPgTable>;
+export type PostVotePgType = InferSelectModel<typeof postVotesTable>;
 
-export const postVotesPgTableRelations = relations(
-	postVotesPgTable,
-	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [postVotesPgTable.creatorId],
-			references: [usersPgTable.id],
-			relationName: "post_votes.creator_id:users.id",
-		}),
-
-		post: one(postsPgTable, {
-			fields: [postVotesPgTable.postId],
-			references: [postsPgTable.id],
-			relationName: "post_votes.post_id:posts.id",
-		}),
-
-		updater: one(usersPgTable, {
-			fields: [postVotesPgTable.updaterId],
-			references: [usersPgTable.id],
-			relationName: "post_votes.updater_id:users.id",
-		}),
-
-		voter: one(usersPgTable, {
-			fields: [postVotesPgTable.voterId],
-			references: [usersPgTable.id],
-			relationName: "post_votes.voter_id:users.id",
-		}),
+export const postVotesTableRelations = relations(postVotesTable, ({ one }) => ({
+	creator: one(usersTable, {
+		fields: [postVotesTable.creatorId],
+		references: [usersTable.id],
+		relationName: "post_votes.creator_id:users.id",
 	}),
-);
+
+	post: one(postsTable, {
+		fields: [postVotesTable.postId],
+		references: [postsTable.id],
+		relationName: "post_votes.post_id:posts.id",
+	}),
+
+	updater: one(usersTable, {
+		fields: [postVotesTable.updaterId],
+		references: [usersTable.id],
+		relationName: "post_votes.updater_id:users.id",
+	}),
+
+	voter: one(usersTable, {
+		fields: [postVotesTable.voterId],
+		references: [usersTable.id],
+		relationName: "post_votes.voter_id:users.id",
+	}),
+}));

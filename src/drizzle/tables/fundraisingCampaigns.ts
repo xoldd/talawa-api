@@ -8,24 +8,32 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { fundsPgTable } from "./funds.js";
-import { pledgesPgTable } from "./pledges.js";
-import { usersPgTable } from "./users.js";
+import { fundsTable } from "./funds.js";
+import { pledgesTable } from "./pledges.js";
+import { usersTable } from "./users.js";
 
-export const fundraisingCampaignsPgTable = pgTable(
+export const fundraisingCampaignsTable = pgTable(
 	"fundraising_campaigns",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
-		endAt: timestamp("end_at", {}).notNull(),
+		endAt: timestamp("end_at", {
+			mode: "date",
+		}).notNull(),
 
 		fundId: uuid("fund_id")
 			.notNull()
-			.references(() => fundsPgTable.id),
+			.references(() => fundsTable.id),
 
 		goalAmount: integer("goal_amount").notNull(),
 
@@ -33,11 +41,15 @@ export const fundraisingCampaignsPgTable = pgTable(
 
 		name: text("name", {}).notNull(),
 
-		startAt: timestamp("start_at", {}).notNull(),
+		startAt: timestamp("start_at", {
+			mode: "date",
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -51,31 +63,31 @@ export const fundraisingCampaignsPgTable = pgTable(
 );
 
 export type FundraisingCampaignPgType = InferSelectModel<
-	typeof fundraisingCampaignsPgTable
+	typeof fundraisingCampaignsTable
 >;
 
-export const fundraisingCampaignsPgTableRelations = relations(
-	fundraisingCampaignsPgTable,
+export const fundraisingCampaignsTableRelations = relations(
+	fundraisingCampaignsTable,
 	({ many, one }) => ({
-		creator: one(usersPgTable, {
-			fields: [fundraisingCampaignsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [fundraisingCampaignsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "fundraising_campaigns.creator_id:users.id",
 		}),
 
-		fund: one(fundsPgTable, {
-			fields: [fundraisingCampaignsPgTable.fundId],
-			references: [fundsPgTable.id],
+		fund: one(fundsTable, {
+			fields: [fundraisingCampaignsTable.fundId],
+			references: [fundsTable.id],
 			relationName: "fundraising_campaigns.fund_id:funds.id",
 		}),
 
-		pledgesWhereFundraisingCampaign: many(pledgesPgTable, {
+		pledgesWhereFundraisingCampaign: many(pledgesTable, {
 			relationName: "fundraising_campaigns.id:pledges.fundraising_campaign_id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [fundraisingCampaignsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [fundraisingCampaignsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "fundraising_campaigns.updater_id:users.id",
 		}),
 	}),

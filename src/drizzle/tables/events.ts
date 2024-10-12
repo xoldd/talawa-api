@@ -10,31 +10,39 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { actionsPgTable } from "./actions.js";
-import { agendaSectionsPgTable } from "./agendaSections.js";
-import { eventAttachmentsPgTable } from "./eventAttachments.js";
-import { eventAttendancesPgTable } from "./eventAttendances.js";
-import { organizationsPgTable } from "./organizations.js";
-import { usersPgTable } from "./users.js";
-import { venueBookingsPgTable } from "./venueBookings.js";
-import { volunteerGroupsPgTable } from "./volunteerGroups.js";
+import { actionsTable } from "./actions.js";
+import { agendaSectionsTable } from "./agendaSections.js";
+import { eventAttachmentsTable } from "./eventAttachments.js";
+import { eventAttendancesTable } from "./eventAttendances.js";
+import { organizationsTable } from "./organizations.js";
+import { usersTable } from "./users.js";
+import { venueBookingsTable } from "./venueBookings.js";
+import { volunteerGroupsTable } from "./volunteerGroups.js";
 
-export const eventsPgTable = pgTable(
+export const eventsTable = pgTable(
 	"events",
 	{
 		baseRecurringEventId: uuid("base_recurring_event_id").references(
-			(): AnyPgColumn => eventsPgTable.id,
+			(): AnyPgColumn => eventsTable.id,
 		),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		description: text("description"),
 
-		endDate: date("end_date"),
+		endDate: date("end_date", {
+			mode: "date",
+		}),
 
 		endTime: time("end_time"),
 
@@ -60,15 +68,19 @@ export const eventsPgTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id),
+			.references(() => organizationsTable.id),
 
-		startDate: date("start_date").notNull(),
+		startDate: date("start_date", {
+			mode: "date",
+		}).notNull(),
 
 		startTime: time("start_time"),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -78,45 +90,42 @@ export const eventsPgTable = pgTable(
 	}),
 );
 
-export type EventPgType = InferSelectModel<typeof eventsPgTable>;
+export type EventPgType = InferSelectModel<typeof eventsTable>;
 
-export const eventsPgTableRelations = relations(
-	eventsPgTable,
-	({ many, one }) => ({
-		actionsWhereEvent: many(actionsPgTable, {
-			relationName: "actions.event_id:events.id",
-		}),
-
-		agendaSectionsWhereEvent: many(agendaSectionsPgTable, {
-			relationName: "agenda_sections.event_id:events.id",
-		}),
-
-		creator: one(usersPgTable, {
-			fields: [eventsPgTable.creatorId],
-			references: [usersPgTable.id],
-			relationName: "events.creator_id:users.id",
-		}),
-
-		eventAttachmentsWhereEvent: many(eventAttachmentsPgTable, {
-			relationName: "event_attachments.event_id:events.id",
-		}),
-
-		eventAttendancesWhereEvent: many(eventAttendancesPgTable, {
-			relationName: "event_attendances.event_id:events.id",
-		}),
-
-		updater: one(usersPgTable, {
-			fields: [eventsPgTable.updaterId],
-			references: [usersPgTable.id],
-			relationName: "events.updater_id:users.id",
-		}),
-
-		venueBookingsWhereEvent: many(venueBookingsPgTable, {
-			relationName: "events.id:venue_bookings.event_id",
-		}),
-
-		volunteerGroupsWhereEvent: many(volunteerGroupsPgTable, {
-			relationName: "events.id:volunteer_groups.event_id",
-		}),
+export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
+	actionsWhereEvent: many(actionsTable, {
+		relationName: "actions.event_id:events.id",
 	}),
-);
+
+	agendaSectionsWhereEvent: many(agendaSectionsTable, {
+		relationName: "agenda_sections.event_id:events.id",
+	}),
+
+	creator: one(usersTable, {
+		fields: [eventsTable.creatorId],
+		references: [usersTable.id],
+		relationName: "events.creator_id:users.id",
+	}),
+
+	eventAttachmentsWhereEvent: many(eventAttachmentsTable, {
+		relationName: "event_attachments.event_id:events.id",
+	}),
+
+	eventAttendancesWhereEvent: many(eventAttendancesTable, {
+		relationName: "event_attendances.event_id:events.id",
+	}),
+
+	updater: one(usersTable, {
+		fields: [eventsTable.updaterId],
+		references: [usersTable.id],
+		relationName: "events.updater_id:users.id",
+	}),
+
+	venueBookingsWhereEvent: many(venueBookingsTable, {
+		relationName: "events.id:venue_bookings.event_id",
+	}),
+
+	volunteerGroupsWhereEvent: many(volunteerGroupsTable, {
+		relationName: "events.id:volunteer_groups.event_id",
+	}),
+}));

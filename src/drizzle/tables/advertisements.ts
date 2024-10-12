@@ -7,23 +7,31 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { advertisementTypePgEnum } from "../enums/advertisementType.js";
-import { advertisementAttachmentsPgTable } from "./advertisementAttachments.js";
-import { organizationsPgTable } from "./organizations.js";
-import { usersPgTable } from "./users.js";
+import { advertisementTypeEnum } from "~/src/drizzle/enums.js";
+import { advertisementAttachmentsTable } from "./advertisementAttachments.js";
+import { organizationsTable } from "./organizations.js";
+import { usersTable } from "./users.js";
 
-export const advertisementsPgTable = pgTable(
+export const advertisementsTable = pgTable(
 	"advertisements",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		description: text("description"),
 
-		endAt: timestamp("end_at", {}).notNull(),
+		endAt: timestamp("end_at", {
+			mode: "date",
+		}).notNull(),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
@@ -31,15 +39,21 @@ export const advertisementsPgTable = pgTable(
 
 		organizationId: uuid("organization_id")
 			.notNull()
-			.references(() => organizationsPgTable.id),
+			.references(() => organizationsTable.id),
 
-		startAt: timestamp("start_at", {}).notNull(),
+		startAt: timestamp("start_at", {
+			mode: "date",
+		}).notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
-		type: advertisementTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: advertisementTypeEnum.options,
+		}).notNull(),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -52,36 +66,34 @@ export const advertisementsPgTable = pgTable(
 	}),
 );
 
-export type AdvertisementPgType = InferSelectModel<
-	typeof advertisementsPgTable
->;
+export type AdvertisementPgType = InferSelectModel<typeof advertisementsTable>;
 
-export const advertisementsPgTableRelations = relations(
-	advertisementsPgTable,
+export const advertisementsTableRelations = relations(
+	advertisementsTable,
 	({ many, one }) => ({
 		advertisementAttachmentsWhereAdvertisement: many(
-			advertisementAttachmentsPgTable,
+			advertisementAttachmentsTable,
 			{
 				relationName:
 					"advertisement_attachments.advertisement_id:advertisements.id",
 			},
 		),
 
-		creator: one(usersPgTable, {
-			fields: [advertisementsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [advertisementsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "advertisements.creator_id:users.id",
 		}),
 
-		organization: one(organizationsPgTable, {
-			fields: [advertisementsPgTable.organizationId],
-			references: [organizationsPgTable.id],
+		organization: one(organizationsTable, {
+			fields: [advertisementsTable.organizationId],
+			references: [organizationsTable.id],
 			relationName: "advertisements.organization_id:organizations.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [advertisementsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [advertisementsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "advertisements.updater_id:users.id",
 		}),
 	}),

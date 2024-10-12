@@ -6,10 +6,10 @@ import { request } from "node:http";
 
 request(
 	{
-		host: process.env.API_HOST,
-		path: "/health",
+		host: process.env.API_HOST ?? "0.0.0.0",
+		path: "/healthcheck",
 		method: "GET",
-		port: process.env.API_PORT,
+		port: process.env.API_PORT ?? 8080,
 	},
 	(response) => {
 		if (response.statusCode === 200) {

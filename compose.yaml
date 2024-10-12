@@ -37,8 +37,9 @@ services:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:
-      - API_ENVIRONMENT=${API_ENVIRONMENT:?error}
       - API_HOST=${API_HOST:?error}
+      - API_IS_GRAPHIQL=${API_IS_GRAPHIQL:?error}
+      - API_IS_PINO_PRETTY=${API_IS_PINO_PRETTY:?error}
       - API_LOG_LEVEL=${API_LOG_LEVEL:?error}
       - API_MINIO_ACCESS_KEY=${API_MINIO_ACCESS_KEY:?error}
       - API_MINIO_END_POINT=${API_MINIO_END_POINT:?error}

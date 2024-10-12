@@ -1,8 +1,28 @@
 # More information at this link: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 updates:
+  - package-ecosystem: devcontainers
+    commit-message:
+      include: scope
+      prefix: "[devcontainers]"
+    directories:
+      - /
+    schedule:
+      interval: weekly
+    target-branch: develop
+  - package-ecosystem: docker
+    commit-message:
+      include: scope
+      prefix: "[docker]"
+    directories:
+      - /
+      - /docker/
+    schedule:
+      interval: weekly
+    target-branch: develop
   - package-ecosystem: pnpm
     commit-message:
-      prefix: pnpm
+      include: scope
+      prefix: "[pnpm]"
     directory: /
     schedule:
       interval: weekly

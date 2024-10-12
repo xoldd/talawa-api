@@ -90,4 +90,4 @@ COPY --from=production_code /home/talawa/api/dist ./dist
 COPY --from=production_code /home/talawa/api/drizzle_migrations ./drizzle_migrations
 COPY --from=production_code /home/talawa/api/package.json ./package.json
 COPY --from=production_dependencies /home/talawa/api/node_modules ./node_modules
-CMD ["node", "./dist/startServer.js"]
+CMD ["node", "./dist/index.js"]

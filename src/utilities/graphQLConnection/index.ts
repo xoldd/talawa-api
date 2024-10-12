@@ -28,7 +28,7 @@ export type DefaultGraphQLArgumentError = {
 
 /**
  * This is typescript type of the standard arguments object received by a graphql connection
- * following the relay cursor connection specification, More information at this link:- {@link https://relay.dev/graphql/connections.htm}
+ * following the relay cursor connection specification, More information at this link: {@link https://relay.dev/graphql/connections.htm}
  */
 export type DefaultGraphQLConnectionArguments = {
 	after?: string | null;

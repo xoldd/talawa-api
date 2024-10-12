@@ -8,32 +8,42 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { eventAttachmentTypePgEnum } from "../enums/eventAttachmentType.js";
-import { eventsPgTable } from "./events.js";
-import { usersPgTable } from "./users.js";
+import { eventAttachmentTypeEnum } from "~/src/drizzle/enums.js";
+import { eventsTable } from "./events.js";
+import { usersTable } from "./users.js";
 
-export const eventAttachmentsPgTable = pgTable(
+export const eventAttachmentsTable = pgTable(
 	"event_attachments",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsPgTable.id),
+			.references(() => eventsTable.id),
 
 		position: integer("position").notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		uri: text("uri", {}).notNull(),
 
-		type: eventAttachmentTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: eventAttachmentTypeEnum.options,
+		}).notNull(),
 	},
 	(self) => ({
 		index0: index().on(self.eventId),
@@ -44,27 +54,27 @@ export const eventAttachmentsPgTable = pgTable(
 );
 
 export type EventAttachmentPgType = InferSelectModel<
-	typeof eventAttachmentsPgTable
+	typeof eventAttachmentsTable
 >;
 
-export const eventAttachmentsPgTableRelations = relations(
-	eventAttachmentsPgTable,
+export const eventAttachmentsTableRelations = relations(
+	eventAttachmentsTable,
 	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [eventAttachmentsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [eventAttachmentsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "event_attachments.creator_id:users.id",
 		}),
 
-		event: one(eventsPgTable, {
-			fields: [eventAttachmentsPgTable.eventId],
-			references: [eventsPgTable.id],
+		event: one(eventsTable, {
+			fields: [eventAttachmentsTable.eventId],
+			references: [eventsTable.id],
 			relationName: "event_attachments.event_id:events.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [eventAttachmentsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [eventAttachmentsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "event_attachments.updater_id:users.id",
 		}),
 	}),

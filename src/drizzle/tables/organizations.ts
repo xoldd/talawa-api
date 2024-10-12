@@ -7,20 +7,20 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { iso3166Alpha2CountryCodePgEnum } from "../enums/iso3166Alpha2CountryCode.js";
-import { actionCategoriesPgTable } from "./actionCategories.js";
-import { actionsPgTable } from "./actions.js";
-import { advertisementsPgTable } from "./advertisements.js";
-import { familiesPgTable } from "./families.js";
-import { fundsPgTable } from "./funds.js";
-import { organizationMembershipsPgTable } from "./organizationMemberships.js";
-import { postsPgTable } from "./posts.js";
-import { tagFoldersPgTable } from "./tagFolders.js";
-import { tagsPgTable } from "./tags.js";
-import { usersPgTable } from "./users.js";
-import { venuesPgTable } from "./venues.js";
+import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums.js";
+import { actionCategoriesTable } from "./actionCategories.js";
+import { actionsTable } from "./actions.js";
+import { advertisementsTable } from "./advertisements.js";
+import { familiesTable } from "./families.js";
+import { fundsTable } from "./funds.js";
+import { organizationMembershipsTable } from "./organizationMemberships.js";
+import { postsTable } from "./posts.js";
+import { tagFoldersTable } from "./tagFolders.js";
+import { tagsTable } from "./tags.js";
+import { usersTable } from "./users.js";
+import { venuesTable } from "./venues.js";
 
-export const organizationsPgTable = pgTable(
+export const organizationsTable = pgTable(
 	"organizations",
 	{
 		addressLine1: text("address_line_1"),
@@ -31,11 +31,17 @@ export const organizationsPgTable = pgTable(
 
 		city: text("city"),
 
-		countryCode: iso3166Alpha2CountryCodePgEnum("country_code"),
+		countryCode: text("country_code", {
+			enum: iso3166Alpha2CountryCodeEnum.options,
+		}),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
 		description: text("description"),
 
@@ -51,9 +57,11 @@ export const organizationsPgTable = pgTable(
 
 		state: text("state"),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -62,63 +70,63 @@ export const organizationsPgTable = pgTable(
 	}),
 );
 
-export type OrganizationPgType = InferSelectModel<typeof organizationsPgTable>;
+export type OrganizationPgType = InferSelectModel<typeof organizationsTable>;
 
-export const organizationsPgTableRelations = relations(
-	organizationsPgTable,
+export const organizationsTableRelations = relations(
+	organizationsTable,
 	({ one, many }) => ({
-		actionsWhereOrganization: many(actionsPgTable, {
+		actionsWhereOrganization: many(actionsTable, {
 			relationName: "actions.organization_id:organizations.id",
 		}),
-		actionCategoriesWhereOrganization: many(actionCategoriesPgTable, {
+		actionCategoriesWhereOrganization: many(actionCategoriesTable, {
 			relationName: "action_categories.organization_id:organizations.id",
 		}),
 
-		advertisementsWhereOrganization: many(advertisementsPgTable, {
+		advertisementsWhereOrganization: many(advertisementsTable, {
 			relationName: "advertisements.organization_id:organizations.id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [organizationsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [organizationsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "organizations.creator_id:users.id",
 		}),
 
-		familiesWhereOrganization: many(familiesPgTable, {
+		familiesWhereOrganization: many(familiesTable, {
 			relationName: "families.organization_id:organizations.id",
 		}),
 
-		fundsWhereOrganization: many(fundsPgTable, {
+		fundsWhereOrganization: many(fundsTable, {
 			relationName: "funds.organization_id:organizations.id",
 		}),
 
 		organziationMembershipsWhereOrganization: many(
-			organizationMembershipsPgTable,
+			organizationMembershipsTable,
 			{
 				relationName:
 					"organizations.id:organization_memberships.organization_id",
 			},
 		),
 
-		postsWhereOrganization: many(postsPgTable, {
+		postsWhereOrganization: many(postsTable, {
 			relationName: "organizations.id:posts.organization_id",
 		}),
 
-		tagFoldersWhereOrganization: many(tagFoldersPgTable, {
+		tagFoldersWhereOrganization: many(tagFoldersTable, {
 			relationName: "organizations.id:tag_folders.organization_id",
 		}),
 
-		tagsWhereOrganization: many(tagsPgTable, {
+		tagsWhereOrganization: many(tagsTable, {
 			relationName: "organizations.id:tags.organization_id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [organizationsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [organizationsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "organizations.updater_id:users.id",
 		}),
 
-		venuesWhereOrganization: many(venuesPgTable, {
+		venuesWhereOrganization: many(venuesTable, {
 			relationName: "organizations.id:venues.organization_id",
 		}),
 	}),

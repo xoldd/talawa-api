@@ -5,6 +5,7 @@ reviews:
   auto_review:
     base_branches:
       - develop
+      - dev-postgres
   poem: false
   profile: "assertive"
   request_changes_workflow: true

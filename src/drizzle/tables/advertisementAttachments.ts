@@ -8,32 +8,42 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { advertisementAttachmentTypePgEnum } from "../enums/advertisementAttachmentType.js";
-import { advertisementsPgTable } from "./advertisements.js";
-import { usersPgTable } from "./users.js";
+import { advertisementAttachmentTypeEnum } from "~/src/drizzle/enums.js";
+import { advertisementsTable } from "./advertisements.js";
+import { usersTable } from "./users.js";
 
-export const advertisementAttachmentsPgTable = pgTable(
+export const advertisementAttachmentsTable = pgTable(
 	"advertisement_attachments",
 	{
 		advertisementId: uuid("advertisement_id")
 			.notNull()
-			.references(() => advertisementsPgTable.id),
+			.references(() => advertisementsTable.id),
 
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		position: integer("position").notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		uri: text("uri", {}).notNull(),
 
-		type: advertisementAttachmentTypePgEnum("type").notNull(),
+		type: text("type", {
+			enum: advertisementAttachmentTypeEnum.options,
+		}).notNull(),
 	},
 	(self) => ({
 		index0: index().on(self.advertisementId),
@@ -44,28 +54,28 @@ export const advertisementAttachmentsPgTable = pgTable(
 );
 
 export type AdvertisementAttachmentPgType = InferSelectModel<
-	typeof advertisementAttachmentsPgTable
+	typeof advertisementAttachmentsTable
 >;
 
-export const advertisementAttachmentsPgTableRelations = relations(
-	advertisementAttachmentsPgTable,
+export const advertisementAttachmentsTableRelations = relations(
+	advertisementAttachmentsTable,
 	({ one }) => ({
-		advertisement: one(advertisementsPgTable, {
-			fields: [advertisementAttachmentsPgTable.advertisementId],
-			references: [advertisementsPgTable.id],
+		advertisement: one(advertisementsTable, {
+			fields: [advertisementAttachmentsTable.advertisementId],
+			references: [advertisementsTable.id],
 			relationName:
 				"advertisement_attachments.advertisement_id:advertisements.id",
 		}),
 
-		creator: one(usersPgTable, {
-			fields: [advertisementAttachmentsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [advertisementAttachmentsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "advertisement_attachments.creator_id:users.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [advertisementAttachmentsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [advertisementAttachmentsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "advertisement_attachments.updater_id:users.id",
 		}),
 	}),

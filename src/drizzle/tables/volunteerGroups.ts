@@ -8,34 +8,42 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { eventsPgTable } from "./events.js";
-import { usersPgTable } from "./users.js";
-import { volunteerGroupAssignmentsPgTable } from "./volunteerGroupAssignments.js";
+import { eventsTable } from "./events.js";
+import { usersTable } from "./users.js";
+import { volunteerGroupAssignmentsTable } from "./volunteerGroupAssignments.js";
 
-export const volunteerGroupsPgTable = pgTable(
+export const volunteerGroupsTable = pgTable(
 	"volunteer_groups",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsPgTable.id, {}),
+			.references(() => eventsTable.id, {}),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
-		leaderId: uuid("leader_id").references(() => usersPgTable.id),
+		leaderId: uuid("leader_id").references(() => usersTable.id),
 
 		maxVolunteerCount: integer("max_volunteer_count").notNull(),
 
 		name: text("name").notNull(),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id),
+		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
@@ -48,41 +56,37 @@ export const volunteerGroupsPgTable = pgTable(
 );
 
 export type VolunteerGroupPgType = InferSelectModel<
-	typeof volunteerGroupsPgTable
+	typeof volunteerGroupsTable
 >;
 
-export const volunteerGroupsPgTableRelations = relations(
-	volunteerGroupsPgTable,
+export const volunteerGroupsTableRelations = relations(
+	volunteerGroupsTable,
 	({ many, one }) => ({
-		creator: one(usersPgTable, {
-			fields: [volunteerGroupsPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [volunteerGroupsTable.creatorId],
+			references: [usersTable.id],
 			relationName: "users.id:volunteer_groups.creator_id",
 		}),
 
-		event: one(eventsPgTable, {
-			fields: [volunteerGroupsPgTable.eventId],
-			references: [eventsPgTable.id],
+		event: one(eventsTable, {
+			fields: [volunteerGroupsTable.eventId],
+			references: [eventsTable.id],
 			relationName: "events.id:volunteer_groups.event_id",
 		}),
 
-		leader: one(usersPgTable, {
-			fields: [volunteerGroupsPgTable.leaderId],
-			references: [usersPgTable.id],
+		leader: one(usersTable, {
+			fields: [volunteerGroupsTable.leaderId],
+			references: [usersTable.id],
 			relationName: "users.id:volunteer_groups.leader_id",
 		}),
 
-		volunteerGroupAssignmentsWhereGroup: many(
-			volunteerGroupAssignmentsPgTable,
-			{
-				relationName:
-					"volunteer_group_assignments.group_id:volunteer_groups.id",
-			},
-		),
+		volunteerGroupAssignmentsWhereGroup: many(volunteerGroupAssignmentsTable, {
+			relationName: "volunteer_group_assignments.group_id:volunteer_groups.id",
+		}),
 
-		updater: one(usersPgTable, {
-			fields: [volunteerGroupsPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [volunteerGroupsTable.updaterId],
+			references: [usersTable.id],
 			relationName: "users.id:volunteer_groups.updater_id",
 		}),
 	}),

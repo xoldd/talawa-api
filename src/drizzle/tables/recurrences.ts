@@ -7,26 +7,32 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { recurrenceTypePgEnum } from "../enums/recurrenceType.js";
-import { eventsPgTable } from "./events.js";
-import { usersPgTable } from "./users.js";
+import { recurrenceTypeEnum } from "~/src/drizzle/enums.js";
+import { eventsTable } from "./events.js";
+import { usersTable } from "./users.js";
 
-export const recurrencesPgTable = pgTable(
+export const recurrencesTable = pgTable(
 	"recurrences",
 	{
-		createdAt: timestamp("created_at", {}).notNull().defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+		})
+			.notNull()
+			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersPgTable.id, {}),
+		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
 		dayOfMonth: integer("day_of_month"),
 
 		dayOfWeek: integer("day_of_week"),
 
-		deletedAt: timestamp("deleted_at", {}),
+		deletedAt: timestamp("deleted_at", {
+			mode: "date",
+		}),
 
 		eventId: uuid("event_id")
 			.notNull()
-			.references(() => eventsPgTable.id),
+			.references(() => eventsTable.id),
 
 		id: uuid("id").notNull().primaryKey().defaultRandom(),
 
@@ -38,11 +44,15 @@ export const recurrencesPgTable = pgTable(
 
 		seperationCount: integer("seperation_count"),
 
-		type: recurrenceTypePgEnum("recurrence_type"),
+		type: text("type", {
+			enum: recurrenceTypeEnum.options,
+		}),
 
-		updatedAt: timestamp("updated_at", {}),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+		}),
 
-		updaterId: uuid("updater_id").references(() => usersPgTable.id, {}),
+		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
 		weekOfMonth: integer("week_of_month"),
 	},
@@ -53,26 +63,26 @@ export const recurrencesPgTable = pgTable(
 	}),
 );
 
-export type RecurrencePgType = InferSelectModel<typeof recurrencesPgTable>;
+export type RecurrencePgType = InferSelectModel<typeof recurrencesTable>;
 
-export const recurrencesPgTableRelations = relations(
-	recurrencesPgTable,
+export const recurrencesTableRelations = relations(
+	recurrencesTable,
 	({ one }) => ({
-		creator: one(usersPgTable, {
-			fields: [recurrencesPgTable.creatorId],
-			references: [usersPgTable.id],
+		creator: one(usersTable, {
+			fields: [recurrencesTable.creatorId],
+			references: [usersTable.id],
 			relationName: "recurrences.creator_id:users.id",
 		}),
 
-		event: one(eventsPgTable, {
-			fields: [recurrencesPgTable.eventId],
-			references: [eventsPgTable.id],
+		event: one(eventsTable, {
+			fields: [recurrencesTable.eventId],
+			references: [eventsTable.id],
 			relationName: "recurrences.event_id:events.id",
 		}),
 
-		updater: one(usersPgTable, {
-			fields: [recurrencesPgTable.updaterId],
-			references: [usersPgTable.id],
+		updater: one(usersTable, {
+			fields: [recurrencesTable.updaterId],
+			references: [usersTable.id],
 			relationName: "recurrences.updater_id:users.id",
 		}),
 	}),
