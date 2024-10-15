@@ -1,0 +1,57 @@
+jobs:
+  check_base_branch:
+    # only run the job if the pull request actor is not dependabot
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Check base branch to be `dev-postgres`
+    runs-on: ubuntu-latest
+    steps:
+      - if: github.event.pull_request.base.ref != 'dev-postgres'
+        name: Check base branch
+        run: |
+          echo "Pull requests are only allowed against the 'dev-postgres' branch. Please refer to the pull request guidelines."
+          exit 1 
+  check_linting_and_formatting:
+    name: Check linting and formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Setup biome.js
+        uses: biomejs/setup-biome@v2
+      - name: Check linting and formatting
+        # Checks linting and formatting only on files that have changed with reference to the git branch the pull request is made against. 
+        run: biome ci ./ --changed --since=${{ github.base_ref }}
+  check_type_errors:
+    name: Check type errors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Build talawa api non production environment docker image
+        uses: docker buildx build -f ./docker/api.Containerfile -t talawa_api --target non_production ./
+      - name: Check type errors
+        uses: docker container run -i talawa_api pnpm check_type_errors
+  check_unauthorized_changes:
+    name: Check unauthorized changes
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout this repository
+      uses: actions/checkout@v4
+  run_tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Create `.env` file for talawa api testing environment
+        run: cp ./envFiles/.env.ci ./.env
+      - name: Build talawa api compose testing environment
+        run: docker compose build
+      - name: Run tests
+        run: docker compose up --exit-code-from api
+name: Pull request workflow
+on:
+  pull_request:
+    branches:
+      - "**"
+  

@@ -1,4 +1,4 @@
-import { builder } from "~/src/graphql/builder";
+import { builder } from "~/src/graphql/schema/builder";
 
 builder.queryField("hello", (t) =>
 	t.string({

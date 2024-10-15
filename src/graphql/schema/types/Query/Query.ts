@@ -1,3 +1,3 @@
-// import { builder } from "~/src/graphql/schema/builder";
+import { builder } from "~/src/graphql/schema/builder";
 
-// builder.queryType({});
+builder.queryType({});
