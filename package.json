@@ -42,7 +42,12 @@
 		"node": "22.9.0"
 	},
 	"homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
-	"keywords": ["chats", "community", "events", "organization"],
+	"keywords": [
+		"chats",
+		"community",
+		"events",
+		"organization"
+	],
 	"license": "GNU General Public License v3.0",
 	"main": "./dist/index.js",
 	"name": "talawa-api",
