@@ -8,15 +8,18 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { fundraisingCampaignsTable } from "./fundraisingCampaigns.js";
-import { organizationsTable } from "./organizations.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { fundraisingCampaignsTable } from "./fundraisingCampaigns";
+import { organizationsTable } from "./organizations";
+import { usersTable } from "./users";
 
 export const fundsTable = pgTable(
 	"funds",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,9 +28,11 @@ export const fundsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		isArchived: boolean("is_archived").notNull().default(false),
 
@@ -43,6 +48,8 @@ export const fundsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

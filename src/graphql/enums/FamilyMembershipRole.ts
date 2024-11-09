@@ -1,5 +1,5 @@
-import { familyMembershipRoleEnum } from "~/src/drizzle/enums.js";
-import { builder } from "~/src/graphql/builder.js";
+import { familyMembershipRoleEnum } from "~/src/drizzle/enums";
+import { builder } from "~/src/graphql/builder";
 
 export const FamilyMembershipRole = builder.enumType("FamilyMembershipRole", {
 	description: "",

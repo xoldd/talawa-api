@@ -25,7 +25,7 @@ jobs:
           default-labels: '["unapproved"]'
           
   Issue-Greeting:
-    name: Greeting message to the user
+    name: Greeting Message to User
     runs-on: ubuntu-latest
     steps:
       - uses: actions/first-interaction@v1

@@ -1,1 +1,1 @@
-export * from "./Subscription.js";
+import "./Subscription";

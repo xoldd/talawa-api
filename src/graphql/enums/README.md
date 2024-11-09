@@ -18,7 +18,7 @@ Here's an example depicting these rules:
 
 ```typescript
 // ~/src/graphql/enums/IceCreamFlavour.ts
-import { builder } from "~/src/graphql/schemaBuilder.js";
+import { builder } from "~/src/graphql/schemaBuilder";
 
 export const IceCreamFlavour = builder.enumType("IceCreamFlavour", {
 	values: ["butter_pecan", "chocolate", "mint_chocolate_chip"] as const,
@@ -26,7 +26,7 @@ export const IceCreamFlavour = builder.enumType("IceCreamFlavour", {
 ```
 ```typescript
 // ~/src/graphql/enums/index.ts
-export * from "./IceCreamFlavour.js";
+export * from "./IceCreamFlavour";
 ```
 In this example: 
 

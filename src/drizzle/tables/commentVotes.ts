@@ -7,9 +7,9 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { commmentVoteTypeEnum } from "~/src/drizzle/enums.js";
-import { commentsTable } from "./comments.js";
-import { usersTable } from "./users.js";
+import { commmentVoteTypeEnum } from "~/src/drizzle/enums";
+import { commentsTable } from "./comments";
+import { usersTable } from "./users";
 
 export const commentVotesTable = pgTable(
 	"comment_votes",
@@ -20,6 +20,8 @@ export const commentVotesTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -32,6 +34,8 @@ export const commentVotesTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updated_id").references(() => usersTable.id),

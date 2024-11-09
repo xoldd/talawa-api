@@ -67,7 +67,7 @@ services:
       retries: 3
       start_interval: 1s
       start_period: 5s
-      test: ["CMD-SHELL", "node /home/talawa/api/docker/api_healthcheck.js"]
+      test: ["CMD-SHELL", "node /home/talawa/api/docker/apiHealthcheck.js"]
       timeout: 10s
     # https://docs.docker.com/reference/compose-file/services/#init
     # https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals

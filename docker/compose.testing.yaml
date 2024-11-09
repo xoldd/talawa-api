@@ -10,7 +10,7 @@ services:
     build:
       # https://docs.docker.com/reference/compose-file/build/#target
       target: non_production
-    command: pnpm run_api_tests
+    command: pnpm run_tests
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:
       minio_test:
@@ -128,3 +128,4 @@ services:
       - redis_test
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
+  

@@ -11,22 +11,33 @@ import { GraphQLError, type GraphQLErrorOptions } from "graphql";
  */
 
 /**
- * When a resource associated to an argument is not found.
+ * When resources associated to arguments are not found.
  *
  * @example
- * throw new TalawaGraphQLError("Post not found.", {
- *  argumentPath: ["input", "postId"],
- *  code: "argument_associated_resource_not_found"
- * })
+ *	throw new TalawaGraphQLError("No posts found for some of the provided arguments.", {
+ *		code: "arguments_associated_resources_not_found"
+ *		issues: [
+ *			{
+ * 				argumentPath: ["input", 0, "id"],
+ * 			},
+ * 			{
+ * 				argumentPath: ["input", 3, "id"],
+ * 			},
+ * 			{
+ * 				argumentPath: ["input", 19, "id"],
+ * 			},
+ *		],
+ *	});
  */
-type ArgumentAssociatedResourceNotFound = {
-	argumentPath: (string | number)[];
-	code: "argument_associated_resource_not_found";
+export type ArgumentsAssociatedResourcesNotFound = {
+	code: "arguments_associated_resources_not_found";
+	issues: {
+		argumentPath: (string | number)[];
+	}[];
 };
 
 /**
- * When the client tries to perform an action that conflicts with real world expectations of the
- * application.
+ * When the client tries to perform an action that conflicts with real world expectations of the application.
  *
  * @example
  * throw new TalawaGraphQLError("You can only claim your yearly award once per year.",
@@ -34,24 +45,34 @@ type ArgumentAssociatedResourceNotFound = {
  *  code: "forbidden_action"
  * })
  */
-type ForbiddenAction = {
+export type ForbiddenAction = {
 	code: "forbidden_action";
 };
 
 /**
- * When the client tries to perform an action on a resource associated to an argument that conflicts
- * with real world expectations of the application. One example would be a user trying to follow their
- * own account on a social media application.
+ * When the client tries to perform an action on a resource associated to an argument that conflicts with real world expectations of the application. One example would be a user trying to follow their own account on a social media application.
  *
  * @example
- * throw new TalawaGraphQLError("You cannot follow your own user account.", {
- *  argumentPath: ["id"],
- *  code: "forbidden_action_on_argument_associated_resource"
- * })
+ *	throw new TalawaGraphQLError("You cannot perform forbidden actions on resources associated to the arguments.", {
+ *		code: "forbidden_action_on_arguments_associated_resources"
+ *		issues: [
+ *			{
+ * 				argumentPath: ["input", 0, "emailAddress"],
+ * 				message: "This email address in already registered under a talawa user.",
+ * 			},
+ * 			{
+ * 				argumentPath: ["input", 3, "username"],
+ * 				message: "This username is already registered under a talawa user.",
+ * 			},
+ *		],
+ *	});
  */
-type ForbiddenActionOnArgumentAssociatedResource = {
-	argumentPath: (string | number)[];
-	code: "forbidden_action_on_argument_associated_resource";
+export type ForbiddenActionOnArgumentsAssociatedResources = {
+	code: "forbidden_action_on_arguments_associated_resources";
+	issues: {
+		argumentPath: (string | number)[];
+		message: string;
+	}[];
 };
 
 /**
@@ -62,7 +83,7 @@ type ForbiddenActionOnArgumentAssociatedResource = {
  *  code: "unauthenticated"
  * })
  */
-type Unauthenticated = {
+export type Unauthenticated = {
 	code: "unauthenticated";
 };
 
@@ -88,7 +109,7 @@ type Unauthenticated = {
  *  ]
  * })
  */
-type InvalidArguments = {
+export type InvalidArguments = {
 	code: "invalid_arguments";
 	issues: {
 		argumentPath: (string | number)[];
@@ -104,7 +125,7 @@ type InvalidArguments = {
  *  code: "resource_not_found"
  * })
  */
-type ResourceNotFound = {
+export type ResourceNotFound = {
 	code: "resource_not_found";
 };
 
@@ -116,7 +137,7 @@ type ResourceNotFound = {
  *  code: "unauthorized_action"
  * })
  */
-type UnauthorizedAction = {
+export type UnauthorizedAction = {
 	code: "unauthorized_action";
 };
 
@@ -126,12 +147,14 @@ type UnauthorizedAction = {
  * @example
  * throw new TalawaGraphQLError("You must be an approved member of this community to access it.", {
  *  argumentPath: ["id"],
- *  code: "unauthorized_action_on_argument_associated_resource"
+ *  code: "unauthorized_action_on_arguments_associated_resources"
  * })
  */
-type UnauthorizedActionOnArgumentAssociatedResource = {
-	argumentPath: (string | number)[];
-	code: "unauthorized_action_on_argument_associated_resource";
+export type UnauthorizedActionOnArgumentsAssociatedResources = {
+	issues: {
+		argumentPath: (string | number)[];
+	}[];
+	code: "unauthorized_action_on_arguments_associated_resources";
 };
 
 /**
@@ -143,29 +166,25 @@ type UnauthorizedActionOnArgumentAssociatedResource = {
  *  code: "unexpected"
  * })
  */
-type Unexpected = {
+export type Unexpected = {
 	code: "unexpected";
 };
 
-type TalawaGraphQLErrorExtensions =
-	| ArgumentAssociatedResourceNotFound
+export type TalawaGraphQLErrorExtensions =
+	| ArgumentsAssociatedResourcesNotFound
 	| ForbiddenAction
-	| ForbiddenActionOnArgumentAssociatedResource
+	| ForbiddenActionOnArgumentsAssociatedResources
 	| Unauthenticated
 	| InvalidArguments
 	| ResourceNotFound
 	| UnauthorizedAction
-	| UnauthorizedActionOnArgumentAssociatedResource
+	| UnauthorizedActionOnArgumentsAssociatedResources
 	| Unexpected;
 
 /**
- * This function is used to create instances of `GraphQLError` class with strict typescript assertion on providing the error metadata within the `extensions` field.
+ * This class extends the `GraphQLError` class and is used to create graphql error instances with strict typescript assertion on providing the error metadata within the `extensions` field. This assertion prevents talawa api contributers from returning arbitrary, undocumented errors to the talawa api graphql clients.
  *
- * This assertion prevents talawa api contributers from returning arbitrary, undocumented errors to the talawa api graphql clients.
- *
- * This also standardizes the errors that the client developers using talawa api can expect in the graphql responses, helping them design better UI experiences for end users.
- *
- * If necessary, the localization of the error messages(i18n) can be done within the graphql resolvers where this function is used.
+ * This also standardizes the errors that the client developers using talawa api can expect in the graphql responses, helping them design better UI experiences for end users. If necessary, the localization of the error messages(i18n) can be done within the graphql resolvers where this function is used.
  *
  * The following example shows the usage of `createTalawaGraphQLError` function within a graphql resolver for resolving the user record of the best friend of a user:
  * @example
@@ -176,20 +195,26 @@ type TalawaGraphQLErrorExtensions =
  *      }
  *  });
  *
- *  if (user === undefined) {
- *      throw createTalawaGraphQLError("Best friend not found", {
- *          code: "resource_not_found"
+ *	if (user === undefined) {
+ *		throw new TalawaGraphQLError({
+ *			extensions: {
+ *				code: "resource_not_found"
+ *			}
+ * 			message: "No best friend found for this user.",
  *      })
- *  }
+ *	}
  *
  *  return user;
  * }
  */
-export const createTalawaGraphQLError = (
-	message: string,
-	options: GraphQLErrorOptions & {
+export class TalawaGraphQLError extends GraphQLError {
+	constructor({
+		message,
+		...options
+	}: GraphQLErrorOptions & {
 		extensions: TalawaGraphQLErrorExtensions;
-	},
-) => {
-	return new GraphQLError(message, options);
-};
+		message: string;
+	}) {
+		super(message, options);
+	}
+}

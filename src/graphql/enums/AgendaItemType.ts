@@ -1,5 +1,5 @@
-import { agendaItemTypeEnum } from "~/src/drizzle/enums.js";
-import { builder } from "~/src/graphql/builder.js";
+import { agendaItemTypeEnum } from "~/src/drizzle/enums";
+import { builder } from "~/src/graphql/builder";
 
 export const AgendaItemType = builder.enumType("AgendaItemType", {
 	description: "",

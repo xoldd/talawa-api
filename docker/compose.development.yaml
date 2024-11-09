@@ -1,4 +1,7 @@
 # https://docs.docker.com/reference/compose-file/networks/
+networks:
+  cloudbeaver:
+# https://docs.docker.com/reference/compose-file/networks/
 services:
   api:
     # https://docs.docker.com/reference/compose-file/build/
@@ -79,6 +82,7 @@ services:
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - postgres
+      - postgre_test
     # https://docs.docker.com/reference/compose-file/services/#ports
     ports:
       - host_ip: ${CLOUDBEAVER_MAPPED_HOST_IP:?error}
@@ -112,6 +116,12 @@ services:
       - host_ip: ${POSTGRES_MAPPED_HOST_IP:?error}
         name: postgres
         published: ${POSTGRES_MAPPED_PORT:?error}
+        target: 5432
+  postgres_test:
+    ports:
+      - host_ip: ${POSTGRES_TEST_MAPPED_HOST_IP:?error}
+        name: postgres
+        published: ${POSTGRES_TEST_MAPPED_PORT:?error}
         target: 5432
   redis:
     # https://docs.docker.com/reference/compose-file/services/#ports

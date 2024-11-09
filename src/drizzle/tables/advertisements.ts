@@ -7,16 +7,19 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { advertisementTypeEnum } from "~/src/drizzle/enums.js";
-import { advertisementAttachmentsTable } from "./advertisementAttachments.js";
-import { organizationsTable } from "./organizations.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { advertisementTypeEnum } from "~/src/drizzle/enums";
+import { advertisementAttachmentsTable } from "./advertisementAttachments";
+import { organizationsTable } from "./organizations";
+import { usersTable } from "./users";
 
 export const advertisementsTable = pgTable(
 	"advertisements",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,15 +28,19 @@ export const advertisementsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		description: text("description"),
 
 		endAt: timestamp("end_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		name: text("name", {}).notNull(),
 
@@ -43,10 +50,14 @@ export const advertisementsTable = pgTable(
 
 		startAt: timestamp("start_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

@@ -8,15 +8,17 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { venueAttachmentTypeEnum } from "~/src/drizzle/enums.js";
-import { usersTable } from "./users.js";
-import { venuesTable } from "./venues.js";
+import { venueAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { usersTable } from "./users";
+import { venuesTable } from "./venues";
 
 export const venueAttachmentsTable = pgTable(
 	"venue_attachments",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,6 +27,8 @@ export const venueAttachmentsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		position: integer("position").notNull(),
@@ -35,6 +39,8 @@ export const venueAttachmentsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

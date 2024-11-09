@@ -8,15 +8,18 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { fundsTable } from "./funds.js";
-import { pledgesTable } from "./pledges.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { fundsTable } from "./funds";
+import { pledgesTable } from "./pledges";
+import { usersTable } from "./users";
 
 export const fundraisingCampaignsTable = pgTable(
 	"fundraising_campaigns",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,10 +28,14 @@ export const fundraisingCampaignsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		endAt: timestamp("end_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
 		fundId: uuid("fund_id")
@@ -37,16 +44,20 @@ export const fundraisingCampaignsTable = pgTable(
 
 		goalAmount: integer("goal_amount").notNull(),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		name: text("name", {}).notNull(),
 
 		startAt: timestamp("start_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

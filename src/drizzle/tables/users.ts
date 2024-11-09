@@ -8,122 +8,180 @@ import {
 	text,
 	timestamp,
 	uuid,
+	varchar,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { uuidv7 } from "uuidv7";
 import {
 	iso3166Alpha2CountryCodeEnum,
 	userEducationGradeEnum,
 	userEmploymentStatusEnum,
 	userMaritalStatusEnum,
 	userNatalSexEnum,
-} from "~/src/drizzle/enums.js";
-import { actionCategoriesTable } from "./actionCategories.js";
-import { actionsTable } from "./actions.js";
-import { advertisementAttachmentsTable } from "./advertisementAttachments.js";
-import { advertisementsTable } from "./advertisements.js";
-import { agendaSectionsTable } from "./agendaSections.js";
-import { commentVotesTable } from "./commentVotes.js";
-import { commentsTable } from "./comments.js";
-import { eventAttachmentsTable } from "./eventAttachments.js";
-import { eventsTable } from "./events.js";
-import { familiesTable } from "./families.js";
-import { familyMembershipsTable } from "./familyMemberships.js";
-import { fundraisingCampaignsTable } from "./fundraisingCampaigns.js";
-import { fundsTable } from "./funds.js";
-import { organizationMembershipsTable } from "./organizationMemberships.js";
-import { organizationsTable } from "./organizations.js";
-import { pledgesTable } from "./pledges.js";
-import { postAttachmentsTable } from "./postAttachments.js";
-import { postVotesTable } from "./postVotes.js";
-import { postsTable } from "./posts.js";
-import { tagAssignmentsTable } from "./tagAssignments.js";
-import { tagFoldersTable } from "./tagFolders.js";
-import { tagsTable } from "./tags.js";
-import { venueAttachmentsTable } from "./venueAttachments.js";
-import { venueBookingsTable } from "./venueBookings.js";
-import { venuesTable } from "./venues.js";
-import { volunteerGroupAssignmentsTable } from "./volunteerGroupAssignments.js";
-import { volunteerGroupsTable } from "./volunteerGroups.js";
+	userRole,
+} from "~/src/drizzle/enums";
+import { actionCategoriesTable } from "./actionCategories";
+import { actionsTable } from "./actions";
+import { advertisementAttachmentsTable } from "./advertisementAttachments";
+import { advertisementsTable } from "./advertisements";
+import { agendaSectionsTable } from "./agendaSections";
+import { commentVotesTable } from "./commentVotes";
+import { commentsTable } from "./comments";
+import { eventAttachmentsTable } from "./eventAttachments";
+import { eventsTable } from "./events";
+import { familiesTable } from "./families";
+import { familyMembershipsTable } from "./familyMemberships";
+import { fundraisingCampaignsTable } from "./fundraisingCampaigns";
+import { fundsTable } from "./funds";
+import { organizationMembershipsTable } from "./organizationMemberships";
+import { organizationsTable } from "./organizations";
+import { pledgesTable } from "./pledges";
+import { postAttachmentsTable } from "./postAttachments";
+import { postVotesTable } from "./postVotes";
+import { postsTable } from "./posts";
+import { tagAssignmentsTable } from "./tagAssignments";
+import { tagFoldersTable } from "./tagFolders";
+import { tagsTable } from "./tags";
+import { venueAttachmentsTable } from "./venueAttachments";
+import { venueBookingsTable } from "./venueBookings";
+import { venuesTable } from "./venues";
+import { volunteerGroupAssignmentsTable } from "./volunteerGroupAssignments";
+import { volunteerGroupsTable } from "./volunteerGroups";
 
+/**
+ * Drizzle orm postgres table definition for users.
+ */
 export const usersTable = pgTable(
-	"user",
+	"users",
 	{
-		addressLine1: text("address_line_1"),
-
-		addressLine2: text("address_line_2"),
-
+		/**
+		 * Address of the user.
+		 */
+		address: text("address"),
+		/**
+		 * URI to the avatar of the user.
+		 */
 		avatarURI: text("avatar_uri"),
-
+		/**
+		 * Date of birth of the user.
+		 */
 		birthDate: date("birth_date", {
 			mode: "date",
 		}),
-
+		/**
+		 * Name of the city where user resides in.
+		 */
 		city: text("city"),
-
-		countryCode: text("country_code", {
+		/**
+		 * Country code of the country the user is a citizen of.
+		 */
+		countryCode: varchar("country_code", {
 			enum: iso3166Alpha2CountryCodeEnum.options,
+			length: 2,
 		}),
-
+		/**
+		 * Datetime at the time the user was created.
+		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
-
+		/**
+		 * Foreign key reference to the id of the user who first created the user.
+		 */
 		creatorId: uuid("creator_id").references((): AnyPgColumn => usersTable.id),
-
+		/**
+		 * Custom information about the user.
+		 */
 		description: text("description"),
-
+		/**
+		 * Primary education grade of the user.
+		 */
 		educationGrade: text("education_grade", {
 			enum: userEducationGradeEnum.options,
 		}),
-
-		state: text("state"),
-
-		email: text("email").notNull().unique(),
-
+		/**
+		 * Email address of the user.
+		 */
+		emailAddress: text("email_address").notNull().unique(),
+		/**
+		 * Employment status of the user.
+		 */
 		employmentStatus: text("employment_status", {
 			enum: userEmploymentStatusEnum.options,
 		}),
-
-		firstName: text("first_name"),
-
+		/**
+		 * The phone number to use to communicate with the user at their home.
+		 */
 		homePhoneNumber: text("home_phone_number"),
-
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
-
-		isAdminstrator: boolean("is_administrator").notNull().default(false),
-
-		isEmailVerified: boolean("is_email_verified").notNull().default(false),
-
-		lastName: text("last_name"),
-
+		/**
+		 * Primary unique identifier of the user.
+		 */
+		id: uuid("id").primaryKey().$default(uuidv7),
+		/**
+		 * Boolean field to tell whether the user has verified their email or not.
+		 */
+		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
+		/**
+		 * Marital status of the user.
+		 */
 		maritalStatus: text("marital_status", {
 			enum: userMaritalStatusEnum.options,
 		}),
-
+		/**
+		 * The phone number to use to communicate with the user on their mobile phone.
+		 */
 		mobilePhoneNumber: text("mobile_phone_number"),
-
-		name: text("name").unique(),
-
+		/**
+		 * Name of the user.
+		 */
+		name: text("name").notNull(),
+		/**
+		 * The sex assigned to the user at their birth.
+		 */
 		natalSex: text("natal_sex", {
 			enum: userNatalSexEnum.options,
 		}),
-
-		passwordHash: text("password_hash"),
-
+		/**
+		 * Cryptographic hash of the password of the user to sign in to the application.
+		 */
+		passwordHash: text("password_hash").notNull(),
+		/**
+		 * Postal code of the user.
+		 */
 		postalCode: text("postal_code"),
-
+		/**
+		 * Role assigned to the user.
+		 */
+		role: text("role", {
+			enum: userRole.options,
+		}).notNull(),
+		/**
+		 * Name of the state the user resides in within their country.
+		 */
+		state: text("state"),
+		/**
+		 * Datetime at the time the user was last updated.
+		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
-		}),
-
+			precision: 3,
+			withTimezone: true,
+		}).$onUpdate(() => new Date()),
+		/**
+		 * Foreign key reference to the id of the user who last updated the user.
+		 */
 		updaterId: uuid("updater_id").references((): AnyPgColumn => usersTable.id),
-
+		/**
+		 * The phone number to use to communicate with the user while they're at work.
+		 */
 		workPhoneNumber: text("work_phone_number"),
 	},
 	(self) => ({
 		index0: index().on(self.createdAt),
-		index1: index().on(self.name),
 	}),
 );
 
@@ -331,7 +389,7 @@ export const usersTableRelations = relations(usersTable, ({ many }) => ({
 	}),
 
 	tagAssignmentsWhereAssignee: many(tagAssignmentsTable, {
-		relationName: "tag_assignments.assignee_id:tags.id",
+		relationName: "tag_assignments.assignee_id:users.id",
 	}),
 
 	tagAssignmentsWhereCreator: many(tagAssignmentsTable, {
@@ -398,3 +456,15 @@ export const usersTableRelations = relations(usersTable, ({ many }) => ({
 		relationName: "users.id:volunteer_group_assignments.updater_id",
 	}),
 }));
+
+export const usersTableInsertSchema = createInsertSchema(usersTable, {
+	address: (schema) => schema.address.min(1).max(1024),
+	avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
+	creatorId: (schema) => schema.creatorId.uuid(),
+	city: (schema) => schema.city.min(1).max(64),
+	description: (schema) => schema.description.min(1).max(2048),
+	name: (schema) => schema.name.min(1).max(256),
+	postalCode: (schema) => schema.postalCode.min(1).max(32),
+	state: (schema) => schema.state.min(1).max(64),
+	updaterId: (schema) => schema.updaterId.uuid(),
+});

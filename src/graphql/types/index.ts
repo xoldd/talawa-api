@@ -1,4 +1,5 @@
-export * from "./Mutation/index.js";
-export * from "./Query/index.js";
-export * from "./Subscription/index.js";
-export * from "./User/index.js";
+import "./AuthenticationPayload";
+import "./Mutation/index";
+import "./Query/index";
+import "./Subscription/index";
+import "./User/index";

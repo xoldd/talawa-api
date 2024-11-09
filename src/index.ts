@@ -1,43 +1,41 @@
 import closeWithGrace from "close-with-grace";
-import { initializeFastify } from "./createServer.js";
+import { createServer } from "./createServer";
 
-const fastify = await initializeFastify();
+// Talawa api server instance.
+const server = await createServer();
 
-/**
- * Makes sure that the fastify server is ready to start listening for requests.
- */
-await fastify.ready();
+// Makes sure that the server is ready to start listening for requests.
+await server.ready();
 
-/**
- * Makes sure that the server exits gracefully without pending tasks and memory leaks.
- */
+// Makes sure that the server exits gracefully without pending tasks and memory leaks.
 closeWithGrace(async ({ err, signal }) => {
 	if (err !== undefined) {
-		fastify.log.info(
+		server.log.info(
 			{
 				err,
 			},
 			"Error encountered, gracefully shutting down the server.",
 		);
 	} else if (signal !== undefined) {
-		fastify.log.info(
+		server.log.info(
 			`Signal '${signal}' received, gracefully shutting down the server.`,
 		);
 	} else {
-		fastify.log.info("Gracefully shutting down the server.");
+		server.log.info("Gracefully shutting down the server.");
 	}
 
-	await fastify.close();
+	// Triggers `onClose` handlers within all fastify plugin functions.
+	await server.close();
 });
 
-fastify.listen(
+server.listen(
 	{
-		host: fastify.envConfig.API_HOST,
-		port: fastify.envConfig.API_PORT,
+		host: server.envConfig.API_HOST,
+		port: server.envConfig.API_PORT,
 	},
 	(error) => {
 		if (error) {
-			fastify.log.error(
+			server.log.error(
 				{ error },
 				"Error encountered while starting the server.",
 			);

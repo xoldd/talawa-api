@@ -1,10 +1,11 @@
 import { type InferSelectModel, relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { commentsTable } from "./comments.js";
-import { organizationsTable } from "./organizations.js";
-import { postAttachmentsTable } from "./postAttachments.js";
-import { postVotesTable } from "./postVotes.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { commentsTable } from "./comments";
+import { organizationsTable } from "./organizations";
+import { postAttachmentsTable } from "./postAttachments";
+import { postVotesTable } from "./postVotes";
+import { usersTable } from "./users";
 
 export const postsTable = pgTable(
 	"posts",
@@ -13,6 +14,8 @@ export const postsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -21,9 +24,11 @@ export const postsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		organizationId: uuid("organization_id")
 			.notNull()
@@ -31,6 +36,8 @@ export const postsTable = pgTable(
 
 		pinnedAt: timestamp("pinned_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		pinnerId: uuid("pinner_id").references(() => usersTable.id, {}),
@@ -39,6 +46,8 @@ export const postsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),

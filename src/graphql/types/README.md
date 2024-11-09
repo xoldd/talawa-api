@@ -8,7 +8,7 @@ The following coventions are to be followed within this directory:
 
 1. The sdl name of a graphql type must follow the `PascalCase` naming convention.
 
-2. The file containing the pothos schema definition for a graphql type must be named the same as the sdl name for that graphql type and it must be exported through the `./index.ts` file in the same directory for pothos's executable schema builder to work.
+2. The file containing the pothos schema definition for a graphql type must be named the same as the sdl name for that graphql type and it must be imported in the `./index.ts` file in the same directory for pothos's executable schema builder to work.
 
 3. All the fields of a graphql type must follow the `camelCase` naming convention.
 
@@ -20,7 +20,7 @@ Here's an example depicting these rules:
 
 ```typescript
 // ~/src/graphql/types/User/User.ts
-import { builder } from "~/src/graphql/schemaBuilder.js";
+import { builder } from "~/src/graphql/builder";
 
 type User = {
 	age: number;
@@ -38,11 +38,11 @@ UserRef.implement({
 ```
 ```typescript
 // ~/src/graphql/types/User/index.ts
-export * from "./User.js";
+import "./User";
 ```
 ```typescript
 // ~/src/graphql/types/Post/Post.ts
-import { builder } from "~/src/graphql/schemaBuilder.js";
+import { builder } from "~/src/graphql/builder";
 
 type Post = {
 	body: string;
@@ -61,9 +61,9 @@ PostRef.implement({
 ```
 ```typescript
 // ~/src/graphql/types/Post/poster.ts
-import { builder } from "~/src/graphql/schemaBuilder.js";
-import { UserRef } from "~/src/graphql/types/User/User.js";
-import { PostRef } from "./Post.js";
+import { builder } from "~/src/graphql/builder";
+import { UserRef } from "~/src/graphql/types/User/User";
+import { PostRef } from "./Post";
 
 PostRef.implement({
 	fields: (t) => ({
@@ -82,19 +82,19 @@ PostRef.implement({
 ```
 ```typescript
 // ~/src/graphql/types/Post/index.ts
-export * from "./Post.js";
-export * from "./poster.js";
+import "./Post";
+import "./poster";
 ```
 ```typescript
 // ~/src/graphql/types/index.ts
-export * from "./Post/index.js";
-export * from "./User/index.js";
+import "./Post/index";
+import "./User/index";
 ```
 In this example: 
 
 1. The sdl name of the graphql type is `User` which follows the `PascalCase` naming convention.
 
-2. The file containing the pothos schema definition of the graphql type is named `User.ts` which is the same as the sdl name `User` of that graphql type and it is exported through the `./index.ts` file in the same directory.
+2. The file containing the pothos schema definition of the graphql type is named `User.ts` which is the same as the sdl name `User` of that graphql type and it is imported in the `./index.ts` file in the same directory.
 
 3. The fields of the graphql type are `age` and `name` which follow the `camelCase` naming convention.
 

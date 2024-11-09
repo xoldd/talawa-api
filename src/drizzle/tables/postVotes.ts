@@ -7,15 +7,17 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { postVoteTypeEnum } from "~/src/drizzle/enums.js";
-import { postsTable } from "./posts.js";
-import { usersTable } from "./users.js";
+import { postVoteTypeEnum } from "~/src/drizzle/enums";
+import { postsTable } from "./posts";
+import { usersTable } from "./users";
 
 export const postVotesTable = pgTable(
 	"post_votes",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -28,6 +30,8 @@ export const postVotesTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updated_id").references(() => usersTable.id),

@@ -7,15 +7,17 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { familyMembershipRoleEnum } from "~/src/drizzle/enums.js";
-import { familiesTable } from "./families.js";
-import { usersTable } from "./users.js";
+import { familyMembershipRoleEnum } from "~/src/drizzle/enums";
+import { familiesTable } from "./families";
+import { usersTable } from "./users";
 
 export const familyMembershipsTable = pgTable(
 	"family_memberships",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -24,6 +26,8 @@ export const familyMembershipsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		familyId: uuid("family_id")
@@ -38,6 +42,8 @@ export const familyMembershipsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

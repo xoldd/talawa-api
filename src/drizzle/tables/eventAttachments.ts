@@ -8,15 +8,17 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { eventAttachmentTypeEnum } from "~/src/drizzle/enums.js";
-import { eventsTable } from "./events.js";
-import { usersTable } from "./users.js";
+import { eventAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { eventsTable } from "./events";
+import { usersTable } from "./users";
 
 export const eventAttachmentsTable = pgTable(
 	"event_attachments",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,6 +27,8 @@ export const eventAttachmentsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		eventId: uuid("event_id")
@@ -35,6 +39,8 @@ export const eventAttachmentsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

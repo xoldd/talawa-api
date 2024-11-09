@@ -1,9 +1,10 @@
 import { type InferSelectModel, relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
-import { eventAttendeeRegistrationInviteStatusEnum } from "~/src/drizzle/enums.js";
-import { eventsTable } from "./events.js";
-import { usersTable } from "./users.js";
+import { eventAttendeeRegistrationInviteStatusEnum } from "~/src/drizzle/enums";
+import { eventsTable } from "./events";
+import { usersTable } from "./users";
+
 export const eventAttendancesTable = pgTable(
 	"event_attendances",
 	{
@@ -11,14 +12,20 @@ export const eventAttendancesTable = pgTable(
 
 		checkInAt: timestamp("check_in_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		checkOutAt: timestamp("check_out_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -27,6 +34,8 @@ export const eventAttendancesTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		eventId: uuid("event_id")
@@ -39,6 +48,8 @@ export const eventAttendancesTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),

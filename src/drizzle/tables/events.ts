@@ -10,14 +10,15 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { actionsTable } from "./actions.js";
-import { agendaSectionsTable } from "./agendaSections.js";
-import { eventAttachmentsTable } from "./eventAttachments.js";
-import { eventAttendancesTable } from "./eventAttendances.js";
-import { organizationsTable } from "./organizations.js";
-import { usersTable } from "./users.js";
-import { venueBookingsTable } from "./venueBookings.js";
-import { volunteerGroupsTable } from "./volunteerGroups.js";
+import { uuidv7 } from "uuidv7";
+import { actionsTable } from "./actions";
+import { agendaSectionsTable } from "./agendaSections";
+import { eventAttachmentsTable } from "./eventAttachments";
+import { eventAttendancesTable } from "./eventAttendances";
+import { organizationsTable } from "./organizations";
+import { usersTable } from "./users";
+import { venueBookingsTable } from "./venueBookings";
+import { volunteerGroupsTable } from "./volunteerGroups";
 
 export const eventsTable = pgTable(
 	"events",
@@ -28,6 +29,8 @@ export const eventsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -36,6 +39,8 @@ export const eventsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		description: text("description"),
@@ -46,7 +51,7 @@ export const eventsTable = pgTable(
 
 		endTime: time("end_time"),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		isAllDay: boolean("is_all_day").notNull().default(false),
 
@@ -78,6 +83,8 @@ export const eventsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

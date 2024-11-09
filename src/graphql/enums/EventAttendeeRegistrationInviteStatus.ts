@@ -1,5 +1,5 @@
-import { eventAttendeeRegistrationInviteStatusEnum } from "~/src/drizzle/enums.js";
-import { builder } from "~/src/graphql/builder.js";
+import { eventAttendeeRegistrationInviteStatusEnum } from "~/src/drizzle/enums";
+import { builder } from "~/src/graphql/builder";
 
 export const EventAttendeeRegistrationInviteStatus = builder.enumType(
 	"EventAttendeeRegistrationInviteStatus",

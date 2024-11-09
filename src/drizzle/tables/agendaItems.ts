@@ -8,16 +8,19 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { agendaItemTypeEnum } from "~/src/drizzle/enums.js";
-import { agendaSectionsTable } from "./agendaSections.js";
-import { eventsTable } from "./events.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { agendaItemTypeEnum } from "~/src/drizzle/enums";
+import { agendaSectionsTable } from "./agendaSections";
+import { eventsTable } from "./events";
+import { usersTable } from "./users";
 
 export const agendaItemsTable = pgTable(
 	"agenda_items",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -26,6 +29,8 @@ export const agendaItemsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		description: text("description"),
@@ -36,7 +41,7 @@ export const agendaItemsTable = pgTable(
 			.notNull()
 			.references(() => eventsTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		key: text("key"),
 
@@ -54,6 +59,8 @@ export const agendaItemsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
@@ -68,10 +75,10 @@ export const agendaItemsTable = pgTable(
 		index6: index().on(self.type),
 		uniqueIndex0: uniqueIndex()
 			.on(self.eventId, self.position)
-			.where(sql`where ${self.sectionId} is null`),
+			.where(sql`${self.sectionId} is null`),
 		uniqueIndex1: uniqueIndex()
 			.on(self.position, self.sectionId)
-			.where(sql`where ${self.sectionId} is not null`),
+			.where(sql`${self.sectionId} is not null`),
 	}),
 );
 

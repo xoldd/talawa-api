@@ -4,7 +4,6 @@
 reviews:
   auto_review:
     base_branches:
-      - develop
       - dev-postgres
   poem: false
   profile: "assertive"

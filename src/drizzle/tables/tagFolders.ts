@@ -8,15 +8,18 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { organizationsTable } from "./organizations.js";
-import { tagsTable } from "./tags.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { organizationsTable } from "./organizations";
+import { tagsTable } from "./tags";
+import { usersTable } from "./users";
 
 export const tagFoldersTable = pgTable(
 	"tag_folders",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,9 +28,11 @@ export const tagFoldersTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		name: text("name").notNull(),
 
@@ -41,6 +46,8 @@ export const tagFoldersTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),

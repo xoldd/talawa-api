@@ -1,1 +1,6 @@
-export * from "./CreateUserInput.js";
+import "./MutationCreateUserInput";
+import "./MutationDeleteUserInput";
+import "./MutationSignUpInput";
+import "./MutationUpdateCurrentUserInput";
+import "./MutationUpdateUserInput";
+import "./QuerySignInInput";

@@ -6,19 +6,21 @@ import {
 	text,
 	timestamp,
 	uuid,
+	varchar,
 } from "drizzle-orm/pg-core";
-import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums.js";
-import { actionCategoriesTable } from "./actionCategories.js";
-import { actionsTable } from "./actions.js";
-import { advertisementsTable } from "./advertisements.js";
-import { familiesTable } from "./families.js";
-import { fundsTable } from "./funds.js";
-import { organizationMembershipsTable } from "./organizationMemberships.js";
-import { postsTable } from "./posts.js";
-import { tagFoldersTable } from "./tagFolders.js";
-import { tagsTable } from "./tags.js";
-import { usersTable } from "./users.js";
-import { venuesTable } from "./venues.js";
+import { uuidv7 } from "uuidv7";
+import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums";
+import { actionCategoriesTable } from "./actionCategories";
+import { actionsTable } from "./actions";
+import { advertisementsTable } from "./advertisements";
+import { familiesTable } from "./families";
+import { fundsTable } from "./funds";
+import { organizationMembershipsTable } from "./organizationMemberships";
+import { postsTable } from "./posts";
+import { tagFoldersTable } from "./tagFolders";
+import { tagsTable } from "./tags";
+import { usersTable } from "./users";
+import { venuesTable } from "./venues";
 
 export const organizationsTable = pgTable(
 	"organizations",
@@ -31,12 +33,15 @@ export const organizationsTable = pgTable(
 
 		city: text("city"),
 
-		countryCode: text("country_code", {
+		countryCode: varchar("country_code", {
 			enum: iso3166Alpha2CountryCodeEnum.options,
+			length: 2,
 		}),
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -45,7 +50,7 @@ export const organizationsTable = pgTable(
 
 		description: text("description"),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		isPrivate: boolean("is_private").notNull().default(false),
 
@@ -59,6 +64,8 @@ export const organizationsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
@@ -100,11 +107,11 @@ export const organizationsTableRelations = relations(
 			relationName: "funds.organization_id:organizations.id",
 		}),
 
-		organziationMembershipsWhereOrganization: many(
+		organizationMembershipsWhereOrganization: many(
 			organizationMembershipsTable,
 			{
 				relationName:
-					"organizations.id:organization_memberships.organization_id",
+					"organization_memberships.organization_id:organizations.id",
 			},
 		),
 

@@ -60,3 +60,58 @@ The official mercurius context type has incorrect typings for the following fiel
 }
 ```
 and many typings don't exist in the mercurius context type but are present in the context at runtime.
+
+# watch modes required
+
+rechecking type errors on code change: tsc watch mode
+
+rechecking biome lint/format errors on code change: biome watch mode?
+
+regenerating graphql sdl schema on pothos schema change: 
+
+pushing drizzle schema to database on drizzle schema change: 
+
+restarting development api server on api server code change: tsx watch
+
+restarting tests on api server code change: vitest watch
+
+# not yet implemented
+
+secrets manager
+
+graphql documentation generation using spectaql
+
+# to run an ephemeral postgres database
+
+```bash
+docker container run --env-file ./.env --interactive --tty --publish 5432:5432 postgres
+```
+#
+
+Graphql input to zod schema for database insert operations:
+
+    Make sure that `T` graphql field is transformed to `T` zod field for non nullable database fields.
+
+        T -> T
+
+    Make sure that `T | null | undefined` graphql field is transformed to `T | undefined` zod field for auto generated non nullable database fields.
+
+        T | null | undefined -> T | undefined
+
+    Make sure that `T | null | undefined` graphql field is transformed to `T | null | undefined` zod field for nullable database fields.
+
+        T | null | undefined -> T | null | undefined
+
+Graphql input to zod schema for database update operations:
+
+    Make sure that `T` graphql field is transformed to `T` zod field for non nullable database fields that are used for record identification.
+
+        T -> T
+
+    Make sure that `T | null | undefined` graphql field is transformed to `T | undefined` zod field for non nullable database fields.
+
+        T | null | undefined -> T | undefined
+
+    Make sure that `T | null | undefined` graphql field is transformed to `T | null | undefined` zod field for nullable database fields.
+
+        T | null | undefined -> T | null | undefined

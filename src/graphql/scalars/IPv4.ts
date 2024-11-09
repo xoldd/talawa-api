@@ -1,5 +1,5 @@
 import { IPv4Resolver } from "graphql-scalars";
-import { builder } from "~/src/graphql/builder.js";
+import { builder } from "~/src/graphql/builder";
 
 /**
  * More information at this link: {@link https://the-guild.dev/graphql/scalars/docs/scalars/i-pv-4}

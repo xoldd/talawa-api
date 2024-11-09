@@ -1,5 +1,5 @@
-import { userNatalSexEnum } from "~/src/drizzle/enums.js";
-import { builder } from "~/src/graphql/builder.js";
+import { userNatalSexEnum } from "~/src/drizzle/enums";
+import { builder } from "~/src/graphql/builder";
 
 export const UserNatalSex = builder.enumType("UserNatalSex", {
 	description: "",

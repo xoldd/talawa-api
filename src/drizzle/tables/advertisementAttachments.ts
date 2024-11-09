@@ -8,9 +8,9 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { advertisementAttachmentTypeEnum } from "~/src/drizzle/enums.js";
-import { advertisementsTable } from "./advertisements.js";
-import { usersTable } from "./users.js";
+import { advertisementAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { advertisementsTable } from "./advertisements";
+import { usersTable } from "./users";
 
 export const advertisementAttachmentsTable = pgTable(
 	"advertisement_attachments",
@@ -21,6 +21,8 @@ export const advertisementAttachmentsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -29,12 +31,16 @@ export const advertisementAttachmentsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		position: integer("position").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

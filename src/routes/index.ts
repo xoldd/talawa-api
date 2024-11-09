@@ -1,10 +1,13 @@
 import fastifyPlugin from "fastify-plugin";
-import { graphql } from "./graphql.js";
-import { healthcheck } from "./healthcheck.js";
+import { graphql } from "./graphql";
+import { healthcheck } from "./healthcheck";
 
 /**
- * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
- * and handles the configuration for it.
+ * This fastify plugin function contains all talawa api routes within it.
+ *
+ * @example
+ * import routes from "./routes/index";
+ * fastify.register(routes, {});
  */
 export const routes = fastifyPlugin(async (fastify) => {
 	fastify.register(healthcheck, {});

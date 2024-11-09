@@ -7,16 +7,19 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { actionCategoriesTable } from "./actionCategories.js";
-import { eventsTable } from "./events.js";
-import { organizationsTable } from "./organizations.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { actionCategoriesTable } from "./actionCategories";
+import { eventsTable } from "./events";
+import { organizationsTable } from "./organizations";
+import { usersTable } from "./users";
 
 export const actionsTable = pgTable(
 	"actions",
 	{
 		assignedAt: timestamp("assigned_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -27,10 +30,14 @@ export const actionsTable = pgTable(
 
 		completionAt: timestamp("completion_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}).notNull(),
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -39,11 +46,13 @@ export const actionsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		eventId: uuid("event_id").references(() => eventsTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		isCompleted: boolean("is_completed").notNull().default(false),
 
@@ -57,6 +66,8 @@ export const actionsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

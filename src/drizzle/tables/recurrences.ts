@@ -7,15 +7,18 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { recurrenceTypeEnum } from "~/src/drizzle/enums.js";
-import { eventsTable } from "./events.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { recurrenceTypeEnum } from "~/src/drizzle/enums";
+import { eventsTable } from "./events";
+import { usersTable } from "./users";
 
 export const recurrencesTable = pgTable(
 	"recurrences",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -28,13 +31,15 @@ export const recurrencesTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		eventId: uuid("event_id")
 			.notNull()
 			.references(() => eventsTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		maxCount: integer("max_count"),
 
@@ -50,6 +55,8 @@ export const recurrencesTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

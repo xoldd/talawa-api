@@ -7,9 +7,10 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { commentVotesTable } from "./commentVotes.js";
-import { postsTable } from "./posts.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { commentVotesTable } from "./commentVotes";
+import { postsTable } from "./posts";
+import { usersTable } from "./users";
 
 export const commentsTable = pgTable(
 	"comments",
@@ -20,6 +21,8 @@ export const commentsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -28,9 +31,11 @@ export const commentsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		parentCommentId: uuid("parent_comment_id").references(
 			(): AnyPgColumn => commentsTable.id,
@@ -39,6 +44,8 @@ export const commentsTable = pgTable(
 
 		pinnedAt: timestamp("pinned_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		pinnerId: uuid("pinner_id").references(() => usersTable.id, {}),
@@ -49,6 +56,8 @@ export const commentsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),

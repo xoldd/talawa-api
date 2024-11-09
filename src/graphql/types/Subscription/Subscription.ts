@@ -1,3 +1,3 @@
-import { builder } from "~/src/graphql/builder.js";
+import { builder } from "~/src/graphql/builder";
 
 // builder.subscriptionType({});

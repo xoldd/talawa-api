@@ -9,15 +9,18 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { agendaItemsTable } from "./agendaItems.js";
-import { eventsTable } from "./events.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { agendaItemsTable } from "./agendaItems";
+import { eventsTable } from "./events";
+import { usersTable } from "./users";
 
 export const agendaSectionsTable = pgTable(
 	"agenda_sections",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -26,13 +29,15 @@ export const agendaSectionsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		eventId: uuid("event_id")
 			.notNull()
 			.references(() => eventsTable.id),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		name: text("name", {}).notNull(),
 
@@ -44,6 +49,8 @@ export const agendaSectionsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),

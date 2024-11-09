@@ -6,8 +6,8 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { tagsTable } from "./tags.js";
-import { usersTable } from "./users.js";
+import { tagsTable } from "./tags";
+import { usersTable } from "./users";
 
 export const tagAssignmentsTable = pgTable(
 	"tag_assignments",
@@ -18,6 +18,8 @@ export const tagAssignmentsTable = pgTable(
 
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -26,12 +28,16 @@ export const tagAssignmentsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		tagId: uuid("tag_id").references(() => tagsTable.id),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),

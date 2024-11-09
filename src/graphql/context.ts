@@ -1,30 +1,67 @@
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type { FastifyBaseLogger } from "fastify";
 import type { Client as MinioClient } from "minio";
-import type * as drizzleSchema from "~/src/drizzle/schema.js";
-import type { TalawaPubSub } from "./pubsub.js";
-
-export type Message = {
-	body: string;
-	id: string;
-};
+import type * as drizzleSchema from "~/src/drizzle/schema";
+import type { usersTable } from "~/src/drizzle/tables/users";
+import type { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { PubSub } from "./pubsub";
 
 /**
- * Type of the context object implicitly passed by mercurius to the graphql resolvers on each request at runtime.
+ * Type of the implicit context object passed by mercurius that is merged with the explicit context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
  */
 export type ImplicitMercuriusContext = {
-	pubsub: TalawaPubSub;
+	pubsub: PubSub;
 };
 
 /**
- * Type of the context object the is explicitly passed by us to the graphql resolvers on each request at runtime. This context must not contain transport protocol specific information as that would require implementing the graphql resolvers in a transport protocol dependent way.
+ * Type of the payload encoded into or decoded from the authentication json web token.
+ */
+export type ExplicitAuthenticationTokenPayload = {
+	user: Pick<
+		typeof usersTable.$inferSelect,
+		"id" | "isEmailAddressVerified" | "role"
+	>;
+};
+
+type UnauthenticatedCurrentClient = {
+	error: TalawaGraphQLError;
+	/**
+	 * Type union discriminator field when the current client is unauthenticated.
+	 */
+	isAuthenticated: false;
+} & {
+	[K in keyof ExplicitAuthenticationTokenPayload]?: never;
+};
+
+type AuthenticatedCurrentClient = {
+	error?: never;
+	/**
+	 * Type union discriminator field when the current client is authenticated.
+	 */
+	isAuthenticated: true;
+} & ExplicitAuthenticationTokenPayload;
+
+/**
+ * Type of the client-specific context for a grahphql operation client.
+ */
+export type CurrentClient =
+	| UnauthenticatedCurrentClient
+	| AuthenticatedCurrentClient;
+
+/**
+ * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
  */
 export type ExplicitGraphQLContext = {
-	messages: Message[];
+	currentClient: CurrentClient;
 	drizzleClient: PostgresJsDatabase<typeof drizzleSchema>;
+	log: FastifyBaseLogger;
 	minioClient: MinioClient;
+	jwt: {
+		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
+	};
 };
 
 /**
- * Type of the context object passed to the graphql resolvers on each request at runtime. All the transport protocol specific information should be dealt with within this function and this function must return a transport protocol agnostic context for usage in the graphql resolvers.
+ * Type of the transport protocol agnostic context object passed to the graphql resolvers each time they resolve a graphql operation at runtime.
  */
 export type GraphQLContext = ExplicitGraphQLContext & ImplicitMercuriusContext;

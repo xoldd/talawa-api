@@ -98,14 +98,14 @@ export async function parseGraphQLConnectionArgumentsWithSortedByAndWhere<
 					),
 					isSuccessful: false,
 				};
-			} else {
-				return {
-					errors: parseGraphQLConnectionArgumentsResult.errors.concat(
-						parseWhereResult.errors,
-					),
-					isSuccessful: false,
-				};
 			}
+
+			return {
+				errors: parseGraphQLConnectionArgumentsResult.errors.concat(
+					parseWhereResult.errors,
+				),
+				isSuccessful: false,
+			};
 		} else {
 			if (!parseSortedByResult.isSuccessful) {
 				return {
@@ -114,12 +114,12 @@ export async function parseGraphQLConnectionArgumentsWithSortedByAndWhere<
 					),
 					isSuccessful: false,
 				};
-			} else {
-				return {
-					errors: parseGraphQLConnectionArgumentsResult.errors,
-					isSuccessful: false,
-				};
 			}
+
+			return {
+				errors: parseGraphQLConnectionArgumentsResult.errors,
+				isSuccessful: false,
+			};
 		}
 	} else if (!parseWhereResult.isSuccessful) {
 		if (!parseSortedByResult.isSuccessful) {
@@ -127,12 +127,12 @@ export async function parseGraphQLConnectionArgumentsWithSortedByAndWhere<
 				errors: parseWhereResult.errors.concat(parseSortedByResult.errors),
 				isSuccessful: false,
 			};
-		} else {
-			return {
-				errors: parseWhereResult.errors,
-				isSuccessful: false,
-			};
 		}
+
+		return {
+			errors: parseWhereResult.errors,
+			isSuccessful: false,
+		};
 	} else if (!parseSortedByResult.isSuccessful) {
 		return {
 			errors: parseSortedByResult.errors,

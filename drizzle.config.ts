@@ -4,14 +4,16 @@
 import type { Static } from "@sinclair/typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
-import { postgresClientEnvConfigSchema } from "./src/envConfigSchema.js";
+import { drizzleEnvConfigSchema, envSchemaAjv } from "./src/envConfigSchema";
 
-const envConfig = envSchema<Static<typeof postgresClientEnvConfigSchema>>({
+const envConfig = envSchema<Static<typeof drizzleEnvConfigSchema>>({
+	ajv: envSchemaAjv,
 	dotenv: true,
-	schema: postgresClientEnvConfigSchema,
+	schema: drizzleEnvConfigSchema,
 });
 
 export default defineConfig({
+	// https://orm.drizzle.team/docs/drizzle-config-file#dbcredentials
 	dbCredentials: {
 		database: envConfig.API_POSTGRES_DATABASE,
 		password: envConfig.API_POSTGRES_PASSWORD,
@@ -20,12 +22,22 @@ export default defineConfig({
 		user: envConfig.API_POSTGRES_USER,
 		ssl: envConfig.API_POSTGRES_SSL_MODE,
 	},
+	// https://orm.drizzle.team/docs/drizzle-config-file#dialect
 	dialect: "postgresql",
+	// https://orm.drizzle.team/docs/drizzle-config-file#introspect
+	introspect: {
+		casing: "camel",
+	},
+	// https://orm.drizzle.team/docs/drizzle-config-file#migrations
 	migrations: {
 		prefix: "timestamp",
 	},
+	// https://orm.drizzle.team/docs/drizzle-config-file#out
 	out: "./drizzle_migrations",
+	// https://orm.drizzle.team/docs/drizzle-config-file#schema
 	schema: "./src/drizzle/schema.ts",
+	// https://orm.drizzle.team/docs/drizzle-config-file#strict
 	strict: true,
+	// https://orm.drizzle.team/docs/drizzle-config-file#verbose
 	verbose: true,
 });

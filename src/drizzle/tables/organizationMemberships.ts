@@ -8,27 +8,26 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { organizationsTable } from "./organizations.js";
-import { usersTable } from "./users.js";
+import { organizationMembershipRole } from "../enums";
+import { organizationsTable } from "./organizations";
+import { usersTable } from "./users";
 
 export const organizationMembershipsTable = pgTable(
 	"organization_memberships",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
 
 		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
 
-		isAdministrator: boolean("is_administrator").notNull().default(false),
-
 		isApproved: boolean("is_approved").notNull().default(false),
 
 		isBlocked: boolean("is_blocked").notNull().default(false),
-
-		reasonForBlock: text("reason_for_block"),
 
 		memberId: uuid("member_id")
 			.notNull()
@@ -38,8 +37,21 @@ export const organizationMembershipsTable = pgTable(
 			.notNull()
 			.references(() => organizationsTable.id, {}),
 
+		reasonForBlock: text("reason_for_block"),
+
+		/**
+		 * Role assigned to the member.
+		 */
+		role: text("role", {
+			enum: organizationMembershipRole.options,
+		})
+			.notNull()
+			.default("base"),
+
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
@@ -50,7 +62,6 @@ export const organizationMembershipsTable = pgTable(
 		}),
 		index0: index().on(self.createdAt),
 		index1: index().on(self.creatorId),
-		index2: index().on(self.isAdministrator),
 		index3: index().on(self.isApproved),
 		index4: index().on(self.isBlocked),
 		index5: index().on(self.memberId),
@@ -80,8 +91,7 @@ export const organizationMembershipsTableRelations = relations(
 		organization: one(organizationsTable, {
 			fields: [organizationMembershipsTable.organizationId],
 			references: [organizationsTable.id],
-			relationName:
-				"organization_memberships.organization_id:organizations.id:",
+			relationName: "organization_memberships.organization_id:organizations.id",
 		}),
 
 		updater: one(usersTable, {

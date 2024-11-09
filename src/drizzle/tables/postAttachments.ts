@@ -8,15 +8,17 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { postAttachmentTypeEnum } from "~/src/drizzle/enums.js";
-import { postsTable } from "./posts.js";
-import { usersTable } from "./users.js";
+import { postAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { postsTable } from "./posts";
+import { usersTable } from "./users";
 
 export const postAttachmentsTable = pgTable(
 	"post_attachments",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,6 +27,8 @@ export const postAttachmentsTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		position: integer("position").notNull(),
@@ -39,6 +43,8 @@ export const postAttachmentsTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
@@ -63,7 +69,7 @@ export const postAttachmentsTableRelations = relations(
 		creator: one(usersTable, {
 			fields: [postAttachmentsTable.creatorId],
 			references: [usersTable.id],
-			relationName: "[post_attachments.creator_id:users.id",
+			relationName: "post_attachments.creator_id:users.id",
 		}),
 
 		post: one(postsTable, {
@@ -75,7 +81,7 @@ export const postAttachmentsTableRelations = relations(
 		updater: one(usersTable, {
 			fields: [postAttachmentsTable.updaterId],
 			references: [usersTable.id],
-			relationName: "[post_attachments.updater_id:users.id",
+			relationName: "post_attachments.updater_id:users.id",
 		}),
 	}),
 );

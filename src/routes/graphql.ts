@@ -2,100 +2,96 @@
 // import { makeHandler } from "graphql-ws/lib/use/@fastify/websocket";
 // import { createRedisEventTarget } from "@graphql-yoga/redis-event-target";
 // import { EnvelopArmor } from "@escape.tech/graphql-armor";
-// import type { TalawaPubSubPublishArgsByKey } from "~/src/graphql/pubSub.js";
+// import type { TalawaPubSubPublishArgsByKey } from "~/src/graphql/pubSub";
 // import { createPubSub, createYoga, type PubSub, type YogaInitialContext, type YogaLogger } from "graphql-yoga";
-// import type { TalawaPubSubPublishArgsByKey } from "~/src/graphql/pubSub.js";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type { FastifyBaseLogger, FastifyReply, FastifyRequest } from "fastify";
+// import type { TalawaPubSubPublishArgsByKey } from "~/src/graphql/pubSub";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { mercurius } from "mercurius";
-import type { Client as MinioClient } from "minio";
-import mqemitterRedis from "mqemitter-redis";
-import type * as drizzleSchema from "~/src/drizzle/schema.js";
-import type { EnvConfig } from "~/src/envConfigSchema.js";
-import type { ExplicitGraphQLContext, Message } from "~/src/graphql/context.js";
-import { schema } from "~/src/graphql/schema.js";
+import type {
+	CurrentClient,
+	ExplicitAuthenticationTokenPayload,
+	ExplicitGraphQLContext,
+} from "~/src/graphql/context";
+import { schema } from "~/src/graphql/schema";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
  */
 type InitialContext = {
-	drizzleClient: PostgresJsDatabase<typeof drizzleSchema>;
-	envConfig: EnvConfig;
-	log: FastifyBaseLogger;
-	messages: Message[];
-	minioClient: MinioClient;
+	fastify: FastifyInstance;
 	request: FastifyRequest;
 } & (
 	| {
+			/**
+			 * This field is `false` if the current graphql operation isn't a subscription.
+			 */
 			isSubscription: false;
+			/**
+			 * This field is only present if the current graphql operation isn't a subscription.
+			 */
 			reply: FastifyReply;
 	  }
 	| {
+			/**
+			 * This field is `true` if the current graphql operation is a subscription.
+			 */
 			isSubscription: true;
+			/**
+			 * This field is only present if the current graphql operation is a subscription.
+			 */
 			socket: WebSocket;
 	  }
 );
 
-export const createContext = async ({
-	drizzleClient,
-	messages,
-	minioClient,
-}: InitialContext): Promise<ExplicitGraphQLContext> => {
-	// /**
-	//  * As this function is traversed, this object will be mutated accordingly.
-	//  */
-	// const authContext: CurrentClientAuthContext = {
-	// 	expired: undefined,
-	// 	isAuth: false,
-	// 	userId: undefined,
-	// };
+export type CreateContext = (
+	initialContext: InitialContext,
+) => Promise<ExplicitGraphQLContext>;
 
-	// const authorizationHeader = request.headers.get("Authorization");
+export const createContext: CreateContext = async (initialContext) => {
+	const { fastify, request } = initialContext;
 
-	// if (authorizationHeader !== null) {
-	// 	const token = authorizationHeader.split(" ")[1];
-
-	// 	if (token !== undefined && token !== "") {
-	// 		try {
-	// 			const decodedToken = verify(
-	// 				token,
-	// 				envConfig.ACCESS_TOKEN_SECRET,
-	// 			) as InterfaceJwtTokenPayload;
-
-	// 			authContext.expired = false;
-	// 			authContext.userId = decodedToken.userId;
-	// 		} catch (error) {
-	// 			if (error instanceof TokenExpiredError) {
-	// 				authContext.expired = true;
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// return {
-	// 	// ...authContext,
-	// 	// pubSub,
-	// };
+	let currentClient: CurrentClient;
+	try {
+		const jwtPayload =
+			await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
+		currentClient = {
+			isAuthenticated: true,
+			user: jwtPayload.user,
+		};
+	} catch (error) {
+		currentClient = {
+			error: new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+				message: "Only authenticated users can perform this action.",
+			}),
+			isAuthenticated: false,
+		};
+	}
 
 	return {
-		drizzleClient,
-		messages,
-		minioClient,
+		currentClient,
+		drizzleClient: fastify.drizzleClient,
+		minioClient: fastify.minioClient,
+		jwt: {
+			sign: (payload: ExplicitAuthenticationTokenPayload) =>
+				fastify.jwt.sign(payload),
+		},
+		log: fastify.log,
 	};
 };
 
 /**
- * This fastify route plugin is used to initialize the graphql endpoint on the fastify server
- * and handles the configuration for it.
+ * This fastify route plugin function is initializes mercurius on the fastify instance and directs incoming requests on the `/graphql` route to it.
  */
 export const graphql = fastifyPlugin(async (fastify) => {
-	const messages: Message[] = [];
-
 	// /**
 	//  * More information at this link: {@link https://mercurius.dev/#/docs/subscriptions?id=subscription-support-with-redis}
 	//  */
-	// const emitter = mqemitterRedis.default({
+	// const emitter = mqemitterRedis({
 	// 	host: fastify.envConfig.API_REDIS_HOST,
 	// 	password: fastify.envConfig.API_REDIS_PASSWORD,
 	// 	port: fastify.envConfig.API_REDIS_PORT,
@@ -104,12 +100,8 @@ export const graphql = fastifyPlugin(async (fastify) => {
 	fastify.register(mercurius, {
 		context: (request, reply) =>
 			createContext({
-				drizzleClient: fastify.drizzleClient,
-				envConfig: fastify.envConfig,
+				fastify,
 				isSubscription: false,
-				log: fastify.log,
-				messages,
-				minioClient: fastify.minioClient,
 				request,
 				reply,
 			}),
@@ -121,39 +113,28 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		subscription: {
 			context: async (socket, request) =>
 				await createContext({
-					drizzleClient: fastify.drizzleClient,
-					envConfig: fastify.envConfig,
+					fastify,
 					isSubscription: true,
-					log: fastify.log,
-					messages,
-					minioClient: fastify.minioClient,
 					request,
 					socket,
 				}),
-			// /**
-			//  * More information at this link: {@link https://mercurius.dev/#/docs/subscriptions?id=subscription-support-with-redis}
-			//  */
+			// More information at this link: https://mercurius.dev/#/docs/subscriptions?id=subscription-support-with-redis
 			// emitter,
-			/**
-			 * Intervals in milli seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
-			 */
+			// Intervals in milli-seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
 			keepAlive: 1000 * 30,
-			// onConnect: (data) => {
-			// 	console.log("===========onConnect==============");
-			// 	console.log(data);
-			// 	console.log("===========onConnect==============");
-			// },
-			// onDisconnect: async (context) => {
-			// 	console.log("===========onDisconnect==============");
-			// 	console.log(context);
-			// 	console.log("===========onDisconnect==============");
-			// },
+			//  A function which can be used to validate the `connection_init` payload. It should return a truthy value to authorize the connection. If it returns an object the subscription context will be extended with the returned object.
+			onConnect: (data) => {
+				return true;
+			},
+			// A function which is called with the subscription context of the connection after the connection gets disconnected.
+			onDisconnect: (ctx) => {},
+			// This function is used to validate incoming Websocket connections.
 			verifyClient: (info, next) => {
 				next(true);
 			},
 		},
 	});
-}, {});
+});
 
 export default graphql;
 

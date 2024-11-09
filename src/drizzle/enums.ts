@@ -3,17 +3,17 @@
 import { z } from "zod";
 
 /**
- * List of possible types for attachments of a talawa advertisement.
+ * Possible variants of the type of attachements of an advertisement.
  */
 export const advertisementAttachmentTypeEnum = z.enum(["image", "video"]);
 
 /**
- * List of possible types for a talawa advertisement.
+ * Possible variants of the type of an advertisement.
  */
 export const advertisementTypeEnum = z.enum(["banner", "menu", "pop_up"]);
 
 /**
- * List of possible types for a talawa agenda item.
+ * Possible variants of the type of an agenda item.
  */
 export const agendaItemTypeEnum = z.enum([
 	"general",
@@ -23,17 +23,17 @@ export const agendaItemTypeEnum = z.enum([
 ]);
 
 /**
- * List of possible vote types on a talawa post comment.
+ * Possible variants of the type of votes on a comment.
  */
 export const commmentVoteTypeEnum = z.enum(["down_vote", "up_vote"]);
 
 /**
- * List of possible types for attachments of a talawa event.
+ * Possible variants of the type of attachements of an event.
  */
 export const eventAttachmentTypeEnum = z.enum(["image", "video"]);
 
 /**
- * List of possible grades for a talawa user's elementary education(if applicable).
+ * Possible variants for status of a user's registration as an attendee to an event.
  */
 export const eventAttendeeRegistrationInviteStatusEnum = z.enum([
 	"accepted",
@@ -42,7 +42,7 @@ export const eventAttendeeRegistrationInviteStatusEnum = z.enum([
 ]);
 
 /**
- * List of possible family roles for a talawa user(if applicable).
+ * Possible variants of role in the family(if applicable) of a user.
  */
 export const familyMembershipRoleEnum = z.enum([
 	"adult",
@@ -52,17 +52,22 @@ export const familyMembershipRoleEnum = z.enum([
 ]);
 
 /**
- * List of possible types for attachments of a talawa post.
+ * Possible variants of the role assigned to an organization member.
+ */
+export const organizationMembershipRole = z.enum(["administrator", "base"]);
+
+/**
+ * Possible variants of the type of attachements of a post.
  */
 export const postAttachmentTypeEnum = z.enum(["image", "video"]);
 
 /**
- * List of possible vote types on a talawa post.
+ * Possible variants of the type of votes on a post.
  */
 export const postVoteTypeEnum = z.enum(["down_vote", "up_vote"]);
 
 /**
- * List of possible recurrence types on a talawa post.
+ * Possible variants of type of recurrence of an event.
  */
 export const recurrenceTypeEnum = z.enum([
 	"daily",
@@ -72,7 +77,7 @@ export const recurrenceTypeEnum = z.enum([
 ]);
 
 /**
- * List of possible grades for a talawa user's education(if applicable).
+ * Possible variants of education grade(if applicable) of a user.
  */
 export const userEducationGradeEnum = z.enum([
 	"grade_1",
@@ -94,7 +99,7 @@ export const userEducationGradeEnum = z.enum([
 ]);
 
 /**
- * List of possible statuses for a talawa user's employment status(if applicable).
+ * Possible variants of the employment status(if applicable) of a user.
  */
 export const userEmploymentStatusEnum = z.enum([
 	"full_time",
@@ -103,7 +108,7 @@ export const userEmploymentStatusEnum = z.enum([
 ]);
 
 /**
- * List of possible statuses for a talawa user's marital status(if applicable).
+ * Possible variants of the martial status(if applicable) of a user.
  */
 export const userMaritalStatusEnum = z.enum([
 	"divorced",
@@ -115,17 +120,22 @@ export const userMaritalStatusEnum = z.enum([
 ]);
 
 /**
- * List of possible sexes assigned to a talawa user at birth.
+ * Possible variants of the sex assigned to a user at birth.
  */
 export const userNatalSexEnum = z.enum(["female", "intersex", "male"]);
 
 /**
- * List of possible types for attachments of a talawa event venue.
+ * Possible variants of the role assigned to a user.
+ */
+export const userRole = z.enum(["administrator", "base"]);
+
+/**
+ * Possible variants of the type of attachements of an event venue.
  */
 export const venueAttachmentTypeEnum = z.enum(["image", "video"]);
 
 /**
- * List of possible statuses for a user's assignment to a talawa event's volunteer group.
+ * Possible variants of status of assignment of a user an event's volunteer group.
  */
 export const volunteerGroupAssignmentInviteStatusEnum = z.enum([
 	"accepted",
@@ -134,9 +144,7 @@ export const volunteerGroupAssignmentInviteStatusEnum = z.enum([
 ]);
 
 /**
- * List of two-letter country codes defined in ISO 3166-1, part of the ISO 3166 standard published by the International Organization for Standardization (ISO), to represent countries, dependent territories, and special areas of geographical interest.
- *
- * More information at this link: {@link https://www.iso.org/obp/ui/#search}
+ * Possible variants of the two-letter country code defined in ISO 3166-1, part of the ISO 3166 standard published by the International Organization for Standardization (ISO), to represent countries, dependent territories, and special areas of geographical interest. More information at this link: {@link https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes}
  */
 export const iso3166Alpha2CountryCodeEnum = z.enum([
 	"ad",

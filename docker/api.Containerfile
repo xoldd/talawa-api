@@ -25,11 +25,6 @@ RUN groupmod -n talawa vscode \
 && echo talawa ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/talawa \
 # Sets read, no write and no execute permissions for the user and the group on `/etc/sudoers.d/talawa` file and no read, no write and no execute permissions for the other.  
 && chmod u=r--,g=r--,o=--- /etc/sudoers.d/talawa \
-&& apt-get install -y --no-install-recommends debian-archive-keyring apt-transport-https curl \
-&& curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg \
-&& curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
-&& apt-get -y --no-install-recommends update \
-&& apt-get -y --no-install-recommends install caddy \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
 USER talawa
@@ -85,9 +80,9 @@ RUN pnpm install --frozen-lockfile --offline --prod
 
 # This build stage is used to create the container image for production environment of talawa api.
 FROM base AS production
-COPY --from=production_code /home/talawa/api/docker/api_healthcheck.js ./docker/api_healthcheck.js
+COPY --from=production_code /home/talawa/api/docker/apiHealthcheck.js ./docker/apiHealthcheck.js
 COPY --from=production_code /home/talawa/api/dist ./dist
 COPY --from=production_code /home/talawa/api/drizzle_migrations ./drizzle_migrations
 COPY --from=production_code /home/talawa/api/package.json ./package.json
 COPY --from=production_dependencies /home/talawa/api/node_modules ./node_modules
-CMD ["node", "./dist/index.js"]
+CMD ["node", "./dist/index"]

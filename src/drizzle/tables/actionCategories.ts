@@ -8,15 +8,18 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { actionsTable } from "./actions.js";
-import { organizationsTable } from "./organizations.js";
-import { usersTable } from "./users.js";
+import { uuidv7 } from "uuidv7";
+import { actionsTable } from "./actions";
+import { organizationsTable } from "./organizations";
+import { usersTable } from "./users";
 
 export const actionCategoriesTable = pgTable(
 	"action_categories",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		})
 			.notNull()
 			.defaultNow(),
@@ -25,11 +28,13 @@ export const actionCategoriesTable = pgTable(
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		description: text("description"),
 
-		id: uuid("id").notNull().primaryKey().defaultRandom(),
+		id: uuid("id").primaryKey().$default(uuidv7),
 
 		isDisabled: boolean("is_disabled").notNull().default(false),
 
@@ -41,6 +46,8 @@ export const actionCategoriesTable = pgTable(
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
+			precision: 3,
+			withTimezone: true,
 		}),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
