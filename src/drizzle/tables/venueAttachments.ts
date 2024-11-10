@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	integer,
@@ -8,7 +8,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { venueAttachmentTypeEnum } from "~/src/drizzle/enums";
+import { venueAttachmentTypeEnum } from "~/src/drizzle/enums/venueAttachmentType";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
 
@@ -23,7 +23,9 @@ export const venueAttachmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -33,9 +35,7 @@ export const venueAttachmentsTable = pgTable(
 
 		position: integer("position").notNull(),
 
-		type: text("type", {
-			enum: venueAttachmentTypeEnum.options,
-		}).notNull(),
+		type: venueAttachmentTypeEnum("type").notNull(),
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
@@ -51,17 +51,13 @@ export const venueAttachmentsTable = pgTable(
 			.notNull()
 			.references(() => venuesTable.id),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.venueId),
-		uniqueIndex0: uniqueIndex().on(self.position, self.venueId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.venueId),
+		uniqueIndex().on(self.position, self.venueId),
+	],
 );
-
-export type VenueAttachmentPgType = InferSelectModel<
-	typeof venueAttachmentsTable
->;
 
 export const venueAttachmentsTableRelations = relations(
 	venueAttachmentsTable,

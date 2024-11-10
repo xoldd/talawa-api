@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -24,7 +24,9 @@ export const fundsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -34,11 +36,11 @@ export const fundsTable = pgTable(
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
-		isArchived: boolean("is_archived").notNull().default(false),
+		isArchived: boolean("is_archived").notNull(),
 
-		isDefault: boolean("is_default").notNull().default(false),
+		isDefault: boolean("is_default").notNull(),
 
-		isTaxDeductible: boolean("is_tax_deductibe").notNull().default(false),
+		isTaxDeductible: boolean("is_tax_deductibe").notNull(),
 
 		name: text("name", {}).notNull(),
 
@@ -54,16 +56,14 @@ export const fundsTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.name),
-		index3: index().on(self.organizationId),
-		unique0: unique().on(self.name, self.organizationId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.organizationId),
+		unique().on(self.name, self.organizationId),
+	],
 );
-
-export type FundPgType = InferSelectModel<typeof fundsTable>;
 
 export const fundsTableRelations = relations(fundsTable, ({ one, many }) => ({
 	creator: one(usersTable, {

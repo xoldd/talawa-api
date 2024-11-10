@@ -22,13 +22,36 @@ builder.mutationField("createUser", (t) =>
 				type: MutationCreateUserInput,
 			}),
 		},
-		description: "Entrypoint mutation field to create a single user record.",
+		description: "Entrypoint mutation field to create a user record.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
 			}
 
-			if (ctx.currentClient.user.role !== "administrator") {
+			const currentUserId = ctx.currentClient.user.id;
+
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			if (currentUser.role !== "administrator") {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action",
@@ -58,6 +81,7 @@ builder.mutationField("createUser", (t) =>
 
 			const existingUserWithEmailAddress =
 				await ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {},
 					where: (fields, operators) =>
 						operators.eq(fields.emailAddress, parsedArgs.input.emailAddress),
 				});
@@ -82,12 +106,12 @@ builder.mutationField("createUser", (t) =>
 				.insert(usersTable)
 				.values({
 					...parsedArgs.input,
-					creatorId: ctx.currentClient.user.id,
+					creatorId: currentUserId,
 					passwordHash: await hash(parsedArgs.input.password),
 				})
 				.returning();
 
-			// Inserted user record not being returned is a tooling specific defect unrelated to this code. It is very unlikely for this error to occur.
+			// Inserted user record not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (createdUser === undefined) {
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",

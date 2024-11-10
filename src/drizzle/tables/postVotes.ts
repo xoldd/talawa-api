@@ -1,13 +1,12 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
 	primaryKey,
-	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { postVoteTypeEnum } from "~/src/drizzle/enums";
+import { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
 
@@ -22,7 +21,9 @@ export const postVotesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		postId: uuid("post_id")
 			.notNull()
@@ -36,25 +37,21 @@ export const postVotesTable = pgTable(
 
 		updaterId: uuid("updated_id").references(() => usersTable.id),
 
-		type: text("type", {
-			enum: postVoteTypeEnum.options,
-		}).notNull(),
+		type: postVoteTypeEnum("type").notNull(),
 
 		voterId: uuid("voter_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		compositePrimaryKey: primaryKey({
+	(self) => [
+		primaryKey({
 			columns: [self.postId, self.voterId],
 		}),
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.postId),
-		index3: index().on(self.type),
-		index4: index().on(self.voterId),
-	}),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.postId),
+		index().on(self.type),
+		index().on(self.voterId),
+	],
 );
-
-export type PostVotePgType = InferSelectModel<typeof postVotesTable>;
 
 export const postVotesTableRelations = relations(postVotesTable, ({ one }) => ({
 	creator: one(usersTable, {

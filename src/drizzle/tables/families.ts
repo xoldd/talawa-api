@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
@@ -23,7 +23,9 @@ export const familiesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -47,16 +49,14 @@ export const familiesTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.name),
-		index3: index().on(self.organizationId),
-		uniqueIndex0: uniqueIndex().on(self.name, self.organizationId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.organizationId),
+		uniqueIndex().on(self.name, self.organizationId),
+	],
 );
-
-export type FamilyPgType = InferSelectModel<typeof familiesTable>;
 
 export const familiesTableRelations = relations(
 	familiesTable,

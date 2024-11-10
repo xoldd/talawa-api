@@ -22,8 +22,12 @@ const mutationUpdateUsersArgumentsSchema = z
 		input: mutationUpdateUserInputSchema.array().min(1).max(32),
 	})
 	.superRefine((arg, ctx) => {
-		const uniqueIds = new Set();
-		const uniqueEmailAddresses = new Set();
+		const uniqueIds = new Set<
+			z.infer<typeof mutationUpdateUserInputSchema>["id"]
+		>();
+		const uniqueEmailAddresses = new Set<
+			z.infer<typeof mutationUpdateUserInputSchema>["emailAddress"]
+		>();
 
 		for (const [index, input] of arg.input.entries()) {
 			if (uniqueIds.has(input.id)) {

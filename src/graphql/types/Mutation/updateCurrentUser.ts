@@ -27,7 +27,12 @@ builder.mutationField("updateCurrentUser", (t) =>
 			"Entrypoint mutation field to update the user record associated to the client performing the action.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
 			}
 
 			const {

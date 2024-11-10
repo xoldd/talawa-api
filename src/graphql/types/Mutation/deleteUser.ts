@@ -20,13 +20,36 @@ builder.mutationField("deleteUser", (t) =>
 				type: MutationDeleteUserInput,
 			}),
 		},
-		description: "Entrypoint mutation field to delete a single user record.",
+		description: "Entrypoint mutation field to delete a user record.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
 			}
 
-			if (ctx.currentClient.user.role !== "administrator") {
+			const currentUserId = ctx.currentClient.user.id;
+
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			if (currentUser.role !== "administrator") {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action",

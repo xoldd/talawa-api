@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -25,7 +25,9 @@ export const pledgesTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -45,7 +47,7 @@ export const pledgesTable = pgTable(
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
-		isIncludeFamily: boolean("is_include_family").notNull().default(false),
+		isIncludeFamily: boolean("is_include_family").notNull(),
 
 		notes: text("notes"),
 
@@ -65,17 +67,15 @@ export const pledgesTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.endAt),
-		index3: index().on(self.fundraisingCampaignId),
-		index4: index().on(self.pledgerId),
-		index5: index().on(self.startAt),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.endAt),
+		index().on(self.fundraisingCampaignId),
+		index().on(self.pledgerId),
+		index().on(self.startAt),
+	],
 );
-
-export type PledgePgType = InferSelectModel<typeof pledgesTable>;
 
 export const pledgesTableRelations = relations(pledgesTable, ({ one }) => ({
 	creator: one(usersTable, {

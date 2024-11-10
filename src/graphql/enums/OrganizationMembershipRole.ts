@@ -1,10 +1,10 @@
-import { organizationMembershipRole } from "~/src/drizzle/enums";
+import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import { builder } from "~/src/graphql/builder";
 
 export const OrganizationMembershipRole = builder.enumType(
 	"OrganizationMembershipRole",
 	{
 		description: "",
-		values: organizationMembershipRole.options,
+		values: organizationMembershipRoleEnum.enumValues,
 	},
 );

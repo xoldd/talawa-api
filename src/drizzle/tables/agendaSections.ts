@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	type AnyPgColumn,
 	index,
@@ -25,7 +25,9 @@ export const agendaSectionsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -55,18 +57,16 @@ export const agendaSectionsTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.eventId),
-		index3: index().on(self.name),
-		index4: index().on(self.parentSectionId),
-		uniqueIndex0: uniqueIndex().on(self.eventId, self.name),
-		uniqueIndex1: uniqueIndex().on(self.eventId, self.position),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.eventId),
+		index().on(self.name),
+		index().on(self.parentSectionId),
+		uniqueIndex().on(self.eventId, self.name),
+		uniqueIndex().on(self.eventId, self.position),
+	],
 );
-
-export type AgendaSectionPgType = InferSelectModel<typeof agendaSectionsTable>;
 
 export const agendaSectionsTableRelations = relations(
 	agendaSectionsTable,

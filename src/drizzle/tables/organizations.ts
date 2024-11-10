@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -6,10 +6,10 @@ import {
 	text,
 	timestamp,
 	uuid,
-	varchar,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums";
+import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementsTable } from "./advertisements";
@@ -25,19 +25,25 @@ import { venuesTable } from "./venues";
 export const organizationsTable = pgTable(
 	"organizations",
 	{
-		addressLine1: text("address_line_1"),
-
-		addressLine2: text("address_line_2"),
-
+		/**
+		 * Address of the organization.
+		 */
+		address: text("address"),
+		/**
+		 * URI to the avatar of the organization.
+		 */
 		avatarURI: text("avatar_uri"),
-
+		/**
+		 * Name of the city where organization exists in.
+		 */
 		city: text("city"),
-
-		countryCode: varchar("country_code", {
-			enum: iso3166Alpha2CountryCodeEnum.options,
-			length: 2,
-		}),
-
+		/**
+		 * Country code of the country the organization exists in.
+		 */
+		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
+		/**
+		 * Datetime at the time the organization was created.
+		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",
 			precision: 3,
@@ -45,39 +51,59 @@ export const organizationsTable = pgTable(
 		})
 			.notNull()
 			.defaultNow(),
-
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
+		/**
+		 * Foreign key reference to the id of the user who first created the user.
+		 */
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
+		/**
+		 * Custom information about the organization.
+		 */
 		description: text("description"),
-
+		/**
+		 * Primary unique identifier of the organization.
+		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
-
+		/**
+		 * Boolean field to tell whether the organization requires manual verification for membership.
+		 */
 		isPrivate: boolean("is_private").notNull().default(false),
-
+		/**
+		 * Boolean field to tell whether the organization is visible in public search.
+		 */
 		isVisible: boolean("is_visible").notNull().default(true),
-
+		/**
+		 * Name of the organization.
+		 */
 		name: text("name", {}).notNull().unique(),
-
+		/**
+		 * Postal code of the organization.
+		 */
 		postalCode: text("postal_code"),
-
+		/**
+		 * Name of the state the organization exists in within its country.
+		 */
 		state: text("state"),
-
+		/**
+		 * Datetime at the time the organization was last updated.
+		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
 		}),
-
+		/**
+		 * Foreign key reference to the id of the user who last updated the organization.
+		 */
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.name),
-	}),
+	(self) => [
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.updaterId),
+	],
 );
-
-export type OrganizationPgType = InferSelectModel<typeof organizationsTable>;
 
 export const organizationsTableRelations = relations(
 	organizationsTable,
@@ -137,4 +163,19 @@ export const organizationsTableRelations = relations(
 			relationName: "organizations.id:venues.organization_id",
 		}),
 	}),
+);
+
+export const organizationsTableInsertSchema = createInsertSchema(
+	organizationsTable,
+	{
+		address: (schema) => schema.address.min(1).max(1024),
+		avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
+		city: (schema) => schema.city.min(1).max(64),
+		creatorId: (schema) => schema.creatorId.uuid(),
+		description: (schema) => schema.description.min(1).max(2048),
+		name: (schema) => schema.name.min(1).max(256),
+		postalCode: (schema) => schema.postalCode.min(1).max(32),
+		state: (schema) => schema.state.min(1).max(64),
+		updaterId: (schema) => schema.updaterId.uuid(),
+	},
 );

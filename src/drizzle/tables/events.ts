@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
 	boolean,
@@ -35,7 +35,9 @@ export const eventsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -53,21 +55,17 @@ export const eventsTable = pgTable(
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
-		isAllDay: boolean("is_all_day").notNull().default(false),
+		isAllDay: boolean("is_all_day").notNull(),
 
-		isBaseRecurringEvent: boolean("is_base_recurring_event")
-			.notNull()
-			.default(false),
+		isBaseRecurringEvent: boolean("is_base_recurring_event").notNull(),
 
-		isPrivate: boolean("is_private").notNull().default(false),
+		isPrivate: boolean("is_private").notNull(),
 
-		isRecurring: boolean("is_recurring").notNull().default(false),
+		isRecurring: boolean("is_recurring").notNull(),
 
-		isRecurringException: boolean("is_recurring_exception")
-			.notNull()
-			.default(false),
+		isRecurringException: boolean("is_recurring_exception").notNull(),
 
-		isRegisterable: boolean("is_registerable").notNull().default(true),
+		isRegisterable: boolean("is_registerable").notNull(),
 
 		name: text("name", {}).notNull(),
 
@@ -89,15 +87,13 @@ export const eventsTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.name),
-		index3: index().on(self.organizationId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.organizationId),
+	],
 );
-
-export type EventPgType = InferSelectModel<typeof eventsTable>;
 
 export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	actionsWhereEvent: many(actionsTable, {

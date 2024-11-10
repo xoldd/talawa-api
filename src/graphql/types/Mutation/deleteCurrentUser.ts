@@ -10,7 +10,12 @@ builder.mutationField("deleteCurrentUser", (t) =>
 			"Entrypoint mutation field to delete the user record associated to the client performing the action.",
 		resolve: async (_parent, _args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
 			}
 
 			const [deletedCurrentUser] = await ctx.drizzleClient
@@ -18,7 +23,7 @@ builder.mutationField("deleteCurrentUser", (t) =>
 				.where(eq(usersTable.id, ctx.currentClient.user.id))
 				.returning();
 
-			// Deleted current user's record not existing in the database means that the client is using an access token which hasn't expired yet.
+			// Deleted current user not existing in the database means that the client is using an access token which hasn't expired yet.
 			if (deletedCurrentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

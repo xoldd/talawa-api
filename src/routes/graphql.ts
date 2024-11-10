@@ -14,7 +14,6 @@ import type {
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
@@ -62,12 +61,6 @@ export const createContext: CreateContext = async (initialContext) => {
 		};
 	} catch (error) {
 		currentClient = {
-			error: new TalawaGraphQLError({
-				extensions: {
-					code: "unauthenticated",
-				},
-				message: "Only authenticated users can perform this action.",
-			}),
 			isAuthenticated: false,
 		};
 	}

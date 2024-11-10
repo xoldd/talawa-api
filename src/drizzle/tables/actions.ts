@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -20,9 +20,7 @@ export const actionsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		})
-			.notNull()
-			.defaultNow(),
+		}).notNull(),
 
 		assigneeId: uuid("actor_id").references(() => usersTable.id),
 
@@ -42,7 +40,9 @@ export const actionsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -54,7 +54,7 @@ export const actionsTable = pgTable(
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
-		isCompleted: boolean("is_completed").notNull().default(false),
+		isCompleted: boolean("is_completed").notNull(),
 
 		organizationId: uuid("organization_id")
 			.notNull()
@@ -72,20 +72,16 @@ export const actionsTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
-	(self) => ({
-		index0: index().on(self.assignedAt),
-		index1: index().on(self.assigneeId),
-		index2: index().on(self.categoryId),
-		index3: index().on(self.completionAt),
-		index4: index().on(self.createdAt),
-		index5: index().on(self.creatorId),
-		index6: index().on(self.eventId),
-		index7: index().on(self.isCompleted),
-		index8: index().on(self.organizationId),
-	}),
+	(self) => [
+		index().on(self.assignedAt),
+		index().on(self.assigneeId),
+		index().on(self.categoryId),
+		index().on(self.completionAt),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.organizationId),
+	],
 );
-
-export type ActionPgType = InferSelectModel<typeof actionsTable>;
 
 export const actionsTableRelations = relations(actionsTable, ({ one }) => ({
 	assignee: one(usersTable, {

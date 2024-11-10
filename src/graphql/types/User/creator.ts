@@ -19,13 +19,9 @@ User.implement({
 					});
 				}
 
-				if (parent.creatorId === null) {
-					return null;
-				}
-
-				const creatorId = parent.creatorId;
 				return await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, creatorId),
+					where: (fields, operators) =>
+						operators.eq(fields.id, parent.creatorId),
 				});
 			},
 			type: User,

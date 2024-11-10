@@ -3,7 +3,6 @@ import type { FastifyBaseLogger } from "fastify";
 import type { Client as MinioClient } from "minio";
 import type * as drizzleSchema from "~/src/drizzle/schema";
 import type { usersTable } from "~/src/drizzle/tables/users";
-import type { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { PubSub } from "./pubsub";
 
 /**
@@ -17,14 +16,10 @@ export type ImplicitMercuriusContext = {
  * Type of the payload encoded into or decoded from the authentication json web token.
  */
 export type ExplicitAuthenticationTokenPayload = {
-	user: Pick<
-		typeof usersTable.$inferSelect,
-		"id" | "isEmailAddressVerified" | "role"
-	>;
+	user: Pick<typeof usersTable.$inferSelect, "id">;
 };
 
 type UnauthenticatedCurrentClient = {
-	error: TalawaGraphQLError;
 	/**
 	 * Type union discriminator field when the current client is unauthenticated.
 	 */
@@ -34,7 +29,6 @@ type UnauthenticatedCurrentClient = {
 };
 
 type AuthenticatedCurrentClient = {
-	error?: never;
 	/**
 	 * Type union discriminator field when the current client is authenticated.
 	 */

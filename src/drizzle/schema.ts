@@ -1,6 +1,26 @@
 // THIS FILE IS ONLY MEANT FOR IMPORTING/EXPORTING MODULES THAT ARE REQUIRED FOR DRIZZLE RELATIONAL QUERY BUILDING AND DRIZZLE DATABASE MIGRATIONS TO WORK.
 // MAKE SURE TO NOT MISS ANY OF THE MODULES THAT ARE DIRECTLY CONCERNED WITH DRIZZLE DATABASE MIGRATIONS. FAILING TO DO SO WILL RESULT IN INCORRECT DRIZZLE DATABASE MIGRATIONS BEING GENERATED.
 
+export { advertisementAttachmentTypeEnum } from "./enums/advertisementAttachmentType";
+export { advertisementTypeEnum } from "./enums/advertisementType";
+export { agendaItemTypeEnum } from "./enums/agendaItemType";
+export { commmentVoteTypeEnum } from "./enums/commentVoteType";
+export { eventAttachmentTypeEnum } from "./enums/eventAttachmentType";
+export { eventAttendeeRegistrationInviteStatusEnum } from "./enums/eventAttendeeRegistrationInviteStatus";
+export { familyMembershipRoleEnum } from "./enums/familyMembershipRole";
+export { iso3166Alpha2CountryCodeEnum } from "./enums/iso3166Alpha2CountryCode";
+export { organizationMembershipRoleEnum } from "./enums/organizationMembershipRole";
+export { postAttachmentTypeEnum } from "./enums/postAttachmentType";
+export { postVoteTypeEnum } from "./enums/postVoteType";
+export { recurrenceTypeEnum } from "./enums/recurrenceType";
+export { userEducationGradeEnum } from "./enums/userEducationGrade";
+export { userEmploymentStatusEnum } from "./enums/userEmploymentStatus";
+export { userMaritalStatusEnum } from "./enums/userMaritalStatus";
+export { userNatalSexEnum } from "./enums/userNatalSex";
+export { userRoleEnum } from "./enums/userRole";
+export { venueAttachmentTypeEnum } from "./enums/venueAttachmentType";
+export { volunteerGroupAssignmentInviteStatusEnum } from "./enums/volunteerGroupAssignmentInviteStatus";
+
 export {
 	actionCategoriesTable,
 	actionCategoriesTableRelations,

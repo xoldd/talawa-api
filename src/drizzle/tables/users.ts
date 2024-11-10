@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
 	boolean,
@@ -8,18 +8,15 @@ import {
 	text,
 	timestamp,
 	uuid,
-	varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import {
-	iso3166Alpha2CountryCodeEnum,
-	userEducationGradeEnum,
-	userEmploymentStatusEnum,
-	userMaritalStatusEnum,
-	userNatalSexEnum,
-	userRole,
-} from "~/src/drizzle/enums";
+import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
+import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
+import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStatus";
+import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
+import { userNatalSexEnum } from "~/src/drizzle/enums/userNatalSex";
+import { userRoleEnum } from "~/src/drizzle/enums/userRole";
 import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
@@ -75,10 +72,7 @@ export const usersTable = pgTable(
 		/**
 		 * Country code of the country the user is a citizen of.
 		 */
-		countryCode: varchar("country_code", {
-			enum: iso3166Alpha2CountryCodeEnum.options,
-			length: 2,
-		}),
+		countryCode: iso3166Alpha2CountryCodeEnum("country_code"),
 		/**
 		 * Datetime at the time the user was created.
 		 */
@@ -92,7 +86,9 @@ export const usersTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the user who first created the user.
 		 */
-		creatorId: uuid("creator_id").references((): AnyPgColumn => usersTable.id),
+		creatorId: uuid("creator_id")
+			.references((): AnyPgColumn => usersTable.id)
+			.notNull(),
 		/**
 		 * Custom information about the user.
 		 */
@@ -100,9 +96,7 @@ export const usersTable = pgTable(
 		/**
 		 * Primary education grade of the user.
 		 */
-		educationGrade: text("education_grade", {
-			enum: userEducationGradeEnum.options,
-		}),
+		educationGrade: userEducationGradeEnum("education_grade"),
 		/**
 		 * Email address of the user.
 		 */
@@ -110,9 +104,7 @@ export const usersTable = pgTable(
 		/**
 		 * Employment status of the user.
 		 */
-		employmentStatus: text("employment_status", {
-			enum: userEmploymentStatusEnum.options,
-		}),
+		employmentStatus: userEmploymentStatusEnum("employment_status"),
 		/**
 		 * The phone number to use to communicate with the user at their home.
 		 */
@@ -124,13 +116,13 @@ export const usersTable = pgTable(
 		/**
 		 * Boolean field to tell whether the user has verified their email or not.
 		 */
-		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
+		isEmailAddressVerified: boolean("is_email_address_verified")
+			.notNull()
+			.default(false),
 		/**
 		 * Marital status of the user.
 		 */
-		maritalStatus: text("marital_status", {
-			enum: userMaritalStatusEnum.options,
-		}),
+		maritalStatus: userMaritalStatusEnum("marital_status"),
 		/**
 		 * The phone number to use to communicate with the user on their mobile phone.
 		 */
@@ -142,9 +134,7 @@ export const usersTable = pgTable(
 		/**
 		 * The sex assigned to the user at their birth.
 		 */
-		natalSex: text("natal_sex", {
-			enum: userNatalSexEnum.options,
-		}),
+		natalSex: userNatalSexEnum("natal_sex"),
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
 		 */
@@ -156,9 +146,7 @@ export const usersTable = pgTable(
 		/**
 		 * Role assigned to the user.
 		 */
-		role: text("role", {
-			enum: userRole.options,
-		}).notNull(),
+		role: userRoleEnum("role").notNull().default("base"),
 		/**
 		 * Name of the state the user resides in within their country.
 		 */
@@ -180,12 +168,12 @@ export const usersTable = pgTable(
 		 */
 		workPhoneNumber: text("work_phone_number"),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-	}),
+	(self) => [
+		index().on(self.creatorId),
+		index().on(self.name),
+		index().on(self.updaterId),
+	],
 );
-
-export type UserPgType = InferSelectModel<typeof usersTable>;
 
 export const usersTableRelations = relations(usersTable, ({ many }) => ({
 	actionsWhereAssignee: many(actionsTable, {
@@ -460,8 +448,8 @@ export const usersTableRelations = relations(usersTable, ({ many }) => ({
 export const usersTableInsertSchema = createInsertSchema(usersTable, {
 	address: (schema) => schema.address.min(1).max(1024),
 	avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
-	creatorId: (schema) => schema.creatorId.uuid(),
 	city: (schema) => schema.city.min(1).max(64),
+	creatorId: (schema) => schema.creatorId.uuid(),
 	description: (schema) => schema.description.min(1).max(2048),
 	name: (schema) => schema.name.min(1).max(256),
 	postalCode: (schema) => schema.postalCode.min(1).max(32),

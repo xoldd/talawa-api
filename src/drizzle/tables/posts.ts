@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
 import { commentsTable } from "./comments";
@@ -20,7 +20,9 @@ export const postsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -52,16 +54,14 @@ export const postsTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.organizationId),
-		index3: index().on(self.pinnedAt),
-		index4: index().on(self.posterId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.organizationId),
+		index().on(self.pinnedAt),
+		index().on(self.posterId),
+	],
 );
-
-export type PostPgType = InferSelectModel<typeof postsTable>;
 
 export const postsTableRelations = relations(postsTable, ({ many, one }) => ({
 	commentsWherePost: many(commentsTable, {

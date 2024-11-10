@@ -23,13 +23,36 @@ builder.mutationField("updateUser", (t) =>
 				type: MutationUpdateUserInput,
 			}),
 		},
-		description: "Entrypoint mutation field to update a single user record.",
+		description: "Entrypoint mutation field to update a user record.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
 			}
 
-			if (ctx.currentClient.user.role !== "administrator") {
+			const currentUserId = ctx.currentClient.user.id;
+
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			if (currentUser.role !== "administrator") {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action",
@@ -57,7 +80,7 @@ builder.mutationField("updateUser", (t) =>
 				});
 			}
 
-			if (parsedArgs.input.id === ctx.currentClient.user.id) {
+			if (parsedArgs.input.id === currentUserId) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
@@ -103,7 +126,7 @@ builder.mutationField("updateUser", (t) =>
 						input.password !== undefined
 							? await hash(input.password)
 							: undefined,
-					updaterId: ctx.currentClient.user.id,
+					updaterId: currentUserId,
 				})
 				.where(eq(usersTable.id, id))
 				.returning();

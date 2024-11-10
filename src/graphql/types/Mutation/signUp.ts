@@ -1,5 +1,6 @@
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
@@ -85,17 +86,19 @@ builder.mutationField("signUp", (t) =>
 				});
 			}
 
+			const userId = uuidv7();
+
 			const [createdUser] = await ctx.drizzleClient
 				.insert(usersTable)
 				.values({
 					...parsedArgs.input,
-					isEmailAddressVerified: false,
+					creatorId: userId,
+					id: userId,
 					passwordHash: await hash(parsedArgs.input.password),
-					role: "base",
 				})
 				.returning();
 
-			// Inserted user record not being returned is a tooling specific defect unrelated to this code. It is very unlikely for this error to occur.
+			// Inserted user record not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (createdUser === undefined) {
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
@@ -112,8 +115,6 @@ builder.mutationField("signUp", (t) =>
 				authenticationToken: ctx.jwt.sign({
 					user: {
 						id: createdUser.id,
-						isEmailAddressVerified: createdUser.isEmailAddressVerified,
-						role: createdUser.role,
 					},
 				}),
 				user: createdUser,

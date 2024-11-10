@@ -23,6 +23,7 @@
 		"drizzle-orm": "^0.36.1",
 		"drizzle-zod": "^0.5.1",
 		"env-schema": "^6.0.0",
+		"fast-jwt": "^4.0.5",
 		"fastify": "^5.1.0",
 		"fastify-plugin": "^5.0.1",
 		"graphql": "^16.9.0",

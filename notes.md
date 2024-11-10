@@ -86,32 +86,7 @@ graphql documentation generation using spectaql
 ```bash
 docker container run --env-file ./.env --interactive --tty --publish 5432:5432 postgres
 ```
-#
+# caching
 
-Graphql input to zod schema for database insert operations:
+currently there is no caching involved in the resolving of a graphql operation, everything is fetched from the database whereever and whenever it is needed.
 
-    Make sure that `T` graphql field is transformed to `T` zod field for non nullable database fields.
-
-        T -> T
-
-    Make sure that `T | null | undefined` graphql field is transformed to `T | undefined` zod field for auto generated non nullable database fields.
-
-        T | null | undefined -> T | undefined
-
-    Make sure that `T | null | undefined` graphql field is transformed to `T | null | undefined` zod field for nullable database fields.
-
-        T | null | undefined -> T | null | undefined
-
-Graphql input to zod schema for database update operations:
-
-    Make sure that `T` graphql field is transformed to `T` zod field for non nullable database fields that are used for record identification.
-
-        T -> T
-
-    Make sure that `T | null | undefined` graphql field is transformed to `T | undefined` zod field for non nullable database fields.
-
-        T | null | undefined -> T | undefined
-
-    Make sure that `T | null | undefined` graphql field is transformed to `T | null | undefined` zod field for nullable database fields.
-
-        T | null | undefined -> T | null | undefined

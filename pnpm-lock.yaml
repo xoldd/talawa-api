@@ -65,6 +65,9 @@ importers:
       env-schema:
         specifier: ^6.0.0
         version: 6.0.0
+      fast-jwt:
+        specifier: ^4.0.5
+        version: 4.0.5
       fastify:
         specifier: ^5.1.0
         version: 5.1.0

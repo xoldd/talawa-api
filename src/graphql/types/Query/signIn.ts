@@ -100,8 +100,6 @@ builder.queryField("signIn", (t) =>
 				authenticationToken: ctx.jwt.sign({
 					user: {
 						id: existingUser.id,
-						isEmailAddressVerified: existingUser.isEmailAddressVerified,
-						role: existingUser.role,
 					},
 				}),
 				user: existingUser,

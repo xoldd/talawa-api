@@ -1,20 +1,23 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
 	pgTable,
 	primaryKey,
-	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { organizationMembershipRole } from "../enums";
+import { createInsertSchema } from "drizzle-zod";
+import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 export const organizationMembershipsTable = pgTable(
 	"organization_memberships",
 	{
+		/**
+		 * Datetime at the time the organization membership was created.
+		 */
 		createdAt: timestamp("created_at", {
 			mode: "date",
 			precision: 3,
@@ -22,56 +25,56 @@ export const organizationMembershipsTable = pgTable(
 		})
 			.notNull()
 			.defaultNow(),
-
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
-
-		isApproved: boolean("is_approved").notNull().default(false),
-
-		isBlocked: boolean("is_blocked").notNull().default(false),
-
+		/**
+		 * Foreign key reference to the id of the user who first created the organization membership.
+		 */
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
+		/**
+		 * Boolean to tell whether the membership has been approved.
+		 */
+		isApproved: boolean("is_approved").notNull().default(true),
+		/**
+		 * Foreign key reference to the id of the user the membership is associated to.
+		 */
 		memberId: uuid("member_id")
 			.notNull()
 			.references(() => usersTable.id, {}),
-
+		/**
+		 * Foreign key reference to the id of the organization the membership is associated to.
+		 */
 		organizationId: uuid("organization_id")
 			.notNull()
 			.references(() => organizationsTable.id, {}),
-
-		reasonForBlock: text("reason_for_block"),
-
 		/**
-		 * Role assigned to the member.
+		 * Role assigned to the user within the organization.
 		 */
-		role: text("role", {
-			enum: organizationMembershipRole.options,
-		})
-			.notNull()
-			.default("base"),
-
+		role: organizationMembershipRoleEnum("role").notNull().default("base"),
+		/**
+		 * Datetime at the time the organization membership was last updated.
+		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
 		}),
-
+		/**
+		 * Foreign key reference to the id of the user who last updated the organization membership.
+		 */
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},
-	(self) => ({
-		compositePrimaryKey: primaryKey({
+	(self) => [
+		primaryKey({
 			columns: [self.memberId, self.organizationId],
 		}),
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index3: index().on(self.isApproved),
-		index4: index().on(self.isBlocked),
-		index5: index().on(self.memberId),
-		index6: index().on(self.organizationId),
-	}),
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.isApproved),
+		index().on(self.memberId),
+		index().on(self.organizationId),
+	],
 );
-
-export type OrganizationMembershipPgType = InferSelectModel<
-	typeof organizationMembershipsTable
->;
 
 export const organizationMembershipsTableRelations = relations(
 	organizationMembershipsTable,
@@ -100,4 +103,8 @@ export const organizationMembershipsTableRelations = relations(
 			relationName: "organization_memberships.updater_id:users.id",
 		}),
 	}),
+);
+
+export const organizationMembershipsTableInsertSchema = createInsertSchema(
+	organizationMembershipsTable,
 );

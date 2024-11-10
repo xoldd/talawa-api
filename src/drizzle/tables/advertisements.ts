@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	index,
 	pgTable,
@@ -8,7 +8,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
-import { advertisementTypeEnum } from "~/src/drizzle/enums";
+import { advertisementTypeEnum } from "~/src/drizzle/enums/advertisementType";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -24,7 +24,9 @@ export const advertisementsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 
-		creatorId: uuid("creator_id").references(() => usersTable.id, {}),
+		creatorId: uuid("creator_id")
+			.references(() => usersTable.id, {})
+			.notNull(),
 
 		deletedAt: timestamp("deleted_at", {
 			mode: "date",
@@ -62,22 +64,18 @@ export const advertisementsTable = pgTable(
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 
-		type: text("type", {
-			enum: advertisementTypeEnum.options,
-		}).notNull(),
+		type: advertisementTypeEnum("type").notNull(),
 	},
-	(self) => ({
-		index0: index().on(self.createdAt),
-		index1: index().on(self.creatorId),
-		index2: index().on(self.endAt),
-		index3: index().on(self.name),
-		index4: index().on(self.organizationId),
-		index5: index().on(self.startAt),
-		uniqueIndex0: uniqueIndex().on(self.name, self.organizationId),
-	}),
+	(self) => [
+		index().on(self.createdAt),
+		index().on(self.creatorId),
+		index().on(self.endAt),
+		index().on(self.name),
+		index().on(self.organizationId),
+		index().on(self.startAt),
+		uniqueIndex().on(self.name, self.organizationId),
+	],
 );
-
-export type AdvertisementPgType = InferSelectModel<typeof advertisementsTable>;
 
 export const advertisementsTableRelations = relations(
 	advertisementsTable,

@@ -29,8 +29,6 @@ builder.queryField("renewAuthenticationToken", (t) =>
 			return ctx.jwt.sign({
 				user: {
 					id: currentUser.id,
-					isEmailAddressVerified: currentUser.isEmailAddressVerified,
-					role: currentUser.role,
 				},
 			});
 		},
