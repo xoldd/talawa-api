@@ -6,8 +6,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 builder.mutationField("deleteCurrentUser", (t) =>
 	t.field({
-		description:
-			"Entrypoint mutation field to delete the user record associated to the client performing the action.",
+		description: "Mutation field to delete the current user.",
 		resolve: async (_parent, _args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -23,7 +22,7 @@ builder.mutationField("deleteCurrentUser", (t) =>
 				.where(eq(usersTable.id, ctx.currentClient.user.id))
 				.returning();
 
-			// Deleted current user not existing in the database means that the client is using an access token which hasn't expired yet.
+			// Deleted current user not existing in the database means that the client is using an authentication token which hasn't expired yet.
 			if (deletedCurrentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

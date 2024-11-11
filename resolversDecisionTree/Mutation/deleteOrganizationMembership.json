@@ -1,0 +1,28 @@
+{
+	"if current user is not authenticated": "throw unauthenticated error",
+	"if current user is authenticated": {
+		"if zod arguments parsing does not succeed": "throw invalid arguments error",
+		"if zod arguments parsing succeeds": {
+			"if current user does not exist": "throw unauthenticated error",
+			"if current user exists": {
+				"if organization membership does not exist": "throw not found error",
+				"if organization membership exists": {
+					"if current user is a base user": {
+						"if current user is not an organization member": "throw unauthorized error",
+						"if current user is an organization member": {
+							"if current user is a base organization member": {
+								"if current user is not deleting organization membership associated to them": "throw unauthorized error",
+								"if current user is deleting organization membership associated to them": "delete the organization membership and return the organization"
+							},
+							"if current user is an administrator organization member": {
+								"if current user is deleting organization membership of a base user": "delete the organization membership and return the organization",
+								"if current user is deleting organization membership of an administrator user": "throw unauthorized error"
+							}
+						}
+					},
+					"if current user is an administrator user": "delete the organization membership and return the organization"
+				}
+			}
+		}
+	}
+}

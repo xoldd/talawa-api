@@ -23,7 +23,7 @@ builder.mutationField("createOrganizations", (t) =>
 				}),
 			}),
 		},
-		description: "Entrypoint mutation field to create organizations.",
+		description: "Mutation field to create organizations.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw ctx.currentClient.error;

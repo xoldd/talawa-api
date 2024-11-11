@@ -16,7 +16,7 @@ builder.queryField("user", (t) =>
 				required: true,
 			}),
 		},
-		description: "Query entrypoint field to read a user record.",
+		description: "Query field to read a user.",
 		resolve: async (_parent, args, ctx) => {
 			const {
 				data: parsedArgs,

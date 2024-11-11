@@ -4,10 +4,15 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 builder.queryField("renewAuthenticationToken", (t) =>
 	t.string({
 		description:
-			"Entrypoint Query field to renew the authentication token of an authenticated client for signing in to the talawa application.",
+			"Query field to renew the authentication token of an authenticated client for signing in to the talawa application.",
 		resolve: async (_parent, _args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action",
+					},
+					message: "Only unauthenticated users can perform this action.",
+				});
 			}
 
 			const currentClientUserId = ctx.currentClient.user.id;
@@ -16,7 +21,7 @@ builder.queryField("renewAuthenticationToken", (t) =>
 					operators.eq(fields.id, currentClientUserId),
 			});
 
-			// User's record not existing in the database means that the client is using an access token which hasn't expired yet.
+			// User's record not existing in the database means that the client is using an authentication token which hasn't expired yet.
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

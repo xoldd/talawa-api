@@ -42,7 +42,7 @@ builder.mutationField("deleteOrganizations", (t) =>
 				}),
 			}),
 		},
-		description: "Entrypoint mutation field to delete an organization.",
+		description: "Mutation field to delete an organization.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw ctx.currentClient.error;
@@ -120,12 +120,12 @@ builder.mutationField("deleteOrganizations", (t) =>
 						.where(inArray(organizationsTable.id, ids))
 						.returning()
 				).sort(
-					// Sort the organization records in the order of corresponding inputs provided by the client.
+					// Sort the organizations in the order of corresponding inputs provided by the client.
 					(organization0, organization1) =>
 						ids.indexOf(organization0.id) - ids.indexOf(organization1.id),
 				);
 
-				// If the number of deleted organization records is not equal to the number of records that were meant to be deleted, it means that some of those records were either deleted or their `id` column was changed by external entities before this delete operation. To keep the delete operation consistent with the input we throw the error to rollback the postgres transaction.
+				// If the number of deleted organizations is not equal to the number of organizations that were meant to be deleted, it means that some of those organizations were either deleted or their `id` column was changed by external entities before this delete operation. To keep the delete operation consistent with the input we throw the error to rollback the postgres transaction.
 				if (deletedOrganizations.length !== ids.length) {
 					throw new TalawaGraphQLError({
 						extensions: {

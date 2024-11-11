@@ -21,7 +21,7 @@ builder.queryField("signIn", (t) =>
 				type: QuerySignInInput,
 			}),
 		},
-		description: "Entrypoint query field for a client to sign in to talawa.",
+		description: "Query field for a client to sign in to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

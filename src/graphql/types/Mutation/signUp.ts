@@ -35,7 +35,7 @@ builder.mutationField("signUp", (t) =>
 				type: MutationSignUpInput,
 			}),
 		},
-		description: "Entrypoint mutation field for a client to sign up to talawa.",
+		description: "Mutation field for a client to sign up to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -98,7 +98,7 @@ builder.mutationField("signUp", (t) =>
 				})
 				.returning();
 
-			// Inserted user record not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
+			// Inserted user not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (createdUser === undefined) {
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",

@@ -23,8 +23,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 				type: MutationUpdateCurrentUserInput,
 			}),
 		},
-		description:
-			"Entrypoint mutation field to update the user record associated to the client performing the action.",
+		description: "Mutation field to update the current user.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -54,19 +53,48 @@ builder.mutationField("updateCurrentUser", (t) =>
 				});
 			}
 
+			const { emailAddress, password, ...input } = parsedArgs.input;
+
+			if (emailAddress !== undefined) {
+				const existingUserWithEmailAddress =
+					await ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {},
+						where: (fields, operators) =>
+							operators.eq(fields.emailAddress, emailAddress),
+					});
+
+				if (existingUserWithEmailAddress !== undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: ["input", "emailAddress"],
+									message: "This email address is already registered.",
+								},
+							],
+						},
+						message:
+							"This action is forbidden on the resources associated to the provided arguments.",
+					});
+				}
+			}
+
+			const passwordHash =
+				password !== undefined ? await hash(password) : undefined;
+
 			const [updatedCurrentUser] = await ctx.drizzleClient
 				.update(usersTable)
 				.set({
-					...parsedArgs.input,
-					passwordHash:
-						parsedArgs.input.password !== undefined
-							? await hash(parsedArgs.input.password)
-							: undefined,
+					...input,
+					emailAddress,
+					passwordHash,
+					updaterId: ctx.currentClient.user.id,
 				})
 				.where(eq(usersTable.id, ctx.currentClient.user.id))
 				.returning();
 
-			// Updated user's record not existing in the database means that the client is using an access token which hasn't expired yet.
+			// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which ultimately means that the current client is using an authentication token which hasn't expired yet.
 			if (updatedCurrentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

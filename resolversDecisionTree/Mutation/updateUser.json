@@ -1,0 +1,19 @@
+{
+	"if current user is not authenticated": "throw unauthenticated error",
+	"if current user is authenticated": {
+		"if zod arguments parsing does not succeed": "throw invalid arguments error",
+		"if zod arguments parsing succeeds": {
+			"if current user does not exist": "throw unauthenticated error",
+			"if current user exists": {
+				"if current user is base user": "throw unauthorized error",
+				"if current user is administrator user": {
+					"if current user is not trying to update themselves": {
+						"if user does not exist": "throw not found error",
+						"if user exists": "update the user and return it"
+					},
+					"if current user is trying to update themselves": "throw forbidden error"
+				}
+			}
+		}
+	}
+}

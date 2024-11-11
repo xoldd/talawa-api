@@ -21,7 +21,7 @@ builder.mutationField("createOrganization", (t) =>
 				type: MutationCreateOrganizationInput,
 			}),
 		},
-		description: "Entrypoint mutation field to create an organization.",
+		description: "Mutation field to create an organization.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -29,6 +29,25 @@ builder.mutationField("createOrganization", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			const {
+				data: parsedArgs,
+				error,
+				success,
+			} = mutationCreateOrganizationArgumentsSchema.safeParse(args);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -56,25 +75,6 @@ builder.mutationField("createOrganization", (t) =>
 						code: "unauthorized_action",
 					},
 					message: "You are not authorized to perform this action.",
-				});
-			}
-
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = mutationCreateOrganizationArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-					message: "Invalid arguments provided.",
 				});
 			}
 

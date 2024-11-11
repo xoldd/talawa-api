@@ -6,10 +6,7 @@ import {
 	mutationCreateOrganizationMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationMembershipInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import {
-	type ArgumentsAssociatedResourcesNotFound,
-	TalawaGraphQLError,
-} from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationCreateOrganizationMembershipInputSchema,
@@ -24,8 +21,7 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				type: MutationCreateOrganizationMembershipInput,
 			}),
 		},
-		description:
-			"Entrypoint mutation field to create an organization membership.",
+		description: "Mutation field to create an organization membership.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -59,9 +55,9 @@ builder.mutationField("createOrganizationMembership", (t) =>
 
 			const [
 				currentUser,
-				existingOrganizationMembership,
 				existingUser,
 				existingOrganization,
+				existingOrganizationMembership,
 			] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
@@ -81,17 +77,6 @@ builder.mutationField("createOrganizationMembership", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
-				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-					columns: {},
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.memberId, parsedArgs.input.memberId),
-							operators.eq(
-								fields.organizationId,
-								parsedArgs.input.organizationId,
-							),
-						),
-				}),
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -102,6 +87,17 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.organizationId),
+				}),
+				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+					columns: {},
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.memberId, parsedArgs.input.memberId),
+							operators.eq(
+								fields.organizationId,
+								parsedArgs.input.organizationId,
+							),
+						),
 				}),
 			]);
 
@@ -136,26 +132,46 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				});
 			}
 
-			const argumentsAssociatedResourcesNotFoundIssues: ArgumentsAssociatedResourcesNotFound["issues"] =
-				[];
-
-			if (existingUser === undefined) {
-				argumentsAssociatedResourcesNotFoundIssues.push({
-					argumentPath: ["input", "memberId"],
+			if (existingOrganization === undefined && existingUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+							{
+								argumentPath: ["input", "memberId"],
+							},
+						],
+					},
+					message: "Not associated resources found for the provided arguments.",
 				});
 			}
 
 			if (existingOrganization === undefined) {
-				argumentsAssociatedResourcesNotFoundIssues.push({
-					argumentPath: ["input", "organizationId"],
-				});
-			}
-
-			if (argumentsAssociatedResourcesNotFoundIssues.length !== 0) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: argumentsAssociatedResourcesNotFoundIssues,
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+					message: "Not associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+						],
 					},
 					message: "Not associated resources found for the provided arguments.",
 				});
@@ -165,25 +181,10 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
 
-				if (currentUserOrganizationMembership === undefined) {
-					if (currentUserId !== parsedArgs.input.memberId) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: [
-									{
-										argumentPath: ["input", "memberId"],
-									},
-									{
-										argumentPath: ["input", "organizationId"],
-									},
-								],
-							},
-							message:
-								"You are not authorized to perform this action on the resources associated to the provided arguments.",
-						});
-					}
-				} else {
+				if (
+					currentUserOrganizationMembership === undefined &&
+					currentUserId !== parsedArgs.input.memberId
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action_on_arguments_associated_resources",
@@ -200,6 +201,22 @@ builder.mutationField("createOrganizationMembership", (t) =>
 							"You are not authorized to perform this action on the resources associated to the provided arguments.",
 					});
 				}
+
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+					message:
+						"You are not authorized to perform this action on the resources associated to the provided arguments.",
+				});
 			}
 
 			const [createdOrganizationMembership] = await ctx.drizzleClient

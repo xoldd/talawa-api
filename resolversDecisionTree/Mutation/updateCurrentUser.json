@@ -1,0 +1,13 @@
+{
+	"if current user is not authenticated": "throw unauthenticated error",
+	"if current user is authenticated": {
+		"if zod arguments parsing does not succeed": "throw invalid arguments error",
+		"if zod arguments parsing succeeds": {
+			"if current user does not exist": "throw unauthenticated error",
+			"if current user exists": {
+				"if email address provided in the arguments is not associated to an existing user": "update the user and return it",
+				"if email address provided in the arguments is associated to an existing user": "throw forbidden error"
+			}
+		}
+	}
+}

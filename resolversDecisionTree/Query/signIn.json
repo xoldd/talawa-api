@@ -1,0 +1,13 @@
+{
+	"if current user is not authenticated": {
+		"if zod arguments parsing does not succeed": "throw invalid arguments error",
+		"if zod arguments parsing succeeds": {
+			"if user has an invalid email address": "throw invalid arguments error",
+			"if user has a valid email address": {
+				"if user has an invalid password": "throw invalid arguments error",
+				"if user has a valid password": "return the user and authentication token"
+			}
+		}
+	},
+	"if current user is authenticated": "throw forbidden error"
+}

@@ -28,7 +28,7 @@ const queryUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 builder.queryField("users", (t) =>
 	t.connection(
 		{
-			description: "Entrypoint Query field to read data of users.",
+			description: "Query field to read data of users.",
 			resolve: async (_parent, args, ctx) => {
 				const {
 					data: parsedArgs,
@@ -55,31 +55,29 @@ builder.queryField("users", (t) =>
 
 				let where: SQL | undefined;
 				if (isInversed) {
-					where =
-						cursor !== undefined
-							? and(
-									exists(
-										ctx.drizzleClient
-											.select()
-											.from(usersTable)
-											.where(eq(usersTable.id, cursor)),
-									),
-									gt(usersTable.id, cursor),
-								)
-							: undefined;
+					if (cursor !== undefined) {
+						where = and(
+							exists(
+								ctx.drizzleClient
+									.select()
+									.from(usersTable)
+									.where(eq(usersTable.id, cursor)),
+							),
+							gt(usersTable.id, cursor),
+						);
+					}
 				} else {
-					where =
-						cursor !== undefined
-							? and(
-									exists(
-										ctx.drizzleClient
-											.select()
-											.from(usersTable)
-											.where(eq(usersTable.id, cursor)),
-									),
-									lt(usersTable.id, cursor),
-								)
-							: undefined;
+					if (cursor !== undefined) {
+						where = and(
+							exists(
+								ctx.drizzleClient
+									.select()
+									.from(usersTable)
+									.where(eq(usersTable.id, cursor)),
+							),
+							lt(usersTable.id, cursor),
+						);
+					}
 				}
 
 				const users = await ctx.drizzleClient.query.usersTable.findMany({
@@ -89,20 +87,18 @@ builder.queryField("users", (t) =>
 				});
 
 				if (cursor !== undefined && users.length === 0) {
-					if (cursor !== undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "arguments_associated_resources_not_found",
-								issues: [
-									{
-										argumentPath: [isInversed ? "before" : "after"],
-									},
-								],
-							},
-							message:
-								"No associated resources found for the provided arguments.",
-						});
-					}
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: [isInversed ? "before" : "after"],
+								},
+							],
+						},
+						message:
+							"No associated resources found for the provided arguments.",
+					});
 				}
 
 				return transformToDefaultGraphQLConnection({

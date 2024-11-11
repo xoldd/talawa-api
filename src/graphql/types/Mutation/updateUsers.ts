@@ -64,7 +64,7 @@ builder.mutationField("updateUsers", (t) =>
 				}),
 			}),
 		},
-		description: "Entrypoint Mutation field to update users.",
+		description: "Mutation field to update users.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw ctx.currentClient.error;
@@ -282,7 +282,7 @@ builder.mutationField("updateUsers", (t) =>
 // 				}),
 // 			}),
 // 		},
-// 		description: "Entrypoint Mutation field to update users.",
+// 		description: "Mutation field to update users.",
 // 		resolve: async (_parent, args, ctx) => {
 // 			if (!ctx.currentClient.isAuthenticated) {
 // 				throw ctx.currentClient.error;

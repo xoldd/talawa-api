@@ -1,10 +1,10 @@
 import type { z } from "zod";
-import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
+import { organizationsTableSelectSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 
 export const mutationCreateOrganizationInputSchema =
-	organizationsTableInsertSchema
+	organizationsTableSelectSchema
 		.omit({
 			createdAt: true,
 			creatorId: true,
@@ -15,11 +15,11 @@ export const mutationCreateOrganizationInputSchema =
 			updaterId: true,
 		})
 		.extend({
-			isPrivate: organizationsTableInsertSchema.shape.isPrivate
-				.nullable()
+			isPrivate: organizationsTableSelectSchema.shape.isPrivate
+				.nullish()
 				.transform((arg) => (arg === null ? undefined : arg)),
-			isVisible: organizationsTableInsertSchema.shape.isVisible
-				.nullable()
+			isVisible: organizationsTableSelectSchema.shape.isVisible
+				.nullish()
 				.transform((arg) => (arg === null ? undefined : arg)),
 		});
 

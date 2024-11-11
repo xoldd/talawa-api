@@ -21,8 +21,7 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 				type: MutationUpdateOrganizationMembershipInput,
 			}),
 		},
-		description:
-			"Entrypoint mutation field to update an organization membership.",
+		description: "Mutation field to update an organization membership.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

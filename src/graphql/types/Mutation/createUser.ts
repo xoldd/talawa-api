@@ -22,7 +22,7 @@ builder.mutationField("createUser", (t) =>
 				type: MutationCreateUserInput,
 			}),
 		},
-		description: "Entrypoint mutation field to create a user record.",
+		description: "Mutation field to create a user.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -30,6 +30,25 @@ builder.mutationField("createUser", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			const {
+				data: parsedArgs,
+				error,
+				success,
+			} = mutationCreateUserArgumentsSchema.safeParse(args);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -57,25 +76,6 @@ builder.mutationField("createUser", (t) =>
 						code: "unauthorized_action",
 					},
 					message: "You are not authorized to perform this action.",
-				});
-			}
-
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = mutationCreateUserArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -111,7 +111,7 @@ builder.mutationField("createUser", (t) =>
 				})
 				.returning();
 
-			// Inserted user record not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
+			// Inserted user not being returned is a external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (createdUser === undefined) {
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",

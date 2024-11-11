@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
+import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
@@ -8,17 +8,25 @@ import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { UserRole } from "~/src/graphql/enums/UserRole";
 
-export const mutationCreateUserInputSchema = usersTableInsertSchema
+export const mutationCreateUserInputSchema = usersTableSelectSchema
 	.omit({
 		createdAt: true,
 		creatorId: true,
 		id: true,
+		isEmailAddressVerified: true,
 		passwordHash: true,
+		role: true,
 		updatedAt: true,
 		updaterId: true,
 	})
 	.extend({
+		isEmailAddressVerfied: usersTableSelectSchema.shape.isEmailAddressVerified
+			.nullish()
+			.transform((arg) => (arg === null ? undefined : arg)),
 		password: z.string().min(1).max(64),
+		role: usersTableSelectSchema.shape.role
+			.nullish()
+			.transform((arg) => (arg === null ? undefined : arg)),
 	});
 
 export const MutationCreateUserInput = builder
@@ -69,7 +77,6 @@ export const MutationCreateUserInput = builder
 			isEmailAddressVerified: t.boolean({
 				description:
 					"This boolean tells whether the user has verified their email address.",
-				required: true,
 			}),
 			maritalStatus: t.field({
 				description: "Marital status of the user.",
@@ -97,7 +104,6 @@ export const MutationCreateUserInput = builder
 			}),
 			role: t.field({
 				description: "Role assigned to the user in the application.",
-				required: true,
 				type: UserRole,
 			}),
 			state: t.string({

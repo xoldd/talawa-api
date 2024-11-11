@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
+import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
@@ -7,7 +7,7 @@ import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 
-export const mutationSignUpInputSchema = usersTableInsertSchema
+export const mutationSignUpInputSchema = usersTableSelectSchema
 	.omit({
 		createdAt: true,
 		creatorId: true,

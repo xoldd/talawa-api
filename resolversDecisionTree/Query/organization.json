@@ -1,0 +1,7 @@
+{
+	"if zod arguments parsing does not succeed": "throw invalid arguments error",
+	"if zod arguments parsing succeeds": {
+		"if organization does not exist": "throw not found error",
+		"if organization exists": "return the organization"
+	}
+}

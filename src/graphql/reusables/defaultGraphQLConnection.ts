@@ -3,11 +3,11 @@ import { z } from "zod";
 /**
  * Type of the object containing the parsed default arguments of a graphql connection.
  */
-export type ParsedDefaultGraphQLConnectionArguments = {
+export type ParsedDefaultGraphQLConnectionArguments<Cursor = string> = {
 	/**
 	 *
 	 */
-	cursor?: string | undefined;
+	cursor?: Cursor | undefined;
 	/**
 	 * The amount of graphql connection edges to return in a single graphql connection operation.
 	 */
@@ -173,7 +173,11 @@ export type DefaultGraphQLConnection<NodeType> = {
  * 	rawNodes: users,
  * });
  */
-export const transformToDefaultGraphQLConnection = <RawNode, Node = RawNode>({
+export const transformToDefaultGraphQLConnection = <
+	RawNode,
+	Node = RawNode,
+	Cursor = string,
+>({
 	createCursor,
 	createNode,
 	parsedArgs: { cursor, isInversed, limit },
@@ -181,7 +185,7 @@ export const transformToDefaultGraphQLConnection = <RawNode, Node = RawNode>({
 }: {
 	createCursor: (rawNode: RawNode) => string;
 	createNode: (rawNode: RawNode) => Node;
-	parsedArgs: ParsedDefaultGraphQLConnectionArguments;
+	parsedArgs: ParsedDefaultGraphQLConnectionArguments<Cursor>;
 	rawNodes: RawNode[];
 }): DefaultGraphQLConnection<Node> => {
 	const connection: DefaultGraphQLConnection<Node> = {

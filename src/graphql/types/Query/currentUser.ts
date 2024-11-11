@@ -4,20 +4,24 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 builder.queryField("currentUser", (t) =>
 	t.field({
-		description: "Entrypoint Query field to read data of a user.",
+		description: "Query field to read data of a user.",
 		resolve: async (_parent, _args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated organizations can perform this action.",
+				});
 			}
 
-			const currentClientUserId = ctx.currentClient.user.id;
-
+			const currentUserId = ctx.currentClient.user.id;
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) =>
-					operators.eq(fields.id, currentClientUserId),
+					operators.eq(fields.emailAddress, currentUserId),
 			});
 
-			// User's record not existing in the database means that the client is using an access token which hasn't expired yet.
+			// User's record not existing in the database means that the client is using an authentication token which hasn't expired yet.
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

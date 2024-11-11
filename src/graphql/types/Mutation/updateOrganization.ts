@@ -22,7 +22,7 @@ builder.mutationField("updateOrganization", (t) =>
 				type: MutationUpdateOrganizationInput,
 			}),
 		},
-		description: "Entrypoint mutation field to update a organization.",
+		description: "Mutation field to update a organization.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -30,6 +30,25 @@ builder.mutationField("updateOrganization", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			const {
+				success,
+				data: parsedArgs,
+				error,
+			} = mutationUpdateOrganizationArgumentsSchema.safeParse(args);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -60,51 +79,7 @@ builder.mutationField("updateOrganization", (t) =>
 				});
 			}
 
-			const {
-				success,
-				data: parsedArgs,
-				error,
-			} = mutationUpdateOrganizationArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-					message: "Invalid arguments provided.",
-				});
-			}
-
 			const { id, ...input } = parsedArgs.input;
-
-			const existingOrganization =
-				await ctx.drizzleClient.query.organizationsTable.findFirst({
-					with: {
-						organizationMembershipsWhereOrganization: {
-							where: (fields, operators) =>
-								operators.eq(fields.role, "administrator"),
-						},
-					},
-					where: (fields, operators) => operators.eq(fields.id, id),
-				});
-
-			if (existingOrganization === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
-					},
-					message: "No associated resources found for the provided arguments.",
-				});
-			}
 
 			const [updatedOrganization] = await ctx.drizzleClient
 				.update(organizationsTable)
@@ -119,9 +94,14 @@ builder.mutationField("updateOrganization", (t) =>
 			if (updatedOrganization === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unexpected",
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
 					},
-					message: "Something went wrong. Please try again later.",
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 

@@ -7,10 +7,31 @@ User.implement({
 			description: "User who first created this user.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
-					throw ctx.currentClient.error;
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+						message:
+							"Only authenticated organizations can perform this action.",
+					});
 				}
 
-				if (ctx.currentClient.user.role !== "administrator") {
+				const currentUserId = ctx.currentClient.user.id;
+				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.emailAddress, currentUserId),
+				});
+
+				if (currentUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action",
+						},
+						message: "Only unauthenticated users can perform this action.",
+					});
+				}
+
+				if (currentUser.role !== "administrator") {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
@@ -18,7 +39,6 @@ User.implement({
 						message: "You are not authorized to access this resource.",
 					});
 				}
-
 				return await ctx.drizzleClient.query.usersTable.findFirst({
 					where: (fields, operators) =>
 						operators.eq(fields.id, parent.creatorId),

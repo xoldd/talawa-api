@@ -13,7 +13,7 @@ const mutationDeleteOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationDeleteOrganizationMembershipInputSchema,
 });
 
-builder.mutationField("deleteOrganization", (t) =>
+builder.mutationField("deleteOrganizationMembership", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
@@ -22,8 +22,7 @@ builder.mutationField("deleteOrganization", (t) =>
 				type: MutationDeleteOrganizationMembershipInput,
 			}),
 		},
-		description:
-			"Entrypoint mutation field to delete an organization membership.",
+		description: "Mutation field to delete an organization membership.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

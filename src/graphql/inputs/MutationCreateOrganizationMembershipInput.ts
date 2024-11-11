@@ -1,10 +1,10 @@
 import type { z } from "zod";
-import { organizationMembershipsTableInsertSchema } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationMembershipsTableSelectSchema } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
 import { OrganizationMembershipRole } from "~/src/graphql/enums/OrganizationMembershipRole";
 
 export const mutationCreateOrganizationMembershipInputSchema =
-	organizationMembershipsTableInsertSchema
+	organizationMembershipsTableSelectSchema
 		.omit({
 			createdAt: true,
 			creatorId: true,
@@ -14,11 +14,11 @@ export const mutationCreateOrganizationMembershipInputSchema =
 			updaterId: true,
 		})
 		.extend({
-			isApproved: organizationMembershipsTableInsertSchema.shape.isApproved
-				.nullable()
+			isApproved: organizationMembershipsTableSelectSchema.shape.isApproved
+				.nullish()
 				.transform((arg) => (arg === null ? undefined : arg)),
-			role: organizationMembershipsTableInsertSchema.shape.role
-				.nullable()
+			role: organizationMembershipsTableSelectSchema.shape.role
+				.nullish()
 				.transform((arg) => (arg === null ? undefined : arg)),
 		});
 

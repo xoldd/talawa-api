@@ -1,0 +1,7 @@
+{
+	"if current user is not authenticated": "throw unauthenticated error",
+	"if current user is authenticated": {
+		"if current user does not exist": "throw unauthenticated error",
+		"if current user exists": "return the authentication token"
+	}
+}

@@ -23,7 +23,7 @@ builder.mutationField("updateUser", (t) =>
 				type: MutationUpdateUserInput,
 			}),
 		},
-		description: "Entrypoint mutation field to update a user record.",
+		description: "Mutation field to update a user record.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -31,6 +31,25 @@ builder.mutationField("updateUser", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			const {
+				success,
+				data: parsedArgs,
+				error,
+			} = mutationUpdateUserArgumentsSchema.safeParse(args);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -61,25 +80,6 @@ builder.mutationField("updateUser", (t) =>
 				});
 			}
 
-			const {
-				success,
-				data: parsedArgs,
-				error,
-			} = mutationUpdateUserArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-					message: "Invalid arguments provided.",
-				});
-			}
-
 			if (parsedArgs.input.id === currentUserId) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -99,25 +99,6 @@ builder.mutationField("updateUser", (t) =>
 
 			const { id, ...input } = parsedArgs.input;
 
-			const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) =>
-					operators.eq(fields.id, parsedArgs.input.id),
-			});
-
-			if (existingUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
-					},
-					message: "No associated resources found for the provided arguments.",
-				});
-			}
-
 			const [updatedUser] = await ctx.drizzleClient
 				.update(usersTable)
 				.set({
@@ -131,13 +112,18 @@ builder.mutationField("updateUser", (t) =>
 				.where(eq(usersTable.id, id))
 				.returning();
 
-			// Updated user's record not being returned means that either the record was deleted or its `id` column was changed before this delete operation by an external entity.
+			// Updated user not being returned means that either the user does not exist or it was deleted or its `id` column was changed by an external entity before this upate operation.
 			if (updatedUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unexpected",
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
 					},
-					message: "Something went wrong. Please try again later.",
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 

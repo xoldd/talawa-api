@@ -7,7 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -103,6 +103,10 @@ export const organizationMembershipsTableRelations = relations(
 			relationName: "organization_memberships.updater_id:users.id",
 		}),
 	}),
+);
+
+export const organizationMembershipsTableSelectSchema = createSelectSchema(
+	organizationMembershipsTable,
 );
 
 export const organizationMembershipsTableInsertSchema = createInsertSchema(

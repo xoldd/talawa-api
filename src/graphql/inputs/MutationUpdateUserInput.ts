@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
+import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
@@ -8,7 +8,7 @@ import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { UserRole } from "~/src/graphql/enums/UserRole";
 
-export const mutationUpdateUserInputSchema = usersTableInsertSchema
+export const mutationUpdateUserInputSchema = usersTableSelectSchema
 	.omit({
 		createdAt: true,
 		creatorId: true,
@@ -20,14 +20,14 @@ export const mutationUpdateUserInputSchema = usersTableInsertSchema
 		updaterId: true,
 	})
 	.extend({
-		emailAddress: usersTableInsertSchema.shape.emailAddress
+		emailAddress: usersTableSelectSchema.shape.emailAddress
 			.nullish()
 			.transform((arg) => (arg === null ? undefined : arg)),
-		id: usersTableInsertSchema.shape.id.unwrap(),
-		isEmailAddressVerified: usersTableInsertSchema.shape.isEmailAddressVerified
+		id: usersTableSelectSchema.shape.id,
+		isEmailAddressVerified: usersTableSelectSchema.shape.isEmailAddressVerified
 			.nullish()
 			.transform((arg) => (arg === null ? undefined : arg)),
-		name: usersTableInsertSchema.shape.name
+		name: usersTableSelectSchema.shape.name
 			.nullish()
 			.transform((arg) => (arg === null ? undefined : arg)),
 		password: z
@@ -36,7 +36,7 @@ export const mutationUpdateUserInputSchema = usersTableInsertSchema
 			.max(64)
 			.nullish()
 			.transform((arg) => (arg === null ? undefined : arg)),
-		role: usersTableInsertSchema.shape.role
+		role: usersTableSelectSchema.shape.role
 			.nullish()
 			.transform((arg) => (arg === null ? undefined : arg)),
 	})

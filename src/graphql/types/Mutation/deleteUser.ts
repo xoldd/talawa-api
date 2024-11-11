@@ -20,7 +20,7 @@ builder.mutationField("deleteUser", (t) =>
 				type: MutationDeleteUserInput,
 			}),
 		},
-		description: "Entrypoint mutation field to delete a user record.",
+		description: "Mutation field to delete a user.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -28,6 +28,25 @@ builder.mutationField("deleteUser", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			const {
+				data: parsedArgs,
+				error,
+				success,
+			} = mutationDeleteUserArgumentsSchema.safeParse(args);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -58,25 +77,6 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = mutationDeleteUserArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-					message: "Invalid arguments provided.",
-				});
-			}
-
 			if (parsedArgs.input.id === ctx.currentClient.user.id) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -85,7 +85,7 @@ builder.mutationField("deleteUser", (t) =>
 							{
 								argumentPath: ["input", "id"],
 								message:
-									"You cannot delete the user record associated to you with this action.",
+									"You cannot delete the user associated to you with this action.",
 							},
 						],
 					},
@@ -118,7 +118,7 @@ builder.mutationField("deleteUser", (t) =>
 				.where(eq(usersTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Deleted user's record not being returned means that either the record was deleted or its `id` column was changed by an external entity before this delete operation.
+			// Deleted user not being returned means that either it was deleted or its `id` column was changed by an external entity before this delete operation.
 			if (deletedUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

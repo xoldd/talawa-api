@@ -1,9 +1,9 @@
 import type { z } from "zod";
-import { organizationMembershipsTableInsertSchema } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationMembershipsTableSelectSchema } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationDeleteOrganizationMembershipInputSchema =
-	organizationMembershipsTableInsertSchema.pick({
+	organizationMembershipsTableSelectSchema.pick({
 		memberId: true,
 		organizationId: true,
 	});

@@ -1,0 +1,13 @@
+{
+	"if current user is not authenticated": "throw unauthenticated error",
+	"if current user is authenticated": {
+		"if zod arguments parsing does not succeed": "throw invalid arguments error",
+		"if zod arguments parsing succeeds": {
+			"if current user does not exist": "throw unauthenticated error",
+			"if current user exists": {
+				"if current user is not an administrator user": "throw unauthorized error",
+				"if current user is an administrator user": "create the organization and return it"
+			}
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"if zod arguments parsing does not succeed": "throw invalid arguments error",
+	"if zod arguments parsing succeeds": {
+		"if graphql connection cursor is not provided by the client": "return the graphql connection",
+		"if graphql connection cursor is provided by the client": {
+			"if it is invalid": "throw not found error",
+			"if it is valid": "return the graphql connection"
+		}
+	}
+}

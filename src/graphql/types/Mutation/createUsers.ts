@@ -2,7 +2,7 @@ import { hash } from "@node-rs/argon2";
 import { z } from "zod";
 import {
 	usersTable,
-	type usersTableInsertSchema,
+	type usersTableSelectSchema,
 } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -30,7 +30,7 @@ builder.mutationField("createUsers", (t) =>
 				}),
 			}),
 		},
-		description: "Entrypoint mutation field to create user records.",
+		description: "Mutation field to create users.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -92,7 +92,7 @@ builder.mutationField("createUsers", (t) =>
 			);
 
 			/**
-			 * Array of existing user records with `emailAddress` field that is equal to the corresponding `emailAddress` field in the inputs in the `parsedArgs.input` array.
+			 * Array of existing users with `emailAddress` field that is equal to the corresponding `emailAddress` field in the inputs in the `parsedArgs.input` array.
 			 */
 			const existingUsersWithEmailAddresses = (
 				await ctx.drizzleClient.query.usersTable.findMany({
@@ -103,7 +103,7 @@ builder.mutationField("createUsers", (t) =>
 						operators.inArray(fields.emailAddress, emailAddresses),
 				})
 			).sort(
-				// Sort the user records in the order of corresponding inputs provided by the client.
+				// Sort the users in the order of corresponding inputs provided by the client.
 				(user0, user1) =>
 					emailAddresses.indexOf(user0.emailAddress) -
 					emailAddresses.indexOf(user1.emailAddress),
@@ -141,9 +141,9 @@ builder.mutationField("createUsers", (t) =>
 				parsedArgs.input.map<
 					Promise<
 						Omit<z.infer<typeof mutationCreateUserInputSchema>, "password"> & {
-							creatorId: z.infer<typeof usersTableInsertSchema.shape.creatorId>;
+							creatorId: z.infer<typeof usersTableSelectSchema.shape.creatorId>;
 							passwordHash: z.infer<
-								typeof usersTableInsertSchema.shape.passwordHash
+								typeof usersTableSelectSchema.shape.passwordHash
 							>;
 						}
 					>

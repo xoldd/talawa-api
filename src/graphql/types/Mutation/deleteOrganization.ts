@@ -22,7 +22,7 @@ builder.mutationField("deleteOrganization", (t) =>
 				type: MutationDeleteOrganizationInput,
 			}),
 		},
-		description: "Entrypoint mutation field to delete an organization.",
+		description: "Mutation field to delete an organization.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -30,6 +30,25 @@ builder.mutationField("deleteOrganization", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			const {
+				data: parsedArgs,
+				error,
+				success,
+			} = mutationDeleteOrganizationArgumentsSchema.safeParse(args);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -60,25 +79,6 @@ builder.mutationField("deleteOrganization", (t) =>
 				});
 			}
 
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = mutationDeleteOrganizationArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-					message: "Invalid arguments provided.",
-				});
-			}
-
 			const existingOrganization =
 				await ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {},
@@ -105,7 +105,7 @@ builder.mutationField("deleteOrganization", (t) =>
 				.where(eq(organizationsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Deleted organization's record not being returned means that either the record was deleted or its `id` column was changed by an external entity before this delete operation.
+			// Deleted organization not being returned means that either it was deleted or its `id` column was changed by an external entity before this delete operation.
 			if (deletedOrganization === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

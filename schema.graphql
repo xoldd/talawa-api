@@ -369,38 +369,38 @@ A field whose value is a valid decimal degrees longitude number (53.471): https:
 scalar Longitude
 
 type Mutation {
-  """Entrypoint mutation field to create a single user record."""
+  """Mutation field to create a single user record."""
   createUser(input: MutationCreateUserInput!): User
 
-  """Entrypoint mutation field to create user records."""
+  """Mutation field to create user records."""
   createUsers(input: [MutationCreateUserInput!]!): [User!]
 
   """
-  Entrypoint mutation field to delete the user record associated to the client performing the action.
+  Mutation field to delete the user record associated to the client performing the action.
   """
   deleteCurrentUser: User
 
-  """Entrypoint mutation field to delete a single user record."""
+  """Mutation field to delete a single user record."""
   deleteUser(input: MutationDeleteUserInput!): User
 
-  """Entrypoint mutation field to delete user records."""
+  """Mutation field to delete user records."""
   deleteUsers(input: [MutationDeleteUserInput!]!): [User!]
 
-  """Entrypoint mutation field for a client to sign up to talawa."""
+  """Mutation field for a client to sign up to talawa."""
   signUp(
     """Input required for signing up to talawa application."""
     input: MutationSignUpInput!
   ): AuthenticationPayload
 
   """
-  Entrypoint mutation field to update the user record associated to the client performing the action.
+  Mutation field to update the user record associated to the client performing the action.
   """
   updateCurrentUser(input: MutationUpdateCurrentUserInput!): User
 
-  """Entrypoint mutation field to update a single user record."""
+  """Mutation field to update a single user record."""
   updateUser(input: MutationUpdateUserInput!): User
 
-  """Entrypoint Mutation field to update users."""
+  """Mutation field to update users."""
   updateUsers(input: [MutationUpdateUserInput!]!): [User!]
 }
 
@@ -730,21 +730,21 @@ enum PostVoteType {
 }
 
 type Query {
-  """Entrypoint Query field to read data of a user."""
+  """Query field to read data of a user."""
   currentUser: User
 
   """
-  Entrypoint Query field to renew the authentication token of an authenticated client for signing in to the talawa application.
+  Query field to renew the authentication token of an authenticated client for signing in to the talawa application.
   """
   renewAuthenticationToken: String
 
-  """Entrypoint query field for a client to sign in to talawa."""
+  """Query field for a client to sign in to talawa."""
   signIn(input: QuerySignInInput!): AuthenticationPayload
 
   """Query entrypoint field to read a user record."""
   user(id: ID!): User
 
-  """Entrypoint Query field to read data of users."""
+  """Query field to read data of users."""
   users(after: String, before: String, first: Int, last: Int): QueryUsersConnection
 }
 

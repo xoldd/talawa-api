@@ -42,10 +42,15 @@ builder.mutationField("deleteUsers", (t) =>
 				}),
 			}),
 		},
-		description: "Entrypoint mutation field to delete user records.",
+		description: "Mutation field to delete users.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
 			}
 
 			if (ctx.currentClient.user.role !== "administrator") {
@@ -97,7 +102,7 @@ builder.mutationField("deleteUsers", (t) =>
 									"id",
 								],
 								message:
-									"You cannot delete the user record associated to you with this action.",
+									"You cannot delete the user associated to you with this action.",
 							},
 						],
 					},
@@ -111,7 +116,7 @@ builder.mutationField("deleteUsers", (t) =>
 					where: (fields, operators) => operators.inArray(fields.id, ids),
 				})
 			).sort(
-				// Sort the user records in the order of corresponding inputs provided by the client.
+				// Sort the users in the order of corresponding inputs provided by the client.
 				(user0, user1) => ids.indexOf(user0.id) - ids.indexOf(user1.id),
 			);
 
@@ -143,11 +148,11 @@ builder.mutationField("deleteUsers", (t) =>
 						.where(inArray(usersTable.id, ids))
 						.returning()
 				).sort(
-					// Sort the user records in the order of corresponding inputs provided by the client.
+					// Sort the users in the order of corresponding inputs provided by the client.
 					(user0, user1) => ids.indexOf(user0.id) - ids.indexOf(user1.id),
 				);
 
-				// If the number of deleted user records is not equal to the number of records that were meant to be deleted, it means that some of those records were either deleted or their `id` column was changed by external entities before this delete operation. To keep the delete operation consistent with the input we throw the error to rollback the postgres transaction.
+				// If the number of deleted users is not equal to the number of users that were meant to be deleted, it means that some of those users were either deleted or their `id` column was changed by external entities before this delete operation. To keep the delete operation consistent with the input we throw the error to rollback the postgres transaction.
 				if (deletedUsers.length !== ids.length) {
 					throw new TalawaGraphQLError({
 						extensions: {

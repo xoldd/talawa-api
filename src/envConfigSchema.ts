@@ -122,10 +122,6 @@ export const envConfigSchema = Type.Composite([
 	minioClientEnvConfigSchema,
 	redisClientEnvConfigSchema,
 	Type.Object({
-		// /**
-		//  * Used for signing access tokens used for authentication flows.
-		//  */
-		// ACCESS_TOKEN_SECRET: Type.String(),
 		/**
 		 * Used for providing the host of the domain on which talawa api will run.
 		 */

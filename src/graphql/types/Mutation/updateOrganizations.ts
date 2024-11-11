@@ -44,7 +44,7 @@ builder.mutationField("updateOrganizations", (t) =>
 				}),
 			}),
 		},
-		description: "Entrypoint Mutation field to update organizations.",
+		description: "Mutation field to update organizations.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw ctx.currentClient.error;
