@@ -1,0 +1,22 @@
+{
+	"if current user is not authenticated": "throw forbidden error",
+	"if current user is authenticated": {
+		"if zod arguments parsing does not succeed": "throw invalid arguments error",
+		"if zod arguments parsing succeeds": {
+			"if current user does not exist": "throw unauthenticated error",
+			"if current user exists": {
+				"if current user is a base user": {
+					"if current user is not an organization member": "throw unauthorized error",
+					"if current user is an organization member": {
+						"if the graphql connection cursor is provided and it doesn't correspond to a valid organization member": "throw not found error",
+						"if the graphql connection cursor is provided and it corresponds to a valid organization member": "return the graphql connection for the parent organization's members"
+					}
+				},
+				"if current user is an administrator user": {
+					"if the graphql connection cursor is provided and it doesn't correspond to a valid organization member": "throw not found error",
+					"if the graphql connection cursor is provided and it corresponds to a valid organization member": "return the graphql connection for the parent organization's members"
+				}
+			}
+		}
+	}
+}

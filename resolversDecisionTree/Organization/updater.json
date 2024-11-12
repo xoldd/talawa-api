@@ -1,0 +1,19 @@
+{
+	"if current user is not authenticated": "throw unauthenticated error",
+	"if current user is authenticated": {
+		"if current user does not exist": "throw unauthenticated error",
+		"if current user exists": {
+			"if current user is a base user": "throw unauthorized error",
+			"if current user is an administrator user": {
+				"if updater user id is not not null": {
+					"if current user id is not equal to the updater user id": {
+						"if updater user does not exist": "return unexpected error",
+						"if updater user exists": "return the updater user"
+					},
+					"if current user id is equal to the updater user idr": "return current user as the updater user"
+				},
+				"if updater user id is null": "return null"
+			}
+		}
+	}
+}

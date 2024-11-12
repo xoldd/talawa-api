@@ -1,3 +1,4 @@
+import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -11,8 +12,7 @@ Organization.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message:
-							"Only authenticated organizations can perform this action.",
+						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -40,12 +40,31 @@ Organization.implement({
 					});
 				}
 
-				return await ctx.drizzleClient.query.organizationsTable.findFirst({
+				if (parent.creatorId === currentUserId) {
+					return currentUser;
+				}
+
+				const creatorUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					where: (fields, operators) =>
 						operators.eq(fields.id, parent.creatorId),
 				});
+
+				// Creator user id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				if (creatorUser === undefined) {
+					ctx.log.error(
+						"Postgres select operation returned an empty array for a user's creator user id that isn't null.",
+					);
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again later.",
+					});
+				}
+
+				return creatorUser;
 			},
-			type: Organization,
+			type: User,
 		}),
 	}),
 });

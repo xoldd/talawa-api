@@ -1,0 +1,16 @@
+{
+	"if current user is not authenticated": "throw unauthenticated error",
+	"if current user is authenticated": {
+		"if current user does not exist": "throw unauthenticated error",
+		"if current user exists": {
+			"if current user is a base user": {
+				"if current user id is not equal to the parent user id": "return unauthorized error",
+				"if current user id is equal to the parent user id": "return the organizations the current user is a member of"
+			},
+			"if current user is an administrator user": {
+				"if current user id is not equal to the parent user id": "return the organizations the parent user is a member of",
+				"if current user id is equal to the parent user id": "return the organizations the current user is a member of"
+			}
+		}
+	}
+}

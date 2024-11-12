@@ -1,3 +1,4 @@
+import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
@@ -44,12 +45,31 @@ Organization.implement({
 					return null;
 				}
 
+				if (parent.updaterId === currentUserId) {
+					return currentUser;
+				}
+
 				const updaterId = parent.updaterId;
-				return await ctx.drizzleClient.query.organizationsTable.findFirst({
+				const updaterUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					where: (fields, operators) => operators.eq(fields.id, updaterId),
 				});
+
+				// Updater user id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				if (updaterUser === undefined) {
+					ctx.log.error(
+						"Postgres select operation returned an empty array for a user's updater user id that isn't null.",
+					);
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again later.",
+					});
+				}
+
+				return updaterUser;
 			},
-			type: Organization,
+			type: User,
 		}),
 	}),
 });

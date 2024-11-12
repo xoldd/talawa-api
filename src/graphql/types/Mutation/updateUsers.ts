@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import {
 	usersTable,
-	type usersTableInsertSchema,
+	type usersTableSelectSchema,
 } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -67,15 +67,11 @@ builder.mutationField("updateUsers", (t) =>
 		description: "Mutation field to update users.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
-				throw ctx.currentClient.error;
-			}
-
-			if (ctx.currentClient.user.role !== "administrator") {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "unauthorized_action",
+						code: "unauthenticated",
 					},
-					message: "You are not authorized to perform this action.",
+					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -98,6 +94,33 @@ builder.mutationField("updateUsers", (t) =>
 				});
 			}
 
+			const currentUserId = ctx.currentClient.user.id;
+
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			if (currentUser.role !== "administrator") {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action",
+					},
+					message: "You are not authorized to perform this action.",
+				});
+			}
+
 			let inputIndexWithCurrentClientUserId: number | undefined = undefined;
 			const emailAddresses: NonNullable<
 				(typeof parsedArgs)["input"][number]["emailAddress"]
@@ -107,7 +130,7 @@ builder.mutationField("updateUsers", (t) =>
 			const inputPromises: Promise<
 				Omit<(typeof parsedArgs)["input"][number], "password"> & {
 					passwordHash?:
-						| z.infer<typeof usersTableInsertSchema.shape.passwordHash>
+						| z.infer<typeof usersTableSelectSchema.shape.passwordHash>
 						| undefined;
 				}
 			>[] = [];

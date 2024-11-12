@@ -47,18 +47,22 @@ export const defaultGraphQLConnectionArgumentsSchema = z.object({
 		.transform((arg) => (arg === null ? undefined : arg)),
 });
 
-export const transformDefaultGraphQLConnectionArguments = (
-	arg: z.infer<typeof defaultGraphQLConnectionArgumentsSchema>,
+export const transformDefaultGraphQLConnectionArguments = <
+	Arg extends z.infer<typeof defaultGraphQLConnectionArgumentsSchema>,
+>(
+	arg: Arg,
 	ctx: z.RefinementCtx,
-): ParsedDefaultGraphQLConnectionArguments => {
+) => {
 	const transformedArg: ParsedDefaultGraphQLConnectionArguments = {
 		cursor: undefined,
 		isInversed: false,
 		limit: 0,
 	};
 
-	if (arg.first !== undefined) {
-		if (arg.last !== undefined) {
+	const { after, before, first, last, ...customArg } = arg;
+
+	if (first !== undefined) {
+		if (last !== undefined) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Argument last cannot be provided with argument first",
@@ -66,7 +70,7 @@ export const transformDefaultGraphQLConnectionArguments = (
 			});
 		}
 
-		if (arg.before !== undefined) {
+		if (before !== undefined) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Argument before cannot be provided with argument first",
@@ -76,13 +80,13 @@ export const transformDefaultGraphQLConnectionArguments = (
 
 		transformedArg.isInversed = false;
 		// The limit is increased by 1 to check for the existence of next connection edge by fetching one additional raw node in the connection resolver and providing this information in the field `hasNextPage` of the connection object's `pageInfo` field.
-		transformedArg.limit = arg.first + 1;
+		transformedArg.limit = first + 1;
 
-		if (arg.after !== undefined) {
-			transformedArg.cursor = arg.after;
+		if (after !== undefined) {
+			transformedArg.cursor = after;
 		}
-	} else if (arg.last !== undefined) {
-		if (arg.after !== undefined) {
+	} else if (last !== undefined) {
+		if (after !== undefined) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Argument after cannot be provided with argument last",
@@ -92,10 +96,10 @@ export const transformDefaultGraphQLConnectionArguments = (
 
 		transformedArg.isInversed = true;
 		// The limit is increased by 1 to check for the existence of previous connection edge by fetching one additional raw node in the connection resolver and providing this information in the field `hasPreviousPage` of the connection object's `pageInfo` field.
-		transformedArg.limit = arg.last + 1;
+		transformedArg.limit = last + 1;
 
-		if (arg.before !== undefined) {
-			transformedArg.cursor = arg.before;
+		if (before !== undefined) {
+			transformedArg.cursor = before;
 		}
 	} else {
 		ctx.addIssue({
@@ -110,7 +114,10 @@ export const transformDefaultGraphQLConnectionArguments = (
 		});
 	}
 
-	return transformedArg;
+	return {
+		...transformedArg,
+		...customArg,
+	};
 };
 
 /**

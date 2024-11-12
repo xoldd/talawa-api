@@ -9,7 +9,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { createSelectSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
@@ -446,18 +446,6 @@ export const usersTableRelations = relations(usersTable, ({ many }) => ({
 }));
 
 export const usersTableSelectSchema = createSelectSchema(usersTable, {
-	address: (schema) => schema.address.min(1).max(1024),
-	avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
-	city: (schema) => schema.city.min(1).max(64),
-	creatorId: (schema) => schema.creatorId.uuid(),
-	description: (schema) => schema.description.min(1).max(2048),
-	name: (schema) => schema.name.min(1).max(256),
-	postalCode: (schema) => schema.postalCode.min(1).max(32),
-	state: (schema) => schema.state.min(1).max(64),
-	updaterId: (schema) => schema.updaterId.uuid(),
-});
-
-export const usersTableInsertSchema = createInsertSchema(usersTable, {
 	address: (schema) => schema.address.min(1).max(1024),
 	avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
 	city: (schema) => schema.city.min(1).max(64),

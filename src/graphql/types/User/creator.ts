@@ -11,8 +11,7 @@ User.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message:
-							"Only authenticated organizations can perform this action.",
+						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -25,24 +24,47 @@ User.implement({
 				if (currentUser === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "forbidden_action",
+							code: "unauthenticated",
 						},
-						message: "Only unauthenticated users can perform this action.",
+						message: "Only authenticated users can perform this action.",
 					});
 				}
 
-				if (currentUser.role !== "administrator") {
+				if (
+					currentUser.role !== "administrator" &&
+					currentUserId !== parent.id
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to access this resource.",
+						message: "You are not authorized to perform this action.",
 					});
 				}
-				return await ctx.drizzleClient.query.usersTable.findFirst({
+
+				if (parent.creatorId === currentUserId) {
+					return currentUser;
+				}
+
+				const creatorUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					where: (fields, operators) =>
 						operators.eq(fields.id, parent.creatorId),
 				});
+
+				// Creator user id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				if (creatorUser === undefined) {
+					ctx.log.error(
+						"Postgres select operation returned an empty array for a user's creator user id that isn't null.",
+					);
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again later.",
+					});
+				}
+
+				return creatorUser;
 			},
 			type: User,
 		}),

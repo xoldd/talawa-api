@@ -10,15 +10,11 @@ export const mutationCreateOrganizationInputSchema =
 			creatorId: true,
 			id: true,
 			isPrivate: true,
-			isVisible: true,
 			updatedAt: true,
 			updaterId: true,
 		})
 		.extend({
 			isPrivate: organizationsTableSelectSchema.shape.isPrivate
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
-			isVisible: organizationsTableSelectSchema.shape.isVisible
 				.nullish()
 				.transform((arg) => (arg === null ? undefined : arg)),
 		});
@@ -50,10 +46,6 @@ export const MutationCreateOrganizationInput = builder
 			isPrivate: t.boolean({
 				description:
 					"Boolean to tell whether the organization requires manual verification for membership.",
-			}),
-			isVisible: t.boolean({
-				description:
-					"Boolean to tell whether the organization is visible in public search.",
 			}),
 			name: t.string({
 				description: "Name of the organization.",

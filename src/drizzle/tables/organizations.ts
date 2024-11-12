@@ -7,7 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { createSelectSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { actionCategoriesTable } from "./actionCategories";
@@ -69,10 +69,6 @@ export const organizationsTable = pgTable(
 		 * Boolean field to tell whether the organization requires manual verification for membership.
 		 */
 		isPrivate: boolean("is_private").notNull().default(false),
-		/**
-		 * Boolean field to tell whether the organization is visible in public search.
-		 */
-		isVisible: boolean("is_visible").notNull().default(true),
 		/**
 		 * Name of the organization.
 		 */
@@ -166,21 +162,6 @@ export const organizationsTableRelations = relations(
 );
 
 export const organizationsTableSelectSchema = createSelectSchema(
-	organizationsTable,
-	{
-		address: (schema) => schema.address.min(1).max(1024),
-		avatarURI: (schema) => schema.avatarURI.min(1).max(2048),
-		city: (schema) => schema.city.min(1).max(64),
-		creatorId: (schema) => schema.creatorId.uuid(),
-		description: (schema) => schema.description.min(1).max(2048),
-		name: (schema) => schema.name.min(1).max(256),
-		postalCode: (schema) => schema.postalCode.min(1).max(32),
-		state: (schema) => schema.state.min(1).max(64),
-		updaterId: (schema) => schema.updaterId.uuid(),
-	},
-);
-
-export const organizationsTableInsertSchema = createInsertSchema(
 	organizationsTable,
 	{
 		address: (schema) => schema.address.min(1).max(1024),

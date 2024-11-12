@@ -1,7 +1,7 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { organizationMembershipsTable } from "~/src/drizzle/schema";
-import { organizationMembershipsTableInsertSchema } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationMembershipsTableSelectSchema } from "~/src/drizzle/tables/organizationMemberships";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
@@ -39,7 +39,7 @@ const organizationMembersArgumentsSchema =
 			};
 		});
 
-const cursorSchema = organizationMembershipsTableInsertSchema
+const cursorSchema = organizationMembershipsTableSelectSchema
 	.pick({
 		memberId: true,
 	})
@@ -58,6 +58,15 @@ Organization.implement({
 				description:
 					"Organization field to read the members of the organization by traversing across a graphql connection.",
 				resolve: async (parent, args, ctx) => {
+					if (!ctx.currentClient.isAuthenticated) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "forbidden_action",
+							},
+							message: "Only unauthenticated users can perform this action.",
+						});
+					}
+
 					const {
 						data: parsedArgs,
 						error,
@@ -75,6 +84,50 @@ Organization.implement({
 							},
 							message: "Invalid arguments provided.",
 						});
+					}
+
+					const currentUserId = ctx.currentClient.user.id;
+					const currentUser =
+						await ctx.drizzleClient.query.usersTable.findFirst({
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+							with: {
+								organizationMembershipsWhereMember: {
+									columns: {},
+									where: (fields, operators) =>
+										operators.and(
+											operators.eq(fields.organizationId, parent.id),
+											operators.eq(fields.isApproved, true),
+										),
+								},
+							},
+						});
+
+					// User's record not existing in the database means that the client is using an authentication token which hasn't expired yet.
+					if (currentUser === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+							message: "Only authenticated users can perform this action.",
+						});
+					}
+
+					if (currentUser.role !== "administrator") {
+						const currentUserOrganizationMembership =
+							currentUser.organizationMembershipsWhereMember[0];
+
+						if (currentUserOrganizationMembership === undefined) {
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unauthorized_action",
+								},
+								message: "You are not authorized to perform this action.",
+							});
+						}
 					}
 
 					const { cursor, isInversed, limit } = parsedArgs;
@@ -185,23 +238,6 @@ Organization.implement({
 								where,
 							},
 						);
-
-					console.log(
-						ctx.drizzleClient.query.organizationMembershipsTable
-							.findMany({
-								columns: {
-									createdAt: true,
-									memberId: true,
-								},
-								limit,
-								orderBy,
-								with: {
-									member: true,
-								},
-								where,
-							})
-							.toSQL(),
-					);
 
 					if (cursor !== undefined && organizationMemberships.length === 0) {
 						throw new TalawaGraphQLError({

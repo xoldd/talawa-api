@@ -33,10 +33,6 @@ Organization.implement({
 			description:
 				"Boolean to tell whether the organization requires manual verification for membership.",
 		}),
-		isVisible: t.exposeBoolean("isVisible", {
-			description:
-				"Boolean to tell whether the organization is visible in public search.",
-		}),
 		name: t.exposeString("name", {
 			description: "Name of the organization.",
 		}),
