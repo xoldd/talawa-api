@@ -1,11 +1,10 @@
+import type {
+	DefaultGraphQLArgumentError,
+	DefaultGraphQLConnectionArguments,
+	GraphQLConnectionTraversalDirection,
+} from "~/src/utilities/graphQLConnection/index";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
-import {
-	type DefaultGraphQLArgumentError,
-	type DefaultGraphQLConnectionArguments,
-	type GraphQLConnectionTraversalDirection,
-	isNotNullish,
-} from "./index";
-
 /**
  *This is typescript type of the single object callback function `parseCursor` takes in as
  * an argument.

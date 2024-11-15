@@ -9,33 +9,22 @@ import {
 	mutationSignUpInputSchema,
 } from "~/src/graphql/inputs/MutationSignUpInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationSignUpArgumentsSchema = z.object({
-	input: mutationSignUpInputSchema.transform((arg, ctx) => {
-		const { confirmedPassword, ...transformedArg } = arg;
-		if (confirmedPassword !== arg.password) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["confirmedPassword"],
-				message: "Does not match the password.",
-			});
-		}
-
-		return transformedArg;
-	}),
+	input: mutationSignUpInputSchema,
 });
 
 builder.mutationField("signUp", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required for signing up to talawa application.",
+				description: "Input required to sign up to talawa.",
 				required: true,
 				type: MutationSignUpInput,
 			}),
 		},
-		description: "Mutation field for a client to sign up to talawa.",
+		description: "Mutation field to sign up to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -94,7 +83,9 @@ builder.mutationField("signUp", (t) =>
 					...parsedArgs.input,
 					creatorId: userId,
 					id: userId,
+					isEmailAddressVerified: false,
 					passwordHash: await hash(parsedArgs.input.password),
+					role: "regular",
 				})
 				.returning();
 

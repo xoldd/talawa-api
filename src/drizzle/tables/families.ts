@@ -27,12 +27,6 @@ export const familiesTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		id: uuid("id").primaryKey().$default(uuidv7),
 
 		name: text("name", {}).notNull(),
@@ -45,7 +39,7 @@ export const familiesTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},

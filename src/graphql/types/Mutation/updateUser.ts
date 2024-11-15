@@ -1,14 +1,14 @@
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { usersTable } from "~/src/drizzle/schema";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateUserInput,
 	mutationUpdateUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateUserArgumentsSchema = z.object({
 	input: mutationUpdateUserInputSchema,
@@ -18,12 +18,12 @@ builder.mutationField("updateUser", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input required to update a user.",
 				required: true,
 				type: MutationUpdateUserInput,
 			}),
 		},
-		description: "Mutation field to update a user record.",
+		description: "Mutation field to update a user.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -112,7 +112,7 @@ builder.mutationField("updateUser", (t) =>
 				.where(eq(usersTable.id, id))
 				.returning();
 
-			// Updated user not being returned means that either the user does not exist or it was deleted or its `id` column was changed by an external entity before this upate operation.
+			// Updated user not being returned means that either the user does not exist or it was already deleted or its `id` column was changed by external entities before this upate operation.
 			if (updatedUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

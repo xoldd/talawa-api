@@ -8,9 +8,9 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import {
-	type ArgumentsAssociatedResourcesNotFound,
+	type ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLError,
-} from "~/src/utilities/TalawaGraphQLError";
+} from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateOrganizationsArgumentsSchema = z
 	.object({
@@ -94,21 +94,20 @@ builder.mutationField("updateOrganizations", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: ids.reduce<ArgumentsAssociatedResourcesNotFound["issues"]>(
-							(accumulator, id, index) => {
-								if (
-									existingOrganizationsWithIds.some(
-										(organization) => organization.id !== id,
-									)
-								) {
-									accumulator.push({
-										argumentPath: ["input", index, "id"],
-									});
-								}
-								return accumulator;
-							},
-							[],
-						),
+						issues: ids.reduce<
+							ArgumentsAssociatedResourcesNotFoundExtensions["issues"]
+						>((accumulator, id, index) => {
+							if (
+								existingOrganizationsWithIds.some(
+									(organization) => organization.id !== id,
+								)
+							) {
+								accumulator.push({
+									argumentPath: ["input", index, "id"],
+								});
+							}
+							return accumulator;
+						}, []),
 					},
 					message: "No associated resources found for the provided arguments.",
 				});
@@ -131,7 +130,7 @@ builder.mutationField("updateOrganizations", (t) =>
 									.where(eq(organizationsTable.id, id))
 									.returning();
 
-								// If the updated organization record is not returned, it means that either it was deleted or itrs `id` column was changed by an external entity before this update operation. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
+								// If the updated organization record is not returned, it means that either it was already deleted or itrs `id` column was changed by external entities before this update operation. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
 								if (updatedOrganization === undefined) {
 									throw new TalawaGraphQLError({
 										extensions: {

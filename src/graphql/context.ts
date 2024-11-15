@@ -19,28 +19,24 @@ export type ExplicitAuthenticationTokenPayload = {
 	user: Pick<typeof usersTable.$inferSelect, "id">;
 };
 
-type UnauthenticatedCurrentClient = {
-	/**
-	 * Type union discriminator field when the current client is unauthenticated.
-	 */
-	isAuthenticated: false;
-} & {
-	[K in keyof ExplicitAuthenticationTokenPayload]?: never;
-};
-
-type AuthenticatedCurrentClient = {
-	/**
-	 * Type union discriminator field when the current client is authenticated.
-	 */
-	isAuthenticated: true;
-} & ExplicitAuthenticationTokenPayload;
-
 /**
  * Type of the client-specific context for a grahphql operation client.
  */
 export type CurrentClient =
-	| UnauthenticatedCurrentClient
-	| AuthenticatedCurrentClient;
+	| ({
+			/**
+			 * Type union discriminator field when the current client is unauthenticated.
+			 */
+			isAuthenticated: false;
+	  } & {
+			[K in keyof ExplicitAuthenticationTokenPayload]?: never;
+	  })
+	| ({
+			/**
+			 * Type union discriminator field when the current client is authenticated.
+			 */
+			isAuthenticated: true;
+	  } & ExplicitAuthenticationTokenPayload);
 
 /**
  * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.

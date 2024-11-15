@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
+import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
@@ -7,7 +7,7 @@ import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 
-export const mutationSignUpInputSchema = usersTableSelectSchema
+export const mutationSignUpInputSchema = usersTableInsertSchema
 	.omit({
 		createdAt: true,
 		creatorId: true,
@@ -21,6 +21,22 @@ export const mutationSignUpInputSchema = usersTableSelectSchema
 	.extend({
 		confirmedPassword: z.string().min(1).max(64),
 		password: z.string().min(1).max(64),
+	})
+	.transform(({ confirmedPassword, ...transformedArg }, ctx) => {
+		if (confirmedPassword !== transformedArg.password) {
+			ctx.addIssue({
+				code: "custom",
+				path: ["confirmedPassword"],
+				message: "Does not match the password.",
+			});
+			ctx.addIssue({
+				code: "custom",
+				path: ["password"],
+				message: "Does not match the confirmed password.",
+			});
+		}
+
+		return transformedArg;
 	});
 
 export const MutationSignUpInput = builder

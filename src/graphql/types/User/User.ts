@@ -31,6 +31,10 @@ User.implement({
 			description: "Country code of the country the user is a citizen of.",
 			type: Iso3166Alpha2CountryCode,
 		}),
+		createdAt: t.expose("createdAt", {
+			description: "Date time at the time the user was created.",
+			type: "DateTime",
+		}),
 		description: t.exposeString("description", {
 			description: "Custom information about the user.",
 		}),
@@ -53,10 +57,11 @@ User.implement({
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the user.",
+			nullable: false,
 		}),
 		isEmailAddressVerified: t.exposeBoolean("isEmailAddressVerified", {
 			description:
-				"This boolean tells whether the user has verified their email address.",
+				"Boolean to tell whether the user has verified their email address.",
 		}),
 		maritalStatus: t.expose("maritalStatus", {
 			description: "Marital status of the user.",
@@ -83,6 +88,10 @@ User.implement({
 		}),
 		state: t.exposeString("state", {
 			description: "Name of the state the user resides in.",
+		}),
+		updatedAt: t.expose("updatedAt", {
+			description: "Date time at the time the user was last updated.",
+			type: "DateTime",
 		}),
 		workPhoneNumber: t.expose("workPhoneNumber", {
 			description:

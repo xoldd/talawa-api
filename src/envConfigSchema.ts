@@ -123,34 +123,40 @@ export const envConfigSchema = Type.Composite([
 	redisClientEnvConfigSchema,
 	Type.Object({
 		/**
+		 * Email address of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+		 */
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: Type.String({
+			format: "email",
+		}),
+		/**
+		 * Password of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+		 */
+		API_ADMINISTRATOR_USER_PASSWORD: Type.String({
+			minLength: 1,
+		}),
+		/**
 		 * Used for providing the host of the domain on which talawa api will run.
 		 */
 		API_HOST: Type.String({
-			default: "127.0.0.1",
+			minLength: 1,
 		}),
 		/**
 		 * Used for providing the decision for whether to enable graphiql web client. It is useful to enable the graphiql web client in development environments for easier graphql schema exploration.
 		 */
-		API_IS_GRAPHIQL: Type.Boolean({
-			default: false,
-		}),
+		API_IS_GRAPHIQL: Type.Boolean(),
 		/**
 		 * Used for providing the decision for whether to enable pretty logging with pino.js logger. It is useful to enable prettier logging in development environments for easier developer log comprehension.
 		 */
-		API_IS_PINO_PRETTY: Type.Boolean({
-			default: false,
-		}),
+		API_IS_PINO_PRETTY: Type.Boolean(),
 		/**
-		 * Used for providing the number of milli-seconds for setting the expiry time of a json web token by talawa api.
+		 * Used for providing the number of milli-seconds for setting the expiry time of authentication json web tokens created by talawa api.
 		 */
-		API_JWT_EXPIRES_IN: Type.Number({
-			minimum: 0,
-		}),
+		API_JWT_EXPIRES_IN: Type.Number(),
 		/**
-		 * Used for providing the secret for signing and verifying json web tokens by talawa api.
+		 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 		 */
-		API_JWT_KEY: Type.String({
-			minLength: 16,
+		API_JWT_SECRET: Type.String({
+			minLength: 64,
 		}),
 		/**
 		 * Used for providing the log level for the logger used in talawa api.
@@ -159,24 +165,18 @@ export const envConfigSchema = Type.Composite([
 		 * Log levels should only be changed when the developers know what they're doing. Otherwise
 		 * the default log level should be used.
 		 */
-		API_LOG_LEVEL: Type.Enum(
-			{
-				debug: "debug",
-				error: "error",
-				fatal: "fatal",
-				info: "info",
-				trace: "trace",
-				warn: "warn",
-			},
-			{
-				default: "info",
-			},
-		),
+		API_LOG_LEVEL: Type.Enum({
+			debug: "debug",
+			error: "error",
+			fatal: "fatal",
+			info: "info",
+			trace: "trace",
+			warn: "warn",
+		}),
 		/**
 		 * Used for providing the port of the domain on which the server will run.
 		 */
 		API_PORT: Type.Number({
-			default: 8080,
 			maximum: 65535,
 			minimum: 0,
 		}),

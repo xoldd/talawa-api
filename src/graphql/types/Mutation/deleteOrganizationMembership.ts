@@ -1,13 +1,13 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { organizationMembershipsTable } from "~/src/drizzle/schema";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationDeleteOrganizationMembershipInput,
 	mutationDeleteOrganizationMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteOrganizationMembershipInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationDeleteOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationDeleteOrganizationMembershipInputSchema,
@@ -54,7 +54,12 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingOrganizationMembership] = await Promise.all([
+			const [
+				currentUser,
+				existingMember,
+				existingOrganization,
+				existingOrganizationMembership,
+			] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -73,17 +78,18 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.memberId),
+				}),
+				ctx.drizzleClient.query.organizationsTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.organizationId),
+				}),
 				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 					columns: {
 						role: true,
-					},
-					with: {
-						member: {
-							columns: {
-								role: true,
-							},
-						},
-						organization: true,
 					},
 					where: (fields, operators) =>
 						operators.and(
@@ -102,6 +108,51 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			if (existingMember === undefined && existingOrganization === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingMember === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingOrganization === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -126,45 +177,11 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
 
-				if (currentUserOrganizationMembership === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "memberId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
-					});
-				}
-
-				if (currentUserOrganizationMembership.role !== "administrator") {
-					if (currentUserId !== parsedArgs.input.memberId) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: [
-									{
-										argumentPath: ["input", "memberId"],
-									},
-									{
-										argumentPath: ["input", "organizationId"],
-									},
-								],
-							},
-							message:
-								"You are not authorized to perform this action on the resources associated to the provided arguments.",
-						});
-					}
-				}
-
-				if (existingOrganizationMembership.member.role === "administrator") {
+				if (
+					currentUserOrganizationMembership === undefined ||
+					(currentUserOrganizationMembership.role !== "administrator" &&
+						currentUserId !== parsedArgs.input.memberId)
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action_on_arguments_associated_resources",
@@ -183,7 +200,7 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 				}
 			}
 
-			await ctx.drizzleClient
+			const [deletedOrganizationMembership] = await ctx.drizzleClient
 				.delete(organizationMembershipsTable)
 				.where(
 					and(
@@ -196,9 +213,20 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 							parsedArgs.input.organizationId,
 						),
 					),
-				);
+				)
+				.returning();
 
-			return existingOrganizationMembership.organization;
+			// Deleted organization not being returned means that either it was already deleted or its `id` column was changed by external entities before this delete operation.
+			if (deletedOrganizationMembership === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unexpected",
+					},
+					message: "Something went wrong. Please try again.",
+				});
+			}
+
+			return existingOrganization;
 		},
 		type: Organization,
 	}),

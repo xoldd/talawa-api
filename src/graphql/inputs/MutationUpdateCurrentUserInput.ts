@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
+import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
@@ -7,7 +7,7 @@ import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 
-export const mutationUpdateCurrentUserInputSchema = usersTableSelectSchema
+export const mutationUpdateCurrentUserInputSchema = usersTableInsertSchema
 	.omit({
 		createdAt: true,
 		creatorId: true,
@@ -21,22 +21,12 @@ export const mutationUpdateCurrentUserInputSchema = usersTableSelectSchema
 		updaterId: true,
 	})
 	.extend({
-		emailAddress: usersTableSelectSchema.shape.emailAddress
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
-		name: usersTableSelectSchema.shape.name
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
-		password: z
-			.string()
-			.min(1)
-			.max(64)
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
+		emailAddress: usersTableInsertSchema.shape.emailAddress.optional(),
+		name: usersTableInsertSchema.shape.name.optional(),
+		password: z.string().min(1).max(64).optional(),
 	})
 	.refine((arg) => Object.values(arg).some((value) => value !== undefined), {
 		message: "At least one optional argument must be provided.",
-		path: ["input"],
 	});
 
 export const MutationUpdateCurrentUserInput = builder

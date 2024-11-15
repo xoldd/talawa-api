@@ -29,12 +29,6 @@ export const agendaItemsTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		description: text("description"),
 
 		duration: text("duration"),
@@ -48,7 +42,9 @@ export const agendaItemsTable = pgTable(
 		key: text("key"),
 
 		name: text("name", {}),
-
+		/**
+		 * Position of the agenda item relative to other agenda item associated to the same agenda section the agenda item is associated to.
+		 */
 		position: integer("position").notNull(),
 
 		sectionId: uuid("section_id")
@@ -61,14 +57,13 @@ export const agendaItemsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
 	(self) => [
 		index().on(self.createdAt),
 		index().on(self.creatorId),
-		index().on(self.deletedAt),
 		index().on(self.name),
 		index().on(self.position),
 		index().on(self.sectionId),

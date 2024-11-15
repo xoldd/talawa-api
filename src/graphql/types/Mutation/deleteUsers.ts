@@ -8,9 +8,9 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
 import {
-	type ArgumentsAssociatedResourcesNotFound,
+	type ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLError,
-} from "~/src/utilities/TalawaGraphQLError";
+} from "~/src/utilities/talawaGraphQLError";
 
 const mutationDeleteUsersArgumentsSchema = z
 	.object({
@@ -125,17 +125,16 @@ builder.mutationField("deleteUsers", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: ids.reduce<ArgumentsAssociatedResourcesNotFound["issues"]>(
-							(accumulator, id, index) => {
-								if (existingUsersWithIds.some((user) => user.id !== id)) {
-									accumulator.push({
-										argumentPath: ["input", index, "id"],
-									});
-								}
-								return accumulator;
-							},
-							[],
-						),
+						issues: ids.reduce<
+							ArgumentsAssociatedResourcesNotFoundExtensions["issues"]
+						>((accumulator, id, index) => {
+							if (existingUsersWithIds.some((user) => user.id !== id)) {
+								accumulator.push({
+									argumentPath: ["input", index, "id"],
+								});
+							}
+							return accumulator;
+						}, []),
 					},
 					message: "No associated resources found for the provided arguments.",
 				});

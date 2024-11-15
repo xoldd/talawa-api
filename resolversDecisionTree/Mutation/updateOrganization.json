@@ -5,7 +5,7 @@
 		"if zod arguments parsing succeeds": {
 			"if current user does not exist": "throw unauthenticated error",
 			"if current user exists": {
-				"if current user is a base user": "throw unauthorized error",
+				"if current user is a regular user": "throw unauthorized error",
 				"if current user is an administrator user": {
 					"if organization does not exist": "throw not found error",
 					"if organization exists": "update the organization and return it"

@@ -6,7 +6,7 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateOrganizationArgumentsSchema = z.object({
 	input: mutationCreateOrganizationInputSchema,
@@ -78,11 +78,40 @@ builder.mutationField("createOrganization", (t) =>
 				});
 			}
 
+			const existingOrganizationWithName =
+				await ctx.drizzleClient.query.organizationsTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.name, parsedArgs.input.name),
+				});
+
+			if (existingOrganizationWithName !== undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "name"],
+								message: "This name is not available.",
+							},
+						],
+					},
+					message:
+						"This action is forbidden on the resources associated to the provided arguments.",
+				});
+			}
+
 			const [createdOrganization] = await ctx.drizzleClient
 				.insert(organizationsTable)
 				.values({
-					...parsedArgs.input,
+					address: parsedArgs.input.address,
+					avatarURI: parsedArgs.input.avatarURI,
+					city: parsedArgs.input.city,
+					countryCode: parsedArgs.input.countryCode,
+					description: parsedArgs.input.description,
 					creatorId: currentUserId,
+					name: parsedArgs.input.name,
+					postalCode: parsedArgs.input.postalCode,
+					state: parsedArgs.input.state,
 				})
 				.returning();
 

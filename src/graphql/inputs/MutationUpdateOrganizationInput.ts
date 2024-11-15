@@ -1,10 +1,10 @@
 import type { z } from "zod";
-import { organizationsTableSelectSchema } from "~/src/drizzle/tables/organizations";
+import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 
 export const mutationUpdateOrganizationInputSchema =
-	organizationsTableSelectSchema
+	organizationsTableInsertSchema
 		.omit({
 			createdAt: true,
 			creatorId: true,
@@ -14,20 +14,14 @@ export const mutationUpdateOrganizationInputSchema =
 			updaterId: true,
 		})
 		.extend({
-			id: organizationsTableSelectSchema.shape.id,
-			isPrivate: organizationsTableSelectSchema.shape.isPrivate
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
-			name: organizationsTableSelectSchema.shape.name
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
+			id: organizationsTableInsertSchema.shape.id.unwrap(),
+			name: organizationsTableInsertSchema.shape.name.optional(),
 		})
 		.refine(
-			({ id, ...input }) =>
-				Object.values(input).some((value) => value !== undefined),
+			({ id, ...remainingArg }) =>
+				Object.values(remainingArg).some((value) => value !== undefined),
 			{
-				message: "At least one optional field must be provided.",
-				path: ["input"],
+				message: "At least one optional argument must be provided.",
 			},
 		);
 
@@ -58,10 +52,6 @@ export const MutationUpdateOrganizationInput = builder
 			id: t.id({
 				description: "Global identifier of the organization.",
 				required: true,
-			}),
-			isPrivate: t.boolean({
-				description:
-					"Boolean to tell whether the organization requires manual verification for membership.",
 			}),
 			name: t.string({
 				description: "Name of the organization.",

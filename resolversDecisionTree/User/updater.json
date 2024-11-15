@@ -3,7 +3,7 @@
 	"if current user is authenticated": {
 		"if current user does not exist": "throw unauthenticated error",
 		"if current user exists": {
-			"if current user is a base user": {
+			"if current user is a regular user": {
 				"if current user is not the updated user": "throw unauthorized error",
 				"if current user is the updated user": {
 					"if updater user id is not null": {

@@ -88,10 +88,9 @@ export type CustomScalars = {
 };
 
 /**
- * Map of custom scalar types used in talawa api used to annotate the type of those scalars to the clients consuming talawa api for type-safe usage of those scalars in the graphql operation documents.
+ * Map of custom scalar types used in talawa api used to annotate the type of those scalars to the clients consuming talawa api for type-safe usage of those scalars in the graphql operations.
  */
 export type ClientCustomScalars = {
-	CountryCode: string;
 	Currency: string;
 	Date: string;
 	DateTime: string;

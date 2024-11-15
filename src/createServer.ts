@@ -107,7 +107,7 @@ export const createServer = async (options?: {
 
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {
-		secret: fastify.envConfig.API_JWT_KEY,
+		secret: fastify.envConfig.API_JWT_SECRET,
 		sign: {
 			expiresIn: fastify.envConfig.API_JWT_EXPIRES_IN,
 		},

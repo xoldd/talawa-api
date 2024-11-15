@@ -6,7 +6,8 @@ import {
 	mutationCreateOrganizationMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationMembershipInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationCreateOrganizationMembershipInputSchema,
@@ -55,25 +56,13 @@ builder.mutationField("createOrganizationMembership", (t) =>
 
 			const [
 				currentUser,
-				existingUser,
+				existingMember,
 				existingOrganization,
 				existingOrganizationMembership,
 			] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
-					},
-					with: {
-						organizationMembershipsWhereMember: {
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(
-									fields.organizationId,
-									parsedArgs.input.organizationId,
-								),
-						},
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
@@ -89,7 +78,9 @@ builder.mutationField("createOrganizationMembership", (t) =>
 						operators.eq(fields.id, parsedArgs.input.organizationId),
 				}),
 				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-					columns: {},
+					columns: {
+						role: true,
+					},
 					where: (fields, operators) =>
 						operators.and(
 							operators.eq(fields.memberId, parsedArgs.input.memberId),
@@ -110,42 +101,34 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				});
 			}
 
-			if (existingOrganizationMembership !== undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "memberId"],
-								message:
-									"This user already has the membership on the provided organization.",
-							},
-							{
-								argumentPath: ["input", "organizationId"],
-								message:
-									"This organization already has the membership of the provided user.",
-							},
-						],
-					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
-				});
-			}
-
-			if (existingOrganization === undefined && existingUser === undefined) {
+			if (existingOrganization === undefined && existingMember === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
+								argumentPath: ["input", "memberId"],
+							},
+							{
 								argumentPath: ["input", "organizationId"],
 							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingMember === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
 							{
 								argumentPath: ["input", "memberId"],
 							},
 						],
 					},
-					message: "Not associated resources found for the provided arguments.",
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -159,71 +142,61 @@ builder.mutationField("createOrganizationMembership", (t) =>
 							},
 						],
 					},
-					message: "Not associated resources found for the provided arguments.",
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
-			if (existingUser === undefined) {
+			if (existingOrganizationMembership !== undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_not_found",
+						code: "forbidden_action_on_arguments_associated_resources",
 						issues: [
 							{
 								argumentPath: ["input", "memberId"],
-							},
-						],
-					},
-					message: "Not associated resources found for the provided arguments.",
-				});
-			}
-
-			if (currentUser.role !== "administrator") {
-				const currentUserOrganizationMembership =
-					currentUser.organizationMembershipsWhereMember[0];
-
-				if (
-					currentUserOrganizationMembership === undefined &&
-					currentUserId !== parsedArgs.input.memberId
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "memberId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
-					});
-				}
-
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "memberId"],
+								message:
+									"This user already has the membership of the associated organization.",
 							},
 							{
 								argumentPath: ["input", "organizationId"],
+								message: "This organization already has the associated member.",
 							},
 						],
 					},
 					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
+						"This action is forbidden on the resources associated to the provided arguments.",
 				});
+			}
+
+			if (currentUser.role !== "administrator") {
+				const unauthorizedArgumentPaths = getKeyPathsWithNonUndefinedValues({
+					keyPaths: [["input", "role"]],
+					object: parsedArgs,
+				});
+
+				if (unauthorizedArgumentPaths.length !== 0) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_arguments",
+							issues: unauthorizedArgumentPaths.map((argumentPath) => ({
+								argumentPath,
+							})),
+						},
+						message:
+							"You are not authorized to perform this action with the provided arguments.",
+					});
+				}
 			}
 
 			const [createdOrganizationMembership] = await ctx.drizzleClient
 				.insert(organizationMembershipsTable)
 				.values({
-					...parsedArgs.input,
 					creatorId: currentUserId,
+					memberId: parsedArgs.input.memberId,
+					organizationId: parsedArgs.input.organizationId,
+					role:
+						parsedArgs.input.role === undefined
+							? "regular"
+							: parsedArgs.input.role,
 				})
 				.returning();
 

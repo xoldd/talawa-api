@@ -1,19 +1,22 @@
 import { z } from "zod";
-import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
+import {
+	QueryUserInput,
+	queryUserInputSchema,
+} from "~/src/graphql/inputs/QueryUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const queryUserArgumentsSchema = z.object({
-	id: usersTableSelectSchema.shape.id,
+	input: queryUserInputSchema,
 });
 
 builder.queryField("user", (t) =>
 	t.field({
 		args: {
-			id: t.arg.id({
-				description: "",
-				required: true,
+			input: t.arg({
+				description: "Input required to read a user.",
+				type: QueryUserInput,
 			}),
 		},
 		description: "Query field to read a user.",
@@ -38,7 +41,8 @@ builder.queryField("user", (t) =>
 			}
 
 			const user = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.id, parsedArgs.id),
+				where: (fields, operators) =>
+					operators.eq(fields.id, parsedArgs.input.id),
 			});
 
 			if (user === undefined) {
@@ -47,7 +51,7 @@ builder.queryField("user", (t) =>
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
-								argumentPath: ["id"],
+								argumentPath: ["input", "id"],
 							},
 						],
 					},

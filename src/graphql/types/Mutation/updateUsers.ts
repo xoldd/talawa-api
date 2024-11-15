@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import {
 	usersTable,
-	type usersTableSelectSchema,
+	type usersTableInsertSchema,
 } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -12,10 +12,10 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
 import {
-	type ArgumentsAssociatedResourcesNotFound,
-	type ForbiddenActionOnArgumentsAssociatedResources,
+	type ArgumentsAssociatedResourcesNotFoundExtensions,
+	type ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	TalawaGraphQLError,
-} from "~/src/utilities/TalawaGraphQLError";
+} from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateUsersArgumentsSchema = z
 	.object({
@@ -130,7 +130,7 @@ builder.mutationField("updateUsers", (t) =>
 			const inputPromises: Promise<
 				Omit<(typeof parsedArgs)["input"][number], "password"> & {
 					passwordHash?:
-						| z.infer<typeof usersTableSelectSchema.shape.passwordHash>
+						| z.infer<typeof usersTableInsertSchema.shape.passwordHash>
 						| undefined;
 				}
 			>[] = [];
@@ -196,17 +196,16 @@ builder.mutationField("updateUsers", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: ids.reduce<ArgumentsAssociatedResourcesNotFound["issues"]>(
-							(accumulator, id, index) => {
-								if (existingUsersWithIds.some((user) => user.id !== id)) {
-									accumulator.push({
-										argumentPath: ["input", index, "id"],
-									});
-								}
-								return accumulator;
-							},
-							[],
-						),
+						issues: ids.reduce<
+							ArgumentsAssociatedResourcesNotFoundExtensions["issues"]
+						>((accumulator, id, index) => {
+							if (existingUsersWithIds.some((user) => user.id !== id)) {
+								accumulator.push({
+									argumentPath: ["input", index, "id"],
+								});
+							}
+							return accumulator;
+						}, []),
 					},
 					message: "No associated resources found for the provided arguments.",
 				});
@@ -232,7 +231,7 @@ builder.mutationField("updateUsers", (t) =>
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
 						issues: emailAddresses.reduce<
-							ForbiddenActionOnArgumentsAssociatedResources["issues"]
+							ForbiddenActionOnArgumentsAssociatedResourcesExtensions["issues"]
 						>((accumulator, emailAddress, index) => {
 							if (
 								existingUsersWithEmailAddresses.some(
@@ -270,7 +269,7 @@ builder.mutationField("updateUsers", (t) =>
 								.where(eq(usersTable.id, input.id))
 								.returning();
 
-							// If the updated user record is not returned, it means that either it was deleted or itrs `id` column was changed by an external entity before this update operation. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
+							// If the updated user record is not returned, it means that either it was already deleted or itrs `id` column was changed by external entities before this update operation. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
 							if (updatedUser === undefined) {
 								throw new TalawaGraphQLError({
 									extensions: {
@@ -416,7 +415,7 @@ builder.mutationField("updateUsers", (t) =>
 // 				throw new TalawaGraphQLError({
 // 					extensions: {
 // 						code: "arguments_associated_resources_not_found",
-// 						issues: ids.reduce<ArgumentsAssociatedResourcesNotFound["issues"]>(
+// 						issues: ids.reduce<ArgumentsAssociatedResourcesNotFoundExtensions["issues"]>(
 // 							(accumulator, id, index) => {
 // 								if (existingUsersWithIds.some((user) => user.id !== id)) {
 // 									accumulator.push({
@@ -452,7 +451,7 @@ builder.mutationField("updateUsers", (t) =>
 // 					extensions: {
 // 						code: "forbidden_action_on_arguments_associated_resources",
 // 						issues: emailAddresses.reduce<
-// 							ForbiddenActionOnArgumentsAssociatedResources["issues"]
+// 							ForbiddenActionOnArgumentsAssociatedResourcesExtensions["issues"]
 // 						>((accumulator, emailAddress, index) => {
 // 							if (
 // 								existingUsersWithEmailAddresses.some(

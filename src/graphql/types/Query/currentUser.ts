@@ -1,10 +1,10 @@
 import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 builder.queryField("currentUser", (t) =>
 	t.field({
-		description: "Query field to read data of a user.",
+		description: "Query field to read a user.",
 		resolve: async (_parent, _args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -17,11 +17,10 @@ builder.queryField("currentUser", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) =>
-					operators.eq(fields.emailAddress, currentUserId),
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
 			});
 
-			// User's record not existing in the database means that the client is using an authentication token which hasn't expired yet.
+			// Current user not existing in the database means that either it was already deleted or its `id` column was changed by external entities which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

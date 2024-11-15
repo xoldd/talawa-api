@@ -1,23 +1,16 @@
 import type { z } from "zod";
-import { organizationsTableSelectSchema } from "~/src/drizzle/tables/organizations";
+import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 
 export const mutationCreateOrganizationInputSchema =
-	organizationsTableSelectSchema
-		.omit({
-			createdAt: true,
-			creatorId: true,
-			id: true,
-			isPrivate: true,
-			updatedAt: true,
-			updaterId: true,
-		})
-		.extend({
-			isPrivate: organizationsTableSelectSchema.shape.isPrivate
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
-		});
+	organizationsTableInsertSchema.omit({
+		createdAt: true,
+		creatorId: true,
+		id: true,
+		updatedAt: true,
+		updaterId: true,
+	});
 
 export const MutationCreateOrganizationInput = builder
 	.inputRef<z.infer<typeof mutationCreateOrganizationInputSchema>>(
@@ -42,10 +35,6 @@ export const MutationCreateOrganizationInput = builder
 			}),
 			description: t.string({
 				description: "Custom information about the organization.",
-			}),
-			isPrivate: t.boolean({
-				description:
-					"Boolean to tell whether the organization requires manual verification for membership.",
 			}),
 			name: t.string({
 				description: "Name of the organization.",

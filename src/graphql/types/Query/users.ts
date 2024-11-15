@@ -1,6 +1,6 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
 import { z } from "zod";
-import { usersTable } from "~/src/drizzle/schema";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
@@ -8,7 +8,7 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/graphql/reusables/defaultGraphQLConnection";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const queryUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
@@ -29,7 +29,7 @@ builder.queryField("users", (t) =>
 	t.connection(
 		{
 			description:
-				"Query field to read the users by traversing across a graphql connection.",
+				"Query field to read users by traversing through them using a graphql connection.",
 			resolve: async (_parent, args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -61,16 +61,15 @@ builder.queryField("users", (t) =>
 
 				const currentUserId = ctx.currentClient.user.id;
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.emailAddress, currentUserId),
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
 
 				if (currentUser === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "forbidden_action",
+							code: "unauthenticated",
 						},
-						message: "Only unauthenticated users can perform this action.",
+						message: "Only authenticated users can perform this action.",
 					});
 				}
 

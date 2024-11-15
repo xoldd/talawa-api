@@ -6,7 +6,7 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateOrganizationsArgumentsSchema = z.object({
 	input: mutationCreateOrganizationInputSchema.array().min(1).max(32),

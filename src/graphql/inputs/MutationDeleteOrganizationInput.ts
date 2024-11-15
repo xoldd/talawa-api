@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { organizationsTableSelectSchema } from "~/src/drizzle/tables/organizations";
+import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationDeleteOrganizationInputSchema = z.object({
-	id: organizationsTableSelectSchema.shape.id,
+	id: organizationsTableInsertSchema.shape.id.unwrap(),
 });
 
 export const MutationDeleteOrganizationInput = builder

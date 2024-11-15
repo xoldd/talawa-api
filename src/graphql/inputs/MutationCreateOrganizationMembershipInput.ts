@@ -1,25 +1,16 @@
 import type { z } from "zod";
-import { organizationMembershipsTableSelectSchema } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationMembershipsTableInsertSchema } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
 import { OrganizationMembershipRole } from "~/src/graphql/enums/OrganizationMembershipRole";
 
 export const mutationCreateOrganizationMembershipInputSchema =
-	organizationMembershipsTableSelectSchema
-		.omit({
-			createdAt: true,
-			creatorId: true,
-			isApproved: true,
-			role: true,
-			updatedAt: true,
-			updaterId: true,
+	organizationMembershipsTableInsertSchema
+		.pick({
+			memberId: true,
+			organizationId: true,
 		})
 		.extend({
-			isApproved: organizationMembershipsTableSelectSchema.shape.isApproved
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
-			role: organizationMembershipsTableSelectSchema.shape.role
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
+			role: organizationMembershipsTableInsertSchema.shape.role.optional(),
 		});
 
 export const MutationCreateOrganizationMembershipInput = builder
@@ -29,10 +20,6 @@ export const MutationCreateOrganizationMembershipInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			isApproved: t.boolean({
-				description:
-					"Boolean to tell whether the membership has been approved.",
-			}),
 			memberId: t.id({
 				description: "Global identifier of the associated user.",
 				required: true,

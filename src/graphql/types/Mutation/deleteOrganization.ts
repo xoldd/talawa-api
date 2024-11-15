@@ -7,7 +7,7 @@ import {
 	mutationDeleteOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationDeleteOrganizationArgumentsSchema = z.object({
 	input: mutationDeleteOrganizationInputSchema,
@@ -79,14 +79,13 @@ builder.mutationField("deleteOrganization", (t) =>
 				});
 			}
 
-			const existingOrganization =
-				await ctx.drizzleClient.query.organizationsTable.findFirst({
-					columns: {},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.id),
-				});
+			const [deletedOrganization] = await ctx.drizzleClient
+				.delete(organizationsTable)
+				.where(eq(organizationsTable.id, parsedArgs.input.id))
+				.returning();
 
-			if (existingOrganization === undefined) {
+			// Deleted organization not being returned means that either it doesn't exist or it was already deleted or its `id` column was changed by external entities before this delete operation.
+			if (deletedOrganization === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -97,21 +96,6 @@ builder.mutationField("deleteOrganization", (t) =>
 						],
 					},
 					message: "No associated resources found for the provided arguments.",
-				});
-			}
-
-			const [deletedOrganization] = await ctx.drizzleClient
-				.delete(organizationsTable)
-				.where(eq(organizationsTable.id, parsedArgs.input.id))
-				.returning();
-
-			// Deleted organization not being returned means that either it was deleted or its `id` column was changed by an external entity before this delete operation.
-			if (deletedOrganization === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

@@ -18,7 +18,7 @@ export function assertToBeNonNullish<T>(
 	value: T | null | undefined,
 ): asserts value is T {
 	if (value === undefined || value === null) {
-		throw new Error("Not a non-nullish value.");
+		throw new Error(`Expected a non-nullish value, but received: ${value}.`);
 	}
 }
 

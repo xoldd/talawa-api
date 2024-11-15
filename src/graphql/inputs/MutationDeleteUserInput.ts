@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
+import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationDeleteUserInputSchema = z.object({
-	id: usersTableSelectSchema.shape.id,
+	id: usersTableInsertSchema.shape.id.unwrap(),
 });
 
 export const MutationDeleteUserInput = builder

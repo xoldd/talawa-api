@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
@@ -6,7 +7,7 @@ import {
 	mutationUpdateOrganizationMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateOrganizationMembershipInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationUpdateOrganizationMembershipInputSchema,
@@ -53,7 +54,12 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingOrganizationMembership] = await Promise.all([
+			const [
+				currentUser,
+				existingMember,
+				existingOrganization,
+				existingOrganizationMembership,
+			] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -72,18 +78,20 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.memberId),
+				}),
+				ctx.drizzleClient.query.organizationsTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.organizationId),
+				}),
 				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 					columns: {
 						role: true,
 					},
-					with: {
-						member: {
-							columns: {
-								role: true,
-							},
-						},
-						organization: true,
-					},
+
 					where: (fields, operators) =>
 						operators.and(
 							operators.eq(fields.memberId, parsedArgs.input.memberId),
@@ -101,6 +109,51 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 						code: "unauthenticated",
 					},
 					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			if (existingMember === undefined && existingOrganization === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingMember === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingOrganization === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -125,43 +178,10 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
 
-				if (currentUserOrganizationMembership === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "memberId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
-					});
-				}
-
-				if (currentUserOrganizationMembership.role !== "administrator") {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "memberId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
-					});
-				}
-
-				if (existingOrganizationMembership.member.role === "administrator") {
+				if (
+					currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator"
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action_on_arguments_associated_resources",
@@ -181,18 +201,27 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 			}
 
 			const [updatedOrganizationMembership] = await ctx.drizzleClient
-				.insert(organizationMembershipsTable)
-				.values({
-					...parsedArgs.input,
-					creatorId: currentUserId,
+				.update(organizationMembershipsTable)
+				.set({
+					role: parsedArgs.input.role,
+					updaterId: currentUserId,
 				})
+				.where(
+					and(
+						eq(
+							organizationMembershipsTable.memberId,
+							parsedArgs.input.memberId,
+						),
+						eq(
+							organizationMembershipsTable.organizationId,
+							parsedArgs.input.organizationId,
+						),
+					),
+				)
 				.returning();
 
-			// Inserted organization not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+			// Updated organization not being returned means that either it was already deleted or its `id` column was changed by external entities before this update operation.
 			if (updatedOrganizationMembership === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -201,7 +230,7 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 				});
 			}
 
-			return existingOrganizationMembership.organization;
+			return existingOrganization;
 		},
 		type: Organization,
 	}),

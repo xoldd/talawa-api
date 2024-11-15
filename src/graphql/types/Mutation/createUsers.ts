@@ -2,18 +2,18 @@ import { hash } from "@node-rs/argon2";
 import { z } from "zod";
 import {
 	usersTable,
-	type usersTableSelectSchema,
+	type usersTableInsertSchema,
 } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateUserInput,
 	mutationCreateUserInputSchema,
 } from "~/src/graphql/inputs/MutationCreateUserInput";
-import { User } from "~/src/graphql/types/User/User";
+import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import {
-	type ForbiddenActionOnArgumentsAssociatedResources,
+	type ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	TalawaGraphQLError,
-} from "~/src/utilities/TalawaGraphQLError";
+} from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateUsersArgumentsSchema = z.object({
 	input: mutationCreateUserInputSchema.array().min(1).max(32),
@@ -115,7 +115,7 @@ builder.mutationField("createUsers", (t) =>
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
 						issues: emailAddresses.reduce<
-							ForbiddenActionOnArgumentsAssociatedResources["issues"]
+							ForbiddenActionOnArgumentsAssociatedResourcesExtensions["issues"]
 						>((accumulator, emailAddress, index) => {
 							if (
 								existingUsersWithEmailAddresses.some(
@@ -141,9 +141,9 @@ builder.mutationField("createUsers", (t) =>
 				parsedArgs.input.map<
 					Promise<
 						Omit<z.infer<typeof mutationCreateUserInputSchema>, "password"> & {
-							creatorId: z.infer<typeof usersTableSelectSchema.shape.creatorId>;
+							creatorId: z.infer<typeof usersTableInsertSchema.shape.creatorId>;
 							passwordHash: z.infer<
-								typeof usersTableSelectSchema.shape.passwordHash
+								typeof usersTableInsertSchema.shape.passwordHash
 							>;
 						}
 					>
@@ -157,11 +157,20 @@ builder.mutationField("createUsers", (t) =>
 				),
 			);
 
-			return await ctx.drizzleClient
+			const createdUsers = await ctx.drizzleClient
 				.insert(usersTable)
 				.values(inputs)
 				.returning();
+
+			return createdUsers.map((user) => ({
+				authenticationToken: ctx.jwt.sign({
+					user: {
+						id: user.id,
+					},
+				}),
+				user: user,
+			}));
 		},
-		type: t.listRef(User),
+		type: t.listRef(AuthenticationPayload),
 	}),
 );

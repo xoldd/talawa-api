@@ -29,12 +29,6 @@ export const volunteerGroupAssignmentsTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		groupId: uuid("group_id")
 			.notNull()
 			.references(() => volunteerGroupsTable.id, {}),
@@ -46,7 +40,7 @@ export const volunteerGroupAssignmentsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id),
 	},

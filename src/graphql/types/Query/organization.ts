@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { organizationsTableSelectSchema } from "~/src/drizzle/tables/organizations";
+import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const queryOrganizationArgumentsSchema = z.object({
-	id: organizationsTableSelectSchema.shape.id,
+	id: organizationsTableInsertSchema.shape.id.unwrap(),
 });
 
 builder.queryField("organization", (t) =>

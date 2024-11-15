@@ -1,26 +1,24 @@
 import type { z } from "zod";
-import { organizationMembershipsTableSelectSchema } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationMembershipsTableInsertSchema } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
 import { OrganizationMembershipRole } from "~/src/graphql/enums/OrganizationMembershipRole";
 
 export const mutationUpdateOrganizationMembershipInputSchema =
-	organizationMembershipsTableSelectSchema
-		.omit({
-			createdAt: true,
-			creatorId: true,
-			isApproved: true,
-			role: true,
-			updatedAt: true,
-			updaterId: true,
+	organizationMembershipsTableInsertSchema
+		.pick({
+			memberId: true,
+			organizationId: true,
 		})
 		.extend({
-			isApproved: organizationMembershipsTableSelectSchema.shape.isApproved
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
-			role: organizationMembershipsTableSelectSchema.shape.role
-				.nullish()
-				.transform((arg) => (arg === null ? undefined : arg)),
-		});
+			role: organizationMembershipsTableInsertSchema.shape.role.optional(),
+		})
+		.refine(
+			({ memberId, organizationId, ...remainingArg }) =>
+				Object.values(remainingArg).some((value) => value !== undefined),
+			{
+				message: "At least one optional argument must be provided.",
+			},
+		);
 
 export const MutationUpdateOrganizationMembershipInput = builder
 	.inputRef<z.infer<typeof mutationUpdateOrganizationMembershipInputSchema>>(
@@ -29,10 +27,6 @@ export const MutationUpdateOrganizationMembershipInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			isApproved: t.boolean({
-				description:
-					"Boolean to tell whether the membership has been approved.",
-			}),
 			memberId: t.id({
 				description: "Global identifier of the associated user.",
 				required: true,

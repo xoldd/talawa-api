@@ -25,12 +25,6 @@ export const venueBookingsTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		eventId: uuid("event_id")
 			.notNull()
 			.references(() => eventsTable.id),
@@ -39,7 +33,7 @@ export const venueBookingsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 

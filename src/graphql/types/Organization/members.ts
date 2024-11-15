@@ -1,45 +1,45 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
 import { z } from "zod";
-import { organizationMembershipsTable } from "~/src/drizzle/schema";
-import { organizationMembershipsTableSelectSchema } from "~/src/drizzle/tables/organizationMemberships";
+import {
+	organizationMembershipsTable,
+	organizationMembershipsTableInsertSchema,
+} from "~/src/drizzle/tables/organizationMemberships";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/graphql/reusables/defaultGraphQLConnection";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
-const organizationMembersArgumentsSchema =
-	defaultGraphQLConnectionArgumentsSchema
-		.transform(transformDefaultGraphQLConnectionArguments)
-		.transform((arg, ctx) => {
-			let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+const membersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
+	.transform(transformDefaultGraphQLConnectionArguments)
+	.transform((arg, ctx) => {
+		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
 
-			try {
-				if (arg.cursor !== undefined) {
-					cursor = cursorSchema.parse(
-						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
-					);
-				}
-			} catch (error) {
-				console.log(error);
-				ctx.addIssue({
-					code: "custom",
-					message: "Not a valid cursor.",
-					path: [arg.isInversed ? "before" : "after"],
-				});
+		try {
+			if (arg.cursor !== undefined) {
+				cursor = cursorSchema.parse(
+					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
+				);
 			}
+		} catch (error) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Not a valid cursor.",
+				path: [arg.isInversed ? "before" : "after"],
+			});
+		}
 
-			return {
-				cursor,
-				isInversed: arg.isInversed,
-				limit: arg.limit,
-			};
-		});
+		return {
+			cursor,
+			isInversed: arg.isInversed,
+			limit: arg.limit,
+		};
+	});
 
-const cursorSchema = organizationMembershipsTableSelectSchema
+const cursorSchema = organizationMembershipsTableInsertSchema
 	.pick({
 		memberId: true,
 	})
@@ -56,22 +56,13 @@ Organization.implement({
 		members: t.connection(
 			{
 				description:
-					"Organization field to read the members of the organization by traversing across a graphql connection.",
+					"Organization field to read the members of the organization by traversing through them using a graphql connection.",
 				resolve: async (parent, args, ctx) => {
-					if (!ctx.currentClient.isAuthenticated) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "forbidden_action",
-							},
-							message: "Only unauthenticated users can perform this action.",
-						});
-					}
-
 					const {
 						data: parsedArgs,
 						error,
 						success,
-					} = organizationMembersArgumentsSchema.safeParse(args);
+					} = membersArgumentsSchema.safeParse(args);
 
 					if (!success) {
 						throw new TalawaGraphQLError({
@@ -86,60 +77,18 @@ Organization.implement({
 						});
 					}
 
-					const currentUserId = ctx.currentClient.user.id;
-					const currentUser =
-						await ctx.drizzleClient.query.usersTable.findFirst({
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.id, currentUserId),
-							with: {
-								organizationMembershipsWhereMember: {
-									columns: {},
-									where: (fields, operators) =>
-										operators.and(
-											operators.eq(fields.organizationId, parent.id),
-											operators.eq(fields.isApproved, true),
-										),
-								},
-							},
-						});
-
-					// User's record not existing in the database means that the client is using an authentication token which hasn't expired yet.
-					if (currentUser === undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-							message: "Only authenticated users can perform this action.",
-						});
-					}
-
-					if (currentUser.role !== "administrator") {
-						const currentUserOrganizationMembership =
-							currentUser.organizationMembershipsWhereMember[0];
-
-						if (currentUserOrganizationMembership === undefined) {
-							throw new TalawaGraphQLError({
-								extensions: {
-									code: "unauthorized_action",
-								},
-								message: "You are not authorized to perform this action.",
-							});
-						}
-					}
-
 					const { cursor, isInversed, limit } = parsedArgs;
 
 					const orderBy = isInversed
 						? [
 								asc(organizationMembershipsTable.createdAt),
 								asc(organizationMembershipsTable.memberId),
+								asc(organizationMembershipsTable.organizationId),
 							]
 						: [
 								desc(organizationMembershipsTable.createdAt),
 								desc(organizationMembershipsTable.memberId),
+								desc(organizationMembershipsTable.organizationId),
 							];
 
 					let where: SQL | undefined;
@@ -164,7 +113,6 @@ Organization.implement({
 										),
 								),
 								eq(organizationMembershipsTable.organizationId, parent.id),
-								eq(organizationMembershipsTable.isApproved, true),
 								or(
 									and(
 										eq(
@@ -177,9 +125,9 @@ Organization.implement({
 								),
 							);
 						} else {
-							where = and(
-								eq(organizationMembershipsTable.organizationId, parent.id),
-								eq(organizationMembershipsTable.isApproved, true),
+							where = eq(
+								organizationMembershipsTable.organizationId,
+								parent.id,
 							);
 						}
 					} else {
@@ -203,7 +151,7 @@ Organization.implement({
 										),
 								),
 								eq(organizationMembershipsTable.organizationId, parent.id),
-								eq(organizationMembershipsTable.isApproved, true),
+
 								or(
 									and(
 										eq(
@@ -216,9 +164,9 @@ Organization.implement({
 								),
 							);
 						} else {
-							where = and(
-								eq(organizationMembershipsTable.organizationId, parent.id),
-								eq(organizationMembershipsTable.isApproved, true),
+							where = eq(
+								organizationMembershipsTable.organizationId,
+								parent.id,
 							);
 						}
 					}
@@ -260,7 +208,6 @@ Organization.implement({
 								JSON.stringify({
 									createdAt: organizationMembership.createdAt,
 									memberId: organizationMembership.memberId,
-									organizationId: parent.id,
 								}),
 							).toString("base64url"),
 						createNode: (organizationMembership) =>

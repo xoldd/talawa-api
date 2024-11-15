@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
+import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
@@ -8,7 +8,7 @@ import { UserMaritalStatus } from "~/src/graphql/enums/UserMaritalStatus";
 import { UserNatalSex } from "~/src/graphql/enums/UserNatalSex";
 import { UserRole } from "~/src/graphql/enums/UserRole";
 
-export const mutationUpdateUserInputSchema = usersTableSelectSchema
+export const mutationUpdateUserInputSchema = usersTableInsertSchema
 	.omit({
 		createdAt: true,
 		creatorId: true,
@@ -20,32 +20,19 @@ export const mutationUpdateUserInputSchema = usersTableSelectSchema
 		updaterId: true,
 	})
 	.extend({
-		emailAddress: usersTableSelectSchema.shape.emailAddress
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
-		id: usersTableSelectSchema.shape.id,
-		isEmailAddressVerified: usersTableSelectSchema.shape.isEmailAddressVerified
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
-		name: usersTableSelectSchema.shape.name
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
-		password: z
-			.string()
-			.min(1)
-			.max(64)
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
-		role: usersTableSelectSchema.shape.role
-			.nullish()
-			.transform((arg) => (arg === null ? undefined : arg)),
+		emailAddress: usersTableInsertSchema.shape.emailAddress.optional(),
+		id: usersTableInsertSchema.shape.id.unwrap(),
+		isEmailAddressVerified:
+			usersTableInsertSchema.shape.isEmailAddressVerified.optional(),
+		name: usersTableInsertSchema.shape.name.optional(),
+		password: z.string().min(1).max(64).optional(),
+		role: usersTableInsertSchema.shape.role.optional(),
 	})
 	.refine(
-		({ id, ...input }) =>
-			Object.values(input).some((value) => value !== undefined),
+		({ id, ...remainingArg }) =>
+			Object.values(remainingArg).some((value) => value !== undefined),
 		{
-			message: "At least one optional field must be provided.",
-			path: ["input"],
+			message: "At least one optional argument must be provided.",
 		},
 	);
 
@@ -99,7 +86,7 @@ export const MutationUpdateUserInput = builder
 			}),
 			isEmailAddressVerified: t.boolean({
 				description:
-					"This boolean tells whether the user has verified their email address.",
+					"Boolean to tell whether the user has verified their email address.",
 			}),
 			maritalStatus: t.field({
 				description: "Marital status of the user.",

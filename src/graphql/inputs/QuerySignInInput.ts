@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { usersTableSelectSchema } from "~/src/drizzle/tables/users";
+import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 
-export const querySignInInputSchema = usersTableSelectSchema
+export const querySignInInputSchema = usersTableInsertSchema
 	.pick({
 		emailAddress: true,
 	})

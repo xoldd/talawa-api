@@ -90,3 +90,6 @@ docker container run --env-file ./.env --interactive --tty --publish 5432:5432 p
 
 currently there is no caching involved in the resolving of a graphql operation, everything is fetched from the database whereever and whenever it is needed.
 
+# delete behavior for postgres
+
+it needs to be discussed which things are to be hard deleted and which things are to be soft deleted, it needs to be discussed wether deletion is to be an attached http request/reponse job for a graphql resolver or a detached asynchronous event based job for a background process.

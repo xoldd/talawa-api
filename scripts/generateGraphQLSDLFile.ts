@@ -1,6 +1,4 @@
-/**
- * THIS SCRIPT IS MEANT FOR GENERATING THE TALAWA API GRAPHQL SCHEMA IN THE GRAPHQL SDL(SCHEMA DEFINITION LANGUAGE) FORMAT AT THE ROOT DIRECTORY OF THIS PROJECT IN A FILE NAMED `schema.graphql`.
- */
+// THIS SCRIPT IS MEANT FOR GENERATING THE TALAWA API GRAPHQL SCHEMA IN THE GRAPHQL SDL(SCHEMA DEFINITION LANGUAGE) FORMAT AT THE ROOT DIRECTORY OF THIS PROJECT IN A FILE NAMED `schema.graphql`.
 
 import { writeFile } from "node:fs/promises";
 import { lexicographicSortSchema, printSchema } from "graphql";
@@ -12,10 +10,10 @@ try {
 		`${import.meta.dirname}/../schema.graphql`,
 		printSchema(lexicographicSortSchema(schema)),
 	);
-	console.log("Successfully generated the talawa api graphql schema.");
+	console.log("Successfully generated the talawa api graphql schema sdl file.");
 } catch (error) {
 	console.log(
-		"Failed to generate the talawa api graphql schema. Following error encountered: ",
+		"Failed to generate the talawa api graphql schema sdl file. Following error encountered: ",
 		error,
 	);
 	process.exit(1);

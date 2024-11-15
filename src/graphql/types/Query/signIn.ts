@@ -6,7 +6,7 @@ import {
 	querySignInInputSchema,
 } from "~/src/graphql/inputs/QuerySignInInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const querySignInArgumentsSchema = z.object({
 	input: querySignInInputSchema,
@@ -16,7 +16,7 @@ builder.queryField("signIn", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input required to sign in to talawa.",
 				required: true,
 				type: QuerySignInInput,
 			}),
@@ -59,19 +59,14 @@ builder.queryField("signIn", (t) =>
 			if (existingUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_arguments",
+						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
 								argumentPath: ["input", "emailAddress"],
-								message: "This email might be invalid.",
-							},
-							{
-								argumentPath: ["input", "password"],
-								message: "This password might be invalid.",
 							},
 						],
 					},
-					message: "Invalid arguments provided.",
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -83,12 +78,8 @@ builder.queryField("signIn", (t) =>
 						code: "invalid_arguments",
 						issues: [
 							{
-								argumentPath: ["input", "emailAddress"],
-								message: "This email might be invalid.",
-							},
-							{
 								argumentPath: ["input", "password"],
-								message: "This password might be invalid.",
+								message: "This password is invalid.",
 							},
 						],
 					},

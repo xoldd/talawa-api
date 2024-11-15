@@ -2,7 +2,6 @@ import { relations } from "drizzle-orm";
 import {
 	type AnyPgColumn,
 	index,
-	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -29,12 +28,6 @@ export const agendaSectionsTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		eventId: uuid("event_id")
 			.notNull()
 			.references(() => eventsTable.id),
@@ -47,13 +40,11 @@ export const agendaSectionsTable = pgTable(
 			(): AnyPgColumn => agendaSectionsTable.id,
 		),
 
-		position: integer("position").notNull(),
-
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},
@@ -64,7 +55,6 @@ export const agendaSectionsTable = pgTable(
 		index().on(self.name),
 		index().on(self.parentSectionId),
 		uniqueIndex().on(self.eventId, self.name),
-		uniqueIndex().on(self.eventId, self.position),
 	],
 );
 

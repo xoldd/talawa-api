@@ -1,94 +1,223 @@
+import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { z } from "zod";
+import {
+	organizationMembershipsTable,
+	organizationMembershipsTableInsertSchema,
+} from "~/src/drizzle/tables/organizationMemberships";
+import {
+	defaultGraphQLConnectionArgumentsSchema,
+	transformDefaultGraphQLConnectionArguments,
+	transformToDefaultGraphQLConnection,
+} from "~/src/graphql/reusables/defaultGraphQLConnection";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { User } from "./User";
+
+const organizationsMemberOfArgumentsSchema =
+	defaultGraphQLConnectionArgumentsSchema
+		.transform(transformDefaultGraphQLConnectionArguments)
+		.transform((arg, ctx) => {
+			let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+
+			try {
+				if (arg.cursor !== undefined) {
+					cursor = cursorSchema.parse(
+						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
+					);
+				}
+			} catch (error) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Not a valid cursor.",
+					path: [arg.isInversed ? "before" : "after"],
+				});
+			}
+
+			return {
+				cursor,
+				isInversed: arg.isInversed,
+				limit: arg.limit,
+			};
+		});
+
+const cursorSchema = organizationMembershipsTableInsertSchema
+	.pick({
+		organizationId: true,
+	})
+	.extend({
+		createdAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		organizationId: arg.organizationId,
+	}));
 
 User.implement({
 	fields: (t) => ({
-		organizationsMemberOf: t.field({
-			description:
-				"User field to read the organizations the user is a member of.",
-			resolve: async (parent, _args, ctx) => {
-				if (!ctx.currentClient.isAuthenticated) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action",
-						},
-						message: "Only unauthenticated users can perform this action.",
-					});
-				}
+		organizationsMemberOf: t.connection(
+			{
+				description:
+					"User field to read the organizations the user is a member of by traversing through them using a graphql connection.",
+				resolve: async (parent, args, ctx) => {
+					const {
+						data: parsedArgs,
+						error,
+						success,
+					} = organizationsMemberOfArgumentsSchema.safeParse(args);
 
-				const currentUserId = ctx.currentClient.user.id;
-				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-					with: {
-						organizationMembershipsWhereMember: {
-							columns: {},
-							orderBy: (fields, operators) => [
-								operators.desc(fields.createdAt),
-								operators.desc(fields.organizationId),
-							],
-							where: (fields, operators) =>
-								operators.eq(fields.isApproved, true),
-							with: {
-								organization: true,
-							},
-						},
-					},
-				});
-
-				// Current client's user not existing in the database means that the client is using an authentication token which hasn't expired yet.
-				if (currentUser === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
-						message: "Only authenticated users can perform this action.",
-					});
-				}
-
-				if (currentUser.role !== "administrator") {
-					if (currentUserId !== parent.id) {
+					if (!success) {
 						throw new TalawaGraphQLError({
 							extensions: {
-								code: "unauthorized_action",
+								code: "invalid_arguments",
+								issues: error.issues.map((issue) => ({
+									argumentPath: issue.path,
+									message: issue.message,
+								})),
 							},
-							message: "You are not authorized to perform this action.",
+							message: "Invalid arguments provided.",
 						});
 					}
 
-					return currentUser.organizationMembershipsWhereMember.map(
-						(membership) => membership.organization,
-					);
-				}
+					const { cursor, isInversed, limit } = parsedArgs;
 
-				if (currentUserId === parent.id) {
-					return currentUser.organizationMembershipsWhereMember.map(
-						(membership) => membership.organization,
-					);
-				}
+					const orderBy = isInversed
+						? [
+								asc(organizationMembershipsTable.createdAt),
+								asc(organizationMembershipsTable.memberId),
+								asc(organizationMembershipsTable.organizationId),
+							]
+						: [
+								desc(organizationMembershipsTable.createdAt),
+								desc(organizationMembershipsTable.memberId),
+								desc(organizationMembershipsTable.organizationId),
+							];
 
-				return (
-					await ctx.drizzleClient.query.organizationMembershipsTable.findMany({
-						columns: {},
-						orderBy: (fields, operators) => [
-							operators.desc(fields.createdAt),
-							operators.desc(fields.organizationId),
-						],
-						where: (fields, operators) =>
-							operators.and(
-								operators.eq(fields.memberId, parent.id),
-								operators.eq(fields.isApproved, true),
-							),
-						with: {
-							organization: true,
-						},
-					})
-				).map((membership) => membership.organization);
+					let where: SQL | undefined;
+					if (isInversed) {
+						if (cursor !== undefined) {
+							where = and(
+								exists(
+									ctx.drizzleClient
+										.select()
+										.from(organizationMembershipsTable)
+										.where(
+											and(
+												eq(organizationMembershipsTable.memberId, parent.id),
+												eq(
+													organizationMembershipsTable.organizationId,
+													cursor.organizationId,
+												),
+											),
+										),
+								),
+								eq(organizationMembershipsTable.memberId, parent.id),
+								or(
+									and(
+										eq(
+											organizationMembershipsTable.createdAt,
+											cursor.createdAt,
+										),
+										gt(
+											organizationMembershipsTable.organizationId,
+											cursor.organizationId,
+										),
+									),
+									gt(organizationMembershipsTable.createdAt, cursor.createdAt),
+								),
+							);
+						} else {
+							where = eq(organizationMembershipsTable.memberId, parent.id);
+						}
+					} else {
+						if (cursor !== undefined) {
+							where = and(
+								exists(
+									ctx.drizzleClient
+										.select()
+										.from(organizationMembershipsTable)
+										.where(
+											and(
+												eq(organizationMembershipsTable.memberId, parent.id),
+												eq(
+													organizationMembershipsTable.memberId,
+													cursor.organizationId,
+												),
+											),
+										),
+								),
+								eq(organizationMembershipsTable.organizationId, parent.id),
+								or(
+									and(
+										eq(
+											organizationMembershipsTable.createdAt,
+											cursor.createdAt,
+										),
+										lt(
+											organizationMembershipsTable.organizationId,
+											cursor.organizationId,
+										),
+									),
+									lt(organizationMembershipsTable.createdAt, cursor.createdAt),
+								),
+							);
+						} else {
+							where = eq(organizationMembershipsTable.memberId, parent.id);
+						}
+					}
+
+					const organizationMemberships =
+						await ctx.drizzleClient.query.organizationMembershipsTable.findMany(
+							{
+								columns: {
+									createdAt: true,
+									organizationId: true,
+								},
+								limit,
+								orderBy,
+								with: {
+									organization: true,
+								},
+								where,
+							},
+						);
+
+					if (cursor !== undefined && organizationMemberships.length === 0) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "arguments_associated_resources_not_found",
+								issues: [
+									{
+										argumentPath: [isInversed ? "before" : "after"],
+									},
+								],
+							},
+							message:
+								"No associated resources found for the provided arguments.",
+						});
+					}
+
+					return transformToDefaultGraphQLConnection({
+						createCursor: (organizationMembership) =>
+							Buffer.from(
+								JSON.stringify({
+									createdAt: organizationMembership.createdAt,
+									organizationId: organizationMembership.organizationId,
+								}),
+							).toString("base64url"),
+						createNode: (organizationMembership) =>
+							organizationMembership.organization,
+						parsedArgs,
+						rawNodes: organizationMemberships,
+					});
+				},
+				type: Organization,
 			},
-			type: t.listRef(Organization),
-		}),
+			{
+				description: "",
+			},
+			{
+				description: "",
+			},
+		),
 	}),
 });

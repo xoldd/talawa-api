@@ -65,7 +65,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 		if (last !== undefined) {
 			ctx.addIssue({
 				code: "custom",
-				message: "Argument last cannot be provided with argument first",
+				message: `Argument "last" cannot be provided with argument "first".`,
 				path: ["last"],
 			});
 		}
@@ -73,7 +73,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 		if (before !== undefined) {
 			ctx.addIssue({
 				code: "custom",
-				message: "Argument before cannot be provided with argument first",
+				message: `Argument "before" cannot be provided with argument "first".`,
 				path: ["before"],
 			});
 		}
@@ -89,7 +89,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 		if (after !== undefined) {
 			ctx.addIssue({
 				code: "custom",
-				message: "Argument after cannot be provided with argument last",
+				message: `Argument "after" cannot be provided with argument "last".`,
 				path: ["after"],
 			});
 		}
@@ -104,12 +104,12 @@ export const transformDefaultGraphQLConnectionArguments = <
 	} else {
 		ctx.addIssue({
 			code: "custom",
-			message: "Argument first must be provided.",
+			message: `A non-null value for argument "first" must be provided.`,
 			path: ["first"],
 		});
 		ctx.addIssue({
 			code: "custom",
-			message: "Argument last must be provided.",
+			message: `A non-null value for argument "last" must be provided.`,
 			path: ["last"],
 		});
 	}

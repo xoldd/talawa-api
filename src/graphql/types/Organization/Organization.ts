@@ -28,10 +28,7 @@ Organization.implement({
 		}),
 		id: t.exposeID("id", {
 			description: "Global identifier of the organization.",
-		}),
-		isPrivate: t.exposeBoolean("isPrivate", {
-			description:
-				"Boolean to tell whether the organization requires manual verification for membership.",
+			nullable: false,
 		}),
 		name: t.exposeString("name", {
 			description: "Name of the organization.",

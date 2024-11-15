@@ -1,10 +1,10 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { User } from "./User";
 
 User.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created this user.",
+			description: "User field to read the user who created the user.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -17,8 +17,7 @@ User.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.emailAddress, currentUserId),
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
 
 				if (currentUser === undefined) {

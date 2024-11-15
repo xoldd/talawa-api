@@ -1,20 +1,20 @@
 A user and a community are the two root fundamental entities. Every functionality in the application would have these two entities as their base in some shape and form.
 
-A user can be created either by pre-existing(created at application startup time) or by signing up. A user doesn't need to be a part of an existing community to exist. For now the user can have two roles namely `BASE` and `ADMINISTRATOR`.
+A user can be created either by pre-existing(created at application startup time) or by signing up. A user doesn't need to be a part of an existing community to exist. For now the user can have two roles namely `regular` and `administrator`.
 
-The `BASE` role gives the least amount of privileges to the user. This role is granted by default to all the users who sign up to the application.
+The `regular` role gives the least amount of privileges to the user. This role is granted by default to all the users who sign up to the application.
 
-The `ADMINISTRATOR` role gives the most amount of privileges to the user. This role is only granted to users that are either created at the application startup time or users who are elevated to this role by other users who already have this role.
+The `administrator` role gives the most amount of privileges to the user. This role is only granted to users that are either created at the application startup time or users who are elevated to this role by other users who already have this role.
 
-A community could be created at either the application startup time or at runtime. Only the users with `ADMINISTRATOR` role can create communities.
+A community could be created at either the application startup time or at runtime. Only the users with `administrator` role can create communities.
 
-A user can become a member of many communities. A community can have many users as members. This is a many-to-many relationship and in relational databases this is expressed using junction tables. In such a junction table each record contains a unique combination of a `member_id` and `community_id` which makes maps a user to a community and also makes sure that a user can only become member of a community once. For now a community member can have two roles namely `BASE` and `MODERATOR` within that community.
+A user can become a member of many communities. A community can have many users as members. This is a many-to-many relationship and in relational databases this is expressed using junction tables. In such a junction table each record contains a unique combination of a `member_id` and `community_id` which makes maps a user to a community and also makes sure that a user can only become member of a community once. For now a community member can have two roles namely `regular` and `MODERATOR` within that community.
 
-The `BASE` role gives the least amount of privileges to a community member. This role is granted by default to all the users who become a member of the community.
+The `regular` role gives the least amount of privileges to a community member. This role is granted by default to all the users who become a member of the community.
 
 The `MODERATOR` role gives the most amount of privileges to a community member within that community. This role is only granted to members that are assigned this role to them at the application startup time or members who have their role elevated by administrators. Whether a moderator can elevate other community members to be a moderator is to be decided.
 
-These concepts are similar to how discord and reddit operate. A user can sign up to discord/reddit without ever joining a single community. After that they could search for public discord/reddit servers/communities and join them. The difference here would be that normal users aren't allowed to create servers/communities unlike discord/reddit, they can only join servers/communities that have already been created by users with `ADMINISTRATOR` role.
+These concepts are similar to how discord and reddit operate. A user can sign up to discord/reddit without ever joining a single community. After that they could search for public discord/reddit servers/communities and join them. The difference here would be that normal users aren't allowed to create servers/communities unlike discord/reddit, they can only join servers/communities that have already been created by users with `administrator` role.
 
 Questions:-
 
@@ -28,6 +28,8 @@ Pending, categories within an action item
 
 `Advertisement`
 Pending
+
+
 
 What is an `AgendaCategory`
 Pending
@@ -139,6 +141,8 @@ Pending
 `Organization`
 Pending, custom fields per community, probably useless feature
 
+Private organizations not implemented yet.
+
 `OrganizationCustomField`
 Remove
 
@@ -185,9 +189,38 @@ Breeze chm doesn't have an equivalent functionality.
 
 Breeze chm doesn't have an equivalent functionality.
 
-`Advertisement` -> `advertisements`
+`advertisements` <- `Advertisement`
 
 Done
+
+<!-- Create -->
+
+administrator user can create advertisements within any organization
+
+administrator organization member can create advertisements within the associated organization
+
+<!-- Update -->
+
+administrator user can update advertisements within any organization
+
+administrator organization member can update advertisements within the associated organization
+
+<!-- Delete -->
+
+administrator user can delete advertisements within any organization
+
+administrator organization member can delete advertisements within the associated organization
+
+`advertisement_attachments`
+
+advertisements can exist without any attachments.
+
+<!-- Not yet implemented -->
+
+advertisement attachments are currently not verified to exist during the creation of an advertisement.
+
+advertisement attachments are currently not allowed to be updated.
+
 
 `AgendaCategory` -> `agenda_categories`
 
@@ -223,9 +256,70 @@ Pending
 
 Has to be done on an instance basis where instance could be regular or a recurring instance of an event.
 
-`Comment` -> `comments`
+`comments` <- `Comment` 
 
 Done
+
+<!-- Create -->
+
+administrator user can create their comments within any organization
+
+organization administrator/regular member can create theircomments within the associated organization
+
+<!-- Update -->
+
+administrator user can update their comments within any organization
+
+administrator user can update the `isPinned` field of comments within any organization
+
+administrator organization member can update their comments within the associated organization
+
+administrator organization member can update the `isPinned` field of comments within the associated organization
+
+regular organization member can update the `body` field of their comments within the associated organization
+
+<!-- Delete -->
+
+administrator user can delete comments within any organization
+
+administrator organization member can delete comments within the associated organization
+
+organization regular member can delete their comments within the associated organization
+
+<!-- Not yet implemented -->
+
+administrator users and administrator organization members creating votes on the behalf of other users 
+
+deleting votes where the `voter_id` column is `null`, such columns would need to be identified using the `id` column
+
+
+`comment_votes`
+
+<!-- Create -->
+
+administrator user can create their votes on comments within any organization
+
+organization administrator/regular member can create their votes on comments within the associated organization
+
+<!-- Update -->
+
+administrator user can update their votes on comments within any organization
+
+organization members can update their votes on comments within the associated organization
+
+<!-- Delete -->
+
+administrator user can delete votes on comments within any organization
+
+administrator organization member can delete votes on comments within the associated organization
+
+organization regular member can delete their votes on comments within the associated organization
+
+<!-- Not yet implemented -->
+
+administrator users and administrator organization members creating votes on the behalf of other users 
+
+deleting votes where the `voter_id` column is `null`, such columns would need to be identified using the `id` column
 
 `DirectChat`
 
@@ -315,9 +409,7 @@ Remove(depends on another GSOC contributer's work)
 
 Remove(as discussed in the google meet conference)
 
-`MembershipRequest` -> `organization_memberships`
 
-Done
 
 `Message`
 
@@ -331,15 +423,61 @@ Remove(not used anywhere on the client side)
 
 Remove(as discussed on slack thread for agenda items)
 
-`Organization` -> `organizations`
+`organizations` <- `Organization` 
 
 Done
+
+<!-- Create -->
+
+administrator user can create organizations
+
+<!-- Update -->
+
+administrator user can update organizations
+
+<!-- Delete -->
+
+administrator user can delete organizations
+
+<!-- Not yet implemented -->
+
+administrator organization members being able to update the associated organization
+
+`organization_memberships` <- `MembershipRequest` 
+
+Done
+
+<!-- Create -->
+
+administrator user can create the memberships within any organization
+
+regular user can create their memberships within any organization
+
+<!-- Update -->
+
+administrator user can update the memberships within any organization
+
+administrator organization member can update the memberships within the associated organization
+
+<!-- Delete -->
+
+administrator user can delete memberships within any organization
+
+administrator organization member can delete memberships within the associated organization
+
+regular organization member can delete their membership within the associated organization
+
+<!-- Not yet implemented -->
+
+devising a fairer strategy for administrator organization members to update/delete other administrator organization members
+
+handling the situation where no administrator organization member exists in the an organization
 
 `OrganizationCustomField`
 
 Remove(useless)
 
-`OrganizationTagUser` -> `tags`
+`tags` <- `OrganizationTagUser`
 
 Done
 
@@ -351,9 +489,65 @@ Remove(useless as discussed on the slack thread for plugins)
 
 Remove(useless as discussed on the slack thread for plugins)
 
-`Post` -> `posts`
+`posts` <- `Post`
 
 Done
+
+<!-- Create -->
+
+administrator user can create their posts within any organization
+
+organization administrator/regular member can create theirposts within the associated organization
+
+<!-- Update -->
+
+administrator user can update their posts within any organization
+
+administrator user can update the `isPinned` field of posts within any organization
+
+administrator organization member can update their posts within the associated organization
+
+administrator organization member can update the `isPinned` field of posts within the associated organization
+
+regular organization member can update the `caption` field of their posts within the associated organization
+
+`post_attachments`
+
+posts can exist without any attachments.
+
+<!-- Not yet implemented -->
+
+post attachments are currently not verified to exist during the creation of a post.
+
+post attachments are currently not allowed to be updated.
+
+`post_votes`
+
+<!-- Create -->
+
+administrator user can create their votes on posts within any organization
+
+organization administrator/regular member can create their votes on posts within the associated organization
+
+<!-- Update -->
+
+administrator user can update their votes on posts within any organization
+
+organization members can update their votes on posts within the associated organization
+
+<!-- Delete -->
+
+administrator user can delete votes on posts within any organization
+
+administrator organization member can delete votes on posts within the associated organization
+
+organization regular member can delete their votes on posts within the associated organization
+
+<!-- Not yet implemented -->
+
+administrator users and administrator organization members creating votes on the behalf of other users 
+
+deleting votes where the `voter_id` column is `null`, such columns would need to be identified using the `id` column
 
 `RecurrenceRule` -> `event_recurrences`
 

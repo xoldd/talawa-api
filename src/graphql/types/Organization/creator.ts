@@ -1,5 +1,5 @@
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
 Organization.implement({
@@ -18,8 +18,7 @@ Organization.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.emailAddress, currentUserId),
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
 
 				if (currentUser === undefined) {
@@ -27,7 +26,7 @@ Organization.implement({
 						extensions: {
 							code: "forbidden_action",
 						},
-						message: "Only unauthenticated users can perform this action.",
+						message: "Only authenticated users can perform this action.",
 					});
 				}
 

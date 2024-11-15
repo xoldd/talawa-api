@@ -28,12 +28,6 @@ export const actionCategoriesTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		description: text("description"),
 
 		id: uuid("id").primaryKey().$default(uuidv7),
@@ -50,7 +44,7 @@ export const actionCategoriesTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},

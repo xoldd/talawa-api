@@ -5,7 +5,7 @@ import { builder } from "~/src/graphql/builder";
 import { MutationDeleteUserInput } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { mutationDeleteUserInputSchema } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationDeleteUserArgumentsSchema = z.object({
 	input: mutationDeleteUserInputSchema,
@@ -15,7 +15,7 @@ builder.mutationField("deleteUser", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input required to delete a user.",
 				required: true,
 				type: MutationDeleteUserInput,
 			}),
@@ -94,12 +94,13 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) =>
-					operators.eq(fields.id, parsedArgs.input.id),
-			});
+			const [deletedUser] = await ctx.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, parsedArgs.input.id))
+				.returning();
 
-			if (existingUser === undefined) {
+			// Deleted user not being returned means that either it doesn't exist or it was already deleted or its `id` column was changed by external entities before this delete operation.
+			if (deletedUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -110,21 +111,6 @@ builder.mutationField("deleteUser", (t) =>
 						],
 					},
 					message: "No associated resources found for the provided arguments.",
-				});
-			}
-
-			const [deletedUser] = await ctx.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, parsedArgs.input.id))
-				.returning();
-
-			// Deleted user not being returned means that either it was deleted or its `id` column was changed by an external entity before this delete operation.
-			if (deletedUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

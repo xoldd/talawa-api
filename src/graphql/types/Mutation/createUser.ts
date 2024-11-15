@@ -6,8 +6,8 @@ import {
 	MutationCreateUserInput,
 	mutationCreateUserInputSchema,
 } from "~/src/graphql/inputs/MutationCreateUserInput";
-import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateUserArgumentsSchema = z.object({
 	input: mutationCreateUserInputSchema,
@@ -17,7 +17,7 @@ builder.mutationField("createUser", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input required to create a user.",
 				required: true,
 				type: MutationCreateUserInput,
 			}),
@@ -81,7 +81,9 @@ builder.mutationField("createUser", (t) =>
 
 			const existingUserWithEmailAddress =
 				await ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {},
+					columns: {
+						role: true,
+					},
 					where: (fields, operators) =>
 						operators.eq(fields.emailAddress, parsedArgs.input.emailAddress),
 				});
@@ -124,8 +126,15 @@ builder.mutationField("createUser", (t) =>
 				});
 			}
 
-			return createdUser;
+			return {
+				authenticationToken: ctx.jwt.sign({
+					user: {
+						id: createdUser.id,
+					},
+				}),
+				user: createdUser,
+			};
 		},
-		type: User,
+		type: AuthenticationPayload,
 	}),
 );

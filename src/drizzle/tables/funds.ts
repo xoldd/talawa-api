@@ -28,12 +28,6 @@ export const fundsTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		id: uuid("id").primaryKey().$default(uuidv7),
 
 		isArchived: boolean("is_archived").notNull(),
@@ -52,7 +46,7 @@ export const fundsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},

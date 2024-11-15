@@ -1,5 +1,5 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
-import { organizationsTable } from "~/src/drizzle/schema";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
@@ -7,7 +7,7 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/graphql/reusables/defaultGraphQLConnection";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const queryOrganizationsArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema.transform(

@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { organizationsTableSelectSchema } from "~/src/drizzle/tables/organizations";
+import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 
 export const organizationNameWhereInputSchema = z
 	.object({
-		equal: organizationsTableSelectSchema.shape.name
+		equal: organizationsTableInsertSchema.shape.name
 			.nullish()
 			.transform((arg) => (arg === null ? undefined : arg)),
 	})

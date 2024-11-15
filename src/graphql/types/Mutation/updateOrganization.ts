@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { organizationsTable } from "~/src/drizzle/schema";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationUpdateOrganizationInput,
 	mutationUpdateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateOrganizationArgumentsSchema = z.object({
 	input: mutationUpdateOrganizationInputSchema,
@@ -79,18 +79,23 @@ builder.mutationField("updateOrganization", (t) =>
 				});
 			}
 
-			const { id, ...input } = parsedArgs.input;
-
 			const [updatedOrganization] = await ctx.drizzleClient
 				.update(organizationsTable)
 				.set({
-					...input,
+					address: parsedArgs.input.address,
+					avatarURI: parsedArgs.input.avatarURI,
+					city: parsedArgs.input.city,
+					countryCode: parsedArgs.input.countryCode,
+					description: parsedArgs.input.description,
+					name: parsedArgs.input.name,
+					postalCode: parsedArgs.input.postalCode,
+					state: parsedArgs.input.state,
 					updaterId: currentUserId,
 				})
-				.where(eq(organizationsTable.id, id))
+				.where(eq(organizationsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated organization not being returned means that either the record was deleted or its `id` column was changed before this delete operation by an external entity.
+			// Updated organization not being returned means that either it doesn't exist or it was already deleted or its `id` column was changed by external entities before this update operation.
 			if (updatedOrganization === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

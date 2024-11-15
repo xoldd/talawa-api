@@ -44,12 +44,6 @@ export const actionsTable = pgTable(
 			.references(() => usersTable.id, {})
 			.notNull(),
 
-		deletedAt: timestamp("deleted_at", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
-
 		eventId: uuid("event_id").references(() => eventsTable.id),
 
 		id: uuid("id").primaryKey().$default(uuidv7),
@@ -68,7 +62,7 @@ export const actionsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}),
+		}).$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},

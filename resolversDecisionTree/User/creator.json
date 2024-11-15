@@ -3,7 +3,7 @@
 	"if current user is authenticated": {
 		"if current user does not exist": "throw unauthenticated error",
 		"if current user exists": {
-			"if current user is a base user": {
+			"if current user is a regular user": {
 				"if current user is not the created user": "throw unauthorized error",
 				"if current user is the created user": {
 					"if current user id is not equal to the creator user id": {
