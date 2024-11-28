@@ -3,8 +3,8 @@ import { User } from "./User";
 
 User.implement({
 	fields: (t) => ({
-		creator: t.field({
-			description: "User field to read the user who created the user.",
+		updatedAt: t.field({
+			description: "Date time at the time the user was last updated.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -15,12 +15,11 @@ User.implement({
 					});
 				}
 
-				if (parent.creatorId === null) {
-					return null;
-				}
-
 				const currentUserId = ctx.currentClient.user.id;
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
 
@@ -45,31 +44,9 @@ User.implement({
 					});
 				}
 
-				if (parent.creatorId === currentUserId) {
-					return currentUser;
-				}
-
-				const creatorId = parent.creatorId;
-				const creatorUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, creatorId),
-				});
-
-				// Creator user id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-				if (creatorUser === undefined) {
-					ctx.log.error(
-						"Postgres select operation returned an empty array for a user's creator user id that isn't null.",
-					);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-						message: "Something went wrong. Please try again later.",
-					});
-				}
-
-				return creatorUser;
+				return parent.updatedAt;
 			},
-			type: User,
+			type: "DateTime",
 		}),
 	}),
 });
