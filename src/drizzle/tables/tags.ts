@@ -1,5 +1,7 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
+	type AnyPgColumn,
+	boolean,
 	index,
 	pgTable,
 	text,
@@ -11,7 +13,6 @@ import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { organizationsTable } from "./organizations";
 import { tagAssignmentsTable } from "./tagAssignments";
-import { tagFoldersTable } from "./tagFolders";
 import { usersTable } from "./users";
 
 /**
@@ -38,16 +39,13 @@ export const tagsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
-		 * Foreign key reference to the id of the tag folder within which the tag is positioned.
-		 */
-		folderId: uuid("folder_id").references(() => tagFoldersTable.id, {
-			onDelete: "cascade",
-			onUpdate: "cascade",
-		}),
-		/**
 		 * Primary unique identifier of the tag.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
+		/**
+		 * Boolean to tell if the tag is used as a tag folder.
+		 */
+		isFolder: boolean("is_folder").notNull(),
 		/**
 		 * Name of the state the tag.
 		 */
@@ -62,13 +60,25 @@ export const tagsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 		/**
+		 * Foreign key reference to the id of the tag within which the tag is positioned.
+		 */
+		parentTagFolderId: uuid("parent_tag_folder_id").references(
+			(): AnyPgColumn => tagsTable.id,
+			{
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			},
+		),
+		/**
 		 * Date time at the time the tag was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).$onUpdate(() => new Date()),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 		/**
 		 * Foreign key reference to the id of the user who last updated the tag.
 		 */
@@ -79,14 +89,20 @@ export const tagsTable = pgTable(
 	},
 	(self) => [
 		index().on(self.creatorId),
-		index().on(self.folderId),
 		index().on(self.name),
+		index().on(self.parentTagFolderId),
 		index().on(self.organizationId),
-		uniqueIndex().on(self.name, self.organizationId),
+		uniqueIndex().on(self.isFolder, self.name, self.organizationId),
 	],
 );
 
 export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
+	/**
+	 * One to many relationship from `tags` table to `tags` table.
+	 */
+	tagsWhereParentTag: many(tagsTable, {
+		relationName: "tags.id:tags.parent_tag_folder_id",
+	}),
 	/**
 	 * Many to one relationship from `tags` table to `users` table.
 	 */
@@ -96,12 +112,12 @@ export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
 		relationName: "tags.creator_id:users.id",
 	}),
 	/**
-	 * Many to one relationship from `tags` table to `tag_folders` table.
+	 * Many to one relationship from `tags` table to `tags` table.
 	 */
-	folder: one(tagFoldersTable, {
-		fields: [tagsTable.folderId],
-		references: [tagFoldersTable.id],
-		relationName: "tag_folders.id:tags.folder_id",
+	parentTagFolder: one(tagsTable, {
+		fields: [tagsTable.parentTagFolderId],
+		references: [tagsTable.id],
+		relationName: "tags.id:tags.parent_tag_folder_id",
 	}),
 	/**
 	 * Many to one relationship from `tags` table to `organizations` table.

@@ -14,6 +14,5 @@ import "./Organization/index";
 import "./Query/index";
 import "./Subscription/index";
 // import "./Tag/index";
-// import "./TagFolder/index";
 import "./User/index";
 // import "./Venue/index";

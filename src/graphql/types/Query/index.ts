@@ -14,7 +14,6 @@ import "./organization";
 import "./renewAuthenticationToken";
 import "./signIn";
 // import "./tag"
-// import "./tagFolder"
 import "./user";
 import "./users";
 import "./venue";

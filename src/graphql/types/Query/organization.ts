@@ -1,19 +1,23 @@
 import { z } from "zod";
-import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
+import {
+	QueryOrganizationInput,
+	queryOrganizationInputSchema,
+} from "~/src/graphql/inputs/QueryOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const queryOrganizationArgumentsSchema = z.object({
-	id: organizationsTableInsertSchema.shape.id.unwrap(),
+	input: queryOrganizationInputSchema,
 });
 
 builder.queryField("organization", (t) =>
 	t.field({
 		args: {
-			id: t.arg.id({
-				description: "",
+			input: t.arg({
+				description: "Input required to read an organization.",
 				required: true,
+				type: QueryOrganizationInput,
 			}),
 		},
 		description: "Query field to read an organization.",
@@ -39,7 +43,8 @@ builder.queryField("organization", (t) =>
 
 			const organization =
 				await ctx.drizzleClient.query.organizationsTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, parsedArgs.id),
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.id),
 				});
 
 			if (organization === undefined) {

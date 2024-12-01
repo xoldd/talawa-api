@@ -111,9 +111,9 @@ builder.mutationField("deleteAdvertisement", (t) =>
 					.organizationMembershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" ||
-				currentUserOrganizationMembership === undefined ||
-				currentUserOrganizationMembership.role !== "administrator"
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -134,7 +134,7 @@ builder.mutationField("deleteAdvertisement", (t) =>
 				.where(eq(advertisementsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Deleted advertisement not being returned means that either it was already deleted or its `id` column was changed by external entities before this delete operation.
+			// Deleted advertisement not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
 			if (deletedAdvertisement === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

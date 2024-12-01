@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
 	type AnyPgColumn,
 	index,
@@ -44,7 +44,9 @@ export const agendaSectionsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).$onUpdate(() => new Date()),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 	},

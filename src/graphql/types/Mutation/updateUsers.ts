@@ -269,7 +269,7 @@ builder.mutationField("updateUsers", (t) =>
 								.where(eq(usersTable.id, input.id))
 								.returning();
 
-							// If the updated user record is not returned, it means that either it was already deleted or itrs `id` column was changed by external entities before this update operation. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
+							// If the updated user record is not returned, it means that either it was deleted or itrs `id` column was changed by external entities before this update operation could take place. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
 							if (updatedUser === undefined) {
 								throw new TalawaGraphQLError({
 									extensions: {
@@ -552,7 +552,7 @@ builder.mutationField("updateUsers", (t) =>
 // 						.returning()
 // 				).sort((user0, user1) => ids.indexOf(user0.id) - ids.indexOf(user1.id));
 
-// 				// If the number of updated user records is not equal to the number of records that were meant to be updated, it means that some of those records were either deleted or their `id` column was changed by external entities before this update operation. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
+// 				// If the number of updated user records is not equal to the number of records that were meant to be updated, it means that some of those records were either deleted or their `id` column was changed by external entities before this update operation could take place. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
 // 				if (updatedUsers.length !== ids.length) {
 // 					throw new TalawaGraphQLError({
 // 						extensions: {

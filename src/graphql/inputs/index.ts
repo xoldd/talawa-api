@@ -24,6 +24,7 @@ import "./MutationUpdateOrganizationMembershipInput";
 import "./MutationUpdatePostVoteInput";
 import "./MutationUpdateUserInput";
 import "./OrganizationNameWhereInput";
+import "./QueryOrganizationInput";
 import "./QueryOrganizationsWhereInput";
 import "./QuerySignInInput";
 import "./QueryUserInput";

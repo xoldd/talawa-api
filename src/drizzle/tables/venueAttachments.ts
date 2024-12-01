@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { venueAttachmentTypeEnum } from "~/src/drizzle/enums/venueAttachmentType";
 import { usersTable } from "./users";
@@ -25,7 +25,9 @@ export const venueAttachmentsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).$onUpdate(() => new Date()),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 
 		updaterId: uuid("updater_id").references(() => usersTable.id, {}),
 

@@ -1,4 +1,3 @@
-import { createContext } from "node:vm";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { tagsTable } from "~/src/drizzle/tables/tags";
@@ -65,7 +64,7 @@ builder.mutationField("updateTag", (t) =>
 				}),
 				ctx.drizzleClient.query.tagsTable.findFirst({
 					columns: {
-						name: true,
+						isFolder: true,
 						organizationId: true,
 					},
 					with: {
@@ -73,9 +72,6 @@ builder.mutationField("updateTag", (t) =>
 							columns: {},
 							with: {
 								organizationMembershipsWhereOrganization: {
-									columns: {
-										role: true,
-									},
 									where: (fields, operators) =>
 										operators.eq(fields.memberId, currentUserId),
 								},
@@ -110,23 +106,26 @@ builder.mutationField("updateTag", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.folderId)) {
-				const folderId = parsedArgs.input.folderId;
+			if (isNotNullish(parsedArgs.input.parentTagFolderId)) {
+				const parentTagFolderId = parsedArgs.input.parentTagFolderId;
 
-				const existingTagFolder =
-					ctx.drizzleClient.query.tagFoldersTable.findFirst({
-						columns: {},
+				const existingParentTag =
+					await ctx.drizzleClient.query.tagsTable.findFirst({
+						columns: {
+							isFolder: true,
+							organizationId: true,
+						},
 						where: (fields, operators) =>
-							operators.and(operators.eq(fields.id, folderId)),
+							operators.eq(fields.id, parentTagFolderId),
 					});
 
-				if (existingTagFolder !== undefined) {
+				if (existingParentTag === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
+									argumentPath: ["input", "parentTagFolderId"],
 								},
 							],
 						},
@@ -134,21 +133,54 @@ builder.mutationField("updateTag", (t) =>
 							"No associated resources found for the provided arguments.",
 					});
 				}
+
+				if (existingParentTag.organizationId !== existingTag.organizationId) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: ["input", "parentTagFolderId"],
+									message:
+										"This tag does not belong to the associated organization.",
+								},
+							],
+						},
+						message:
+							"This action is forbidden on the resources associated to the provided arguments.",
+					});
+				}
+
+				if (existingParentTag.isFolder !== true) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: ["input", "parentTagFolderId"],
+									message: "This must be a tag folder.",
+								},
+							],
+						},
+						message:
+							"This action is forbidden on the resources associated to the provided arguments.",
+					});
+				}
 			}
 
 			if (isNotNullish(parsedArgs.input.name)) {
 				const name = parsedArgs.input.name;
 
-				const existingTagWithName = ctx.drizzleClient.query.tagsTable.findFirst(
-					{
+				const existingTagWithName =
+					await ctx.drizzleClient.query.tagsTable.findFirst({
 						columns: {},
 						where: (fields, operators) =>
 							operators.and(
+								operators.eq(fields.isFolder, existingTag.isFolder),
 								operators.eq(fields.name, name),
 								operators.eq(fields.organizationId, existingTag.organizationId),
 							),
-					},
-				);
+					});
 
 				if (existingTagWithName !== undefined) {
 					throw new TalawaGraphQLError({
@@ -167,44 +199,40 @@ builder.mutationField("updateTag", (t) =>
 				}
 			}
 
-			if (currentUser.role !== "administrator") {
-				const currentUserMembership =
-					existingTag.organization.organizationMembershipsWhereOrganization[0];
+			const currentUserOrganizationMembership =
+				existingTag.organization.organizationMembershipsWhereOrganization[0];
 
-				if (
-					currentUserMembership === undefined ||
-					currentUserMembership.role !== "administrator"
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "id"],
-								},
-							],
-						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
-					});
-				}
+			if (
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
+					},
+					message:
+						"You are not authorized to perform this action on the resources associated to the provided arguments.",
+				});
 			}
 
 			const [updatedTag] = await ctx.drizzleClient
 				.update(tagsTable)
 				.set({
-					folderId: parsedArgs.input.folderId,
+					parentTagFolderId: parsedArgs.input.parentTagFolderId,
 					name: parsedArgs.input.name,
 					updaterId: currentUserId,
 				})
 				.where(eq(tagsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Inserted tag not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+			// Updated tag not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
 			if (updatedTag === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",

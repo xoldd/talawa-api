@@ -1,6 +1,6 @@
 # About this directory
 
-This directory contains the code for performing api tests against the graphql implementation of talawa api. The tests in this directory must follow the practices of black box testing and must be able to run concurrently.
+This directory contains the code for performing api tests against talawa api's graphql implementation. The tests in this directory must follow the practices of black box testing and must be able to run concurrently.
 
 # Directory structure
 

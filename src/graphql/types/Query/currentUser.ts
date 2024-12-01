@@ -20,7 +20,7 @@ builder.queryField("currentUser", (t) =>
 				where: (fields, operators) => operators.eq(fields.id, currentUserId),
 			});
 
-			// Current user not existing in the database means that either it was already deleted or its `id` column was changed by external entities which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
+			// Current user not existing in the database means that either it was deleted or its `id` column was changed by external entities which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

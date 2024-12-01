@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
 	boolean,
@@ -37,7 +37,6 @@ import { postAttachmentsTable } from "./postAttachments";
 import { postVotesTable } from "./postVotes";
 import { postsTable } from "./posts";
 import { tagAssignmentsTable } from "./tagAssignments";
-import { tagFoldersTable } from "./tagFolders";
 import { tagsTable } from "./tags";
 import { venueAttachmentsTable } from "./venueAttachments";
 import { venueBookingsTable } from "./venueBookings";
@@ -157,7 +156,9 @@ export const usersTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).$onUpdate(() => new Date()),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 		/**
 		 * Foreign key reference to the id of the user who last updated the user.
 		 */
@@ -491,18 +492,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	tagAssignmentsWhereUpdater: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.updater_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `tag_folders` table.
-	 */
-	tagFoldersWhereCreator: many(tagFoldersTable, {
-		relationName: "tag_folders.creator_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `tag_folders` table.
-	 */
-	tagFoldersWhereUpdater: many(tagFoldersTable, {
-		relationName: "tag_folders.updater_id:users.id",
 	}),
 	/**
 	 * Many to one relationship from `users` table to `users` table.

@@ -1,24 +1,18 @@
-import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
 Organization.implement({
 	fields: (t) => ({
-		updater: t.field({
-			description: "User who last updated the organization.",
+		updatedAt: t.field({
+			description: "Date time at the time the organization was last updated.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message:
-							"Only authenticated organizations can perform this action.",
+						message: "Only authenticated users can perform this action.",
 					});
-				}
-
-				if (parent.updaterId === null) {
-					return null;
 				}
 
 				const currentUserId = ctx.currentClient.user.id;
@@ -38,7 +32,7 @@ Organization.implement({
 				if (currentUser === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "forbidden_action",
+							code: "unauthenticated",
 						},
 						message: "Only authenticated users can perform this action.",
 					});
@@ -60,31 +54,9 @@ Organization.implement({
 					});
 				}
 
-				if (parent.updaterId === currentUserId) {
-					return currentUser;
-				}
-
-				const updaterId = parent.updaterId;
-				const updaterUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, updaterId),
-				});
-
-				// Updater user id existing but the associated user not existing is either a business logic error which means that the corresponding data in the database is in a corrupted state or it is a rare race condition. It must be investigated and fixed as soon as possible to prevent further data corruption if the former case is true.
-				if (updaterUser === undefined) {
-					ctx.log.warn(
-						"Postgres select operation returned an empty array for a organization's updater user id that isn't null.",
-					);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-						message: "Something went wrong. Please try again later.",
-					});
-				}
-
-				return updaterUser;
+				return parent.updatedAt;
 			},
-			type: User,
+			type: "DateTime",
 		}),
 	}),
 });

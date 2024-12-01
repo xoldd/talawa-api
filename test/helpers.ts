@@ -18,12 +18,12 @@ export function assertToBeNonNullish<T>(
 	value: T | null | undefined,
 ): asserts value is T {
 	if (value === undefined || value === null) {
-		throw new Error(`Expected a non-nullish value, but received: ${value}.`);
+		throw new Error("Not a non-nullish value.");
 	}
 }
 
 /**
- * A subsequence is a sequence that can be derived from another sequence by deleting some or no elements without changing the order of the remaining elements. This function is useful for checking if the sequence passed to it as the first argument is a subsequence of the sequence passed to it as the second argument.
+ * This function is useful for checking if the sequence passed to it as the first argument is a subsequence of the sequence passed to it as the second argument. A subsequence is a sequence that can be derived from another sequence by deleting some or no elements from the latter without changing the order of the remaining elements.
  *
  * @example
  * if(isSubsequence([3, 4, 1, 9, 2], [1, 2]){

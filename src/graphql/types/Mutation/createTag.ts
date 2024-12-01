@@ -60,31 +60,25 @@ builder.mutationField("createTag", (t) =>
 						columns: {
 							role: true,
 						},
-						with: {
-							organizationMembershipsWhereMember: {
-								columns: {
-									role: true,
-								},
-								where: (fields, operators) =>
-									operators.eq(
-										fields.organizationId,
-										parsedArgs.input.organizationId,
-									),
-							},
-						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
 					ctx.drizzleClient.query.organizationsTable.findFirst({
+						columns: {},
+						with: {
+							organizationMembershipsWhereOrganization: {
+								where: (fields, operators) =>
+									operators.eq(fields.memberId, currentUserId),
+							},
+						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.organizationId),
 					}),
 					ctx.drizzleClient.query.tagsTable.findFirst({
-						columns: {
-							name: true,
-						},
+						columns: {},
 						where: (fields, operators) =>
 							operators.and(
+								operators.eq(fields.isFolder, parsedArgs.input.isFolder),
 								operators.eq(fields.name, parsedArgs.input.name),
 								operators.eq(
 									fields.organizationId,
@@ -133,31 +127,26 @@ builder.mutationField("createTag", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.folderId)) {
-				const folderId = parsedArgs.input.folderId;
-				const existingTagFolder =
-					await ctx.drizzleClient.query.tagFoldersTable.findFirst({
-						columns: {},
+			if (isNotNullish(parsedArgs.input.parentTagFolderId)) {
+				const parentTagFolderId = parsedArgs.input.parentTagFolderId;
+
+				const existingParentTag =
+					await ctx.drizzleClient.query.tagsTable.findFirst({
+						columns: {
+							isFolder: true,
+							organizationId: true,
+						},
 						where: (fields, operators) =>
-							operators.and(
-								operators.eq(fields.id, folderId),
-								operators.eq(
-									fields.organizationId,
-									parsedArgs.input.organizationId,
-								),
-							),
+							operators.eq(fields.id, parentTagFolderId),
 					});
 
-				if (existingTagFolder === undefined) {
+				if (existingParentTag === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
+									argumentPath: ["input", "parentTagFolderId"],
 								},
 							],
 						},
@@ -165,36 +154,71 @@ builder.mutationField("createTag", (t) =>
 							"No associated resources found for the provided arguments.",
 					});
 				}
-			}
-
-			if (currentUser.role !== "administrator") {
-				const currentUserMembership =
-					currentUser.organizationMembershipsWhereMember[0];
 
 				if (
-					currentUserMembership === undefined ||
-					currentUserMembership.role !== "administrator"
+					existingParentTag.organizationId !== parsedArgs.input.organizationId
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
+							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "organizationId"],
+									argumentPath: ["input", "parentTagFolderId"],
+									message:
+										"This tag does not belong to the associated organization.",
 								},
 							],
 						},
 						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
+							"This action is forbidden on the resources associated to the provided arguments.",
 					});
 				}
+
+				if (existingParentTag.isFolder !== true) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "forbidden_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: ["input", "parentTagFolderId"],
+									message: "This must be a tag folder.",
+								},
+							],
+						},
+						message:
+							"This action is forbidden on the resources associated to the provided arguments.",
+					});
+				}
+			}
+
+			const currentUserOrganizationMembership =
+				existingOrganization.organizationMembershipsWhereOrganization[0];
+
+			if (
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+					message:
+						"You are not authorized to perform this action on the resources associated to the provided arguments.",
+				});
 			}
 
 			const [createdTag] = await ctx.drizzleClient
 				.insert(tagsTable)
 				.values({
 					creatorId: currentUserId,
-					folderId: parsedArgs.input.folderId,
+					isFolder: parsedArgs.input.isFolder,
+					parentTagFolderId: parsedArgs.input.parentTagFolderId,
 					name: parsedArgs.input.name,
 					organizationId: parsedArgs.input.organizationId,
 				})

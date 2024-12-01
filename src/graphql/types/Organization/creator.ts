@@ -5,7 +5,7 @@ import { Organization } from "./Organization";
 Organization.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created this organization.",
+			description: "User who created the organization.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -16,42 +16,19 @@ Organization.implement({
 					});
 				}
 
-				const currentUserId = ctx.currentClient.user.id;
-				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				});
-
-				if (currentUser === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action",
-						},
-						message: "Only authenticated users can perform this action.",
-					});
+				if (parent.creatorId === null) {
+					return null;
 				}
 
-				if (currentUser.role !== "administrator") {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action",
-						},
-						message: "You are not authorized to access this resource.",
-					});
-				}
-
-				if (parent.creatorId === currentUserId) {
-					return currentUser;
-				}
-
+				const creatorId = parent.creatorId;
 				const creatorUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, parent.creatorId),
+					where: (fields, operators) => operators.eq(fields.id, creatorId),
 				});
 
-				// Creator user id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Creator user id existing but the associated user not existing is either a business logic error which means that the corresponding data in the database is in a corrupted state or it is a rare race condition. It must be investigated and fixed as soon as possible to prevent further data corruption if the former case is true.
 				if (creatorUser === undefined) {
-					ctx.log.error(
-						"Postgres select operation returned an empty array for a user's creator user id that isn't null.",
+					ctx.log.warn(
+						"Postgres select operation returned an empty array for a organization's creator user id that isn't null.",
 					);
 					throw new TalawaGraphQLError({
 						extensions: {

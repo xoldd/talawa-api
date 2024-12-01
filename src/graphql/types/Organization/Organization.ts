@@ -23,6 +23,10 @@ Organization.implement({
 				"Country code of the country the organization is a citizen of.",
 			type: Iso3166Alpha2CountryCode,
 		}),
+		createdAt: t.expose("createdAt", {
+			description: "Date time at the time the organization was created.",
+			type: "DateTime",
+		}),
 		description: t.exposeString("description", {
 			description: "Custom information about the organization.",
 		}),

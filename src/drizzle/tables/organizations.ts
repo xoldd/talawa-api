@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
@@ -10,7 +10,6 @@ import { familiesTable } from "./families";
 import { fundsTable } from "./funds";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { postsTable } from "./posts";
-import { tagFoldersTable } from "./tagFolders";
 import { tagsTable } from "./tags";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
@@ -81,7 +80,9 @@ export const organizationsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).$onUpdate(() => new Date()),
+		})
+			.$defaultFn(() => sql`${null}`)
+			.$onUpdate(() => new Date()),
 		/**
 		 * Foreign key reference to the id of the user who last updated the organization.
 		 */
@@ -153,12 +154,6 @@ export const organizationsTableRelations = relations(
 		 */
 		postsWhereOrganization: many(postsTable, {
 			relationName: "organizations.id:posts.organization_id",
-		}),
-		/**
-		 * One to many relationship from `organizations` table to `tag_folders` table.
-		 */
-		tagFoldersWhereOrganization: many(tagFoldersTable, {
-			relationName: "organizations.id:tag_folders.organization_id",
 		}),
 		/**
 		 * One to many relationship from `organizations` table to `tags` table.

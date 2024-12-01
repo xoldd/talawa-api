@@ -216,7 +216,7 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 				)
 				.returning();
 
-			// Deleted organization not being returned means that either it was already deleted or its `id` column was changed by external entities before this delete operation.
+			// Deleted organization not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
 			if (deletedOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

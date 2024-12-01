@@ -181,9 +181,9 @@ builder.mutationField("updateAdvertisement", (t) =>
 					.organizationMembershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" ||
-				currentUserOrganizationMembership === undefined ||
-				currentUserOrganizationMembership.role !== "administrator"
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -199,7 +199,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 				});
 			}
 
-			const [updatedAdvertisement] = await tx
+			const [updatedAdvertisement] = await ctx.drizzleClient
 				.update(advertisementsTable)
 				.set({
 					description: parsedArgs.input.description,
@@ -212,7 +212,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 				.where(eq(advertisementsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated advertisement not being returned means that either it was already updated or its `id` column was changed by external entities before this update operation.
+			// Updated advertisement not being returned means that either it was already updated or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedAdvertisement === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

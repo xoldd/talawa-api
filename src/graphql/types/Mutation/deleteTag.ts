@@ -53,36 +53,12 @@ builder.mutationField("deleteTag", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
-
-			const [currentUser, existingTag] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.tagsTable.findFirst({
-					columns: {
-						name: true,
-					},
-					with: {
-						organization: {
-							columns: {},
-							with: {
-								organizationMembershipsWhereOrganization: {
-									columns: {
-										role: true,
-									},
-									where: (fields, operators) =>
-										operators.eq(fields.memberId, currentUserId),
-								},
-							},
-						},
-					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.id),
-				}),
-			]);
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -92,6 +68,23 @@ builder.mutationField("deleteTag", (t) =>
 					message: "Only authenticated users can perform this action.",
 				});
 			}
+
+			const existingTag = await ctx.drizzleClient.query.tagsTable.findFirst({
+				columns: {},
+				with: {
+					organization: {
+						columns: {},
+						with: {
+							organizationMembershipsWhereOrganization: {
+								where: (fields, operators) =>
+									operators.eq(fields.memberId, currentUserId),
+							},
+						},
+					},
+				},
+				where: (fields, operators) =>
+					operators.eq(fields.id, parsedArgs.input.id),
+			});
 
 			if (existingTag === undefined) {
 				throw new TalawaGraphQLError({
@@ -107,27 +100,26 @@ builder.mutationField("deleteTag", (t) =>
 				});
 			}
 
-			if (currentUser.role !== "administrator") {
-				const currentUserMembership =
-					existingTag.organization.organizationMembershipsWhereOrganization[0];
+			const currentUserOrganizationMembership =
+				existingTag.organization.organizationMembershipsWhereOrganization[0];
 
-				if (
-					currentUserMembership === undefined ||
-					currentUserMembership.role !== "administrator"
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
-					});
-				}
+			if (
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
+					},
+					message:
+						"You are not authorized to perform this action on the resources associated to the provided arguments.",
+				});
 			}
 
 			const [deletedTag] = await ctx.drizzleClient
@@ -135,11 +127,8 @@ builder.mutationField("deleteTag", (t) =>
 				.where(eq(tagsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Inserted tag not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+			// Deleted tag not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
 			if (deletedTag === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",

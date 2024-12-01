@@ -135,9 +135,9 @@ builder.mutationField("createAdvertisement", (t) =>
 				currentUser.organizationMembershipsWhereMember[0];
 
 			if (
-				currentUser.role !== "administrator" ||
-				currentUserOrganizationMembership === undefined ||
-				currentUserOrganizationMembership.role !== "administrator"
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

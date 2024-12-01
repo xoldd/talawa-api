@@ -155,7 +155,7 @@ builder.mutationField("updateCommentVote", (t) =>
 				)
 				.returning();
 
-			// Updated comment vote not being returned means that either it was already deleted or its `commentId` or `voterId` columns were changed by external entities before this delete operation.
+			// Updated comment vote not being returned means that either it was deleted or its `commentId` or `voterId` columns were changed by external entities before this delete operation could take place.
 			if (updatedCommentVote === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

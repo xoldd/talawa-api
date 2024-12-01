@@ -4,12 +4,12 @@ import {
 	organizationMembershipsTable,
 	organizationMembershipsTableInsertSchema,
 } from "~/src/drizzle/tables/organizationMemberships";
+import { User } from "~/src/graphql/types/User/User";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/graphql/reusables/defaultGraphQLConnection";
-import { User } from "~/src/graphql/types/User/User";
+} from "~/src/utilities/defaultGraphQLConnection";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 

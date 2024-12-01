@@ -1,5 +1,6 @@
 import "./Tag";
 import "./creator";
-import "./folder";
+import "./parentTagFolder";
 import "./organization";
+import "./tagsWhereParentTag";
 import "./updater";

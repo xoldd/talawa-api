@@ -124,7 +124,7 @@ builder.mutationField("deleteOrganizations", (t) =>
 						ids.indexOf(organization0.id) - ids.indexOf(organization1.id),
 				);
 
-				// If the number of deleted organizations is not equal to the number of organizations that were meant to be deleted, it means that some of those organizations were either deleted or their `id` column was changed by external entities before this delete operation. To keep the delete operation consistent with the input we throw the error to rollback the postgres transaction.
+				// If the number of deleted organizations is not equal to the number of organizations that were meant to be deleted, it means that some of those organizations were either deleted or their `id` column was changed by external entities before this delete operation could take place. To keep the delete operation consistent with the input we throw the error to rollback the postgres transaction.
 				if (deletedOrganizations.length !== ids.length) {
 					throw new TalawaGraphQLError({
 						extensions: {

@@ -204,7 +204,7 @@ builder.mutationField("deletePostVote", (t) =>
 				)
 				.returning();
 
-			// Deleted post vote not being returned means that either it was already deleted or its `postId` or `voterId` columns were changed by external entities before this delete operation.
+			// Deleted post vote not being returned means that either it was deleted or its `postId` or `voterId` columns were changed by external entities before this delete operation could take place.
 			if (deletedPostVote === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

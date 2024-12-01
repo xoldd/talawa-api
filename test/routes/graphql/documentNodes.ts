@@ -1,4 +1,4 @@
-// DO NOT USE HARDCODE VALUES FOR VARIABLES IN THE GRAPHQL DOCUMENT NODES, DECLARE VARIABLES FOR ALL VALUES AND PROVIDE THEM EXPLICITLY IN THE TESTS WHERE THE DOCUMENT NODES ARE USED IN. THIS IS REQUIRED TO PREVENT UNPREDICTABLE BEHAVIOR IN THE TESTS BY PREVENTING IMPLICIT DATA BEING SENT ALONG WITH THE GRAPHQL OPERATION.
+// DO NOT USE HARDCODE VALUES FOR VARIABLES IN THE GRAPHQL DOCUMENT NODES, PROVIDE THEM EXPLICITLY IN THE TESTS WHERE THE DOCUMENT NODES ARE USED IN.
 
 import { initGraphQLTada } from "gql.tada";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
@@ -34,7 +34,6 @@ export const Mutation_createUser =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber
         }
     }
@@ -63,7 +62,6 @@ export const Mutation_deleteCurrentUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -91,7 +89,6 @@ export const Mutation_deleteUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -121,7 +118,6 @@ export const Mutation_signUp =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber
         }
     }
@@ -150,7 +146,6 @@ export const Mutation_updateCurrentUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -178,7 +173,6 @@ export const Mutation_updateUser =
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber    
     }
 }`);
@@ -205,7 +199,6 @@ export const Query_currentUser = gql(`query Query_currentUser {
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber
     }
 }`);
@@ -239,7 +232,6 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber
         }
     }
@@ -267,7 +259,6 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
         postalCode
         role
         state
-        updatedAt
         workPhoneNumber
     }
 }`);
@@ -296,9 +287,15 @@ export const Query_user_creator =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber 
         }
+    }
+}`);
+
+export const Query_user_updatedAt =
+	gql(`query Query_user_updatedAt($input: QueryUserInput!) {
+    user(input: $input) {
+        updatedAt
     }
 }`);
 
@@ -326,47 +323,7 @@ export const Query_user_updater =
             postalCode
             role
             state
-            updatedAt
             workPhoneNumber 
-        }
-    }
-}`);
-
-export const Query_users =
-	gql(`query Query_user($after: String, $before: String, $first: Int, $last: Int) {
-    users(after: $after, before: $before, first: $first, last: $last) {
-        edges {
-            cursor
-            node {
-                address
-                avatarURI
-                birthDate
-                city
-                countryCode
-                createdAt
-                description
-                educationGrade
-                emailAddress
-                employmentStatus
-                homePhoneNumber
-                id
-                isEmailAddressVerified
-                maritalStatus
-                mobilePhoneNumber
-                name
-                natalSex
-                postalCode
-                role
-                state
-                updatedAt
-                workPhoneNumber
-            }
-        }
-        pageInfo {
-            endCursor
-            hasNextPage
-            hasPreviousPage
-            startCursor
         }
     }
 }`);

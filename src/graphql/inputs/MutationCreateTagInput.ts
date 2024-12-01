@@ -3,9 +3,10 @@ import { tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationCreateTagInputSchema = tagsTableInsertSchema.pick({
-	folderId: true,
+	isFolder: true,
 	name: true,
 	organizationId: true,
+	parentTagFolderId: true,
 });
 
 export const MutationCreateTagInput = builder
@@ -15,8 +16,9 @@ export const MutationCreateTagInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			folderId: t.id({
-				description: "Global identifier of the tag folder.",
+			isFolder: t.boolean({
+				description: "Boolean to tell if the tag is a folder tag.",
+				required: true,
 			}),
 			name: t.string({
 				description: "Name of the tag.",
@@ -25,6 +27,9 @@ export const MutationCreateTagInput = builder
 			organizationId: t.id({
 				description: "Global identifier of the associated organization.",
 				required: true,
+			}),
+			parentTagFolderId: t.id({
+				description: "Global identifier of the parent tag.",
 			}),
 		}),
 	});

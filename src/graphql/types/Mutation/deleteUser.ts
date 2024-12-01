@@ -99,7 +99,7 @@ builder.mutationField("deleteUser", (t) =>
 				.where(eq(usersTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Deleted user not being returned means that either it doesn't exist or it was already deleted or its `id` column was changed by external entities before this delete operation.
+			// Deleted user not being returned means that either it doesn't exist or it was deleted or its `id` column was changed by external entities before this delete operation could take place.
 			if (deletedUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

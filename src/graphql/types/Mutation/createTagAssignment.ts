@@ -1,15 +1,14 @@
 import { z } from "zod";
-import { tagsTable } from "~/src/drizzle/tables/tags";
+import { tagAssignmentsTable } from "~/src/drizzle/tables/tagAssignments";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateTagAssignmentInput,
 	mutationCreateTagAssignmentInputSchema,
 } from "~/src/graphql/inputs/MutationCreateTagAssignmentInput";
-import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { Tag } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
-const mutationCreateTagArgumentsSchema = z.object({
+const mutationCreateTagAssignmentArgumentsSchema = z.object({
 	input: mutationCreateTagAssignmentInputSchema,
 });
 
@@ -37,7 +36,7 @@ builder.mutationField("createTagAssignment", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationCreateTagArgumentsSchema.safeParse(args);
+			} = mutationCreateTagAssignmentArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -54,45 +53,47 @@ builder.mutationField("createTagAssignment", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingOrganization, existingTag] =
-				await Promise.all([
-					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: {
-							role: true,
-						},
-						with: {
-							organizationMembershipsWhereMember: {
-								columns: {
-									role: true,
+			const [
+				currentUser,
+				existingAssignee,
+				existingTag,
+				existingTagAssignment,
+			] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.assigneeId),
+				}),
+				ctx.drizzleClient.query.tagsTable.findFirst({
+					with: {
+						organization: {
+							columns: {},
+							with: {
+								organizationMembershipsWhereOrganization: {
+									where: (fields, operators) =>
+										operators.eq(fields.memberId, parsedArgs.input.assigneeId),
 								},
-								where: (fields, operators) =>
-									operators.eq(
-										fields.organizationId,
-										parsedArgs.input.organizationId,
-									),
 							},
 						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
-					ctx.drizzleClient.query.organizationsTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.input.organizationId),
-					}),
-					ctx.drizzleClient.query.tagsTable.findFirst({
-						columns: {
-							name: true,
-						},
-						where: (fields, operators) =>
-							operators.and(
-								operators.eq(fields.name, parsedArgs.input.name),
-								operators.eq(
-									fields.organizationId,
-									parsedArgs.input.organizationId,
-								),
-							),
-					}),
-				]);
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.tagId),
+				}),
+				ctx.drizzleClient.query.tagAssignmentsTable.findFirst({
+					columns: {},
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.assigneeId, parsedArgs.input.assigneeId),
+							operators.eq(fields.tagId, parsedArgs.input.tagId),
+						),
+				}),
+			]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -103,58 +104,16 @@ builder.mutationField("createTagAssignment", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.folderId)) {
-				const folderId = parsedArgs.input.folderId;
-				const existingTagFolder =
-					await ctx.drizzleClient.query.tagFoldersTable.findFirst({
-						columns: {},
-						where: (fields, operators) => operators.eq(fields.id, folderId),
-					});
-
-				if (
-					existingOrganization === undefined &&
-					existingTagFolder === undefined
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-						message:
-							"No associated resources found for the provided arguments.",
-					});
-				}
-
-				if (existingTagFolder === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-								},
-							],
-						},
-						message:
-							"No associated resources found for the provided arguments.",
-					});
-				}
-			}
-
-			if (existingOrganization === undefined) {
+			if (existingAssignee === undefined && existingTag === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
-								argumentPath: ["input", "organizationId"],
+								argumentPath: ["input", "assigneeId"],
+							},
+							{
+								argumentPath: ["input", "tagId"],
 							},
 						],
 					},
@@ -162,14 +121,48 @@ builder.mutationField("createTagAssignment", (t) =>
 				});
 			}
 
-			if (existingTag !== undefined) {
+			if (existingAssignee === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "assigneeId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingTag === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "tagId"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
+				});
+			}
+
+			if (existingTagAssignment !== undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
 						issues: [
 							{
-								argumentPath: ["input", "name"],
-								message: "This name is not available.",
+								argumentPath: ["input", "assigneeId"],
+								message:
+									"This user is already assigned with the associated tag.",
+							},
+							{
+								argumentPath: ["input", "tagId"],
+								message:
+									"This tag is already assigned to the associated assignee.",
 							},
 						],
 					},
@@ -178,41 +171,58 @@ builder.mutationField("createTagAssignment", (t) =>
 				});
 			}
 
-			if (currentUser.role !== "administrator") {
-				const currentUserMembership =
-					currentUser.organizationMembershipsWhereMember[0];
-
-				if (
-					currentUserMembership === undefined ||
-					currentUserMembership.role !== "administrator"
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
-					});
-				}
+			if (existingTag.isFolder === true) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "tagId"],
+								message: "This tag cannot be a tag folder.",
+							},
+						],
+					},
+					message:
+						"This action is forbidden on the resources associated to the provided arguments.",
+				});
 			}
 
-			const [createdTag] = await ctx.drizzleClient
-				.insert(tagsTable)
+			const currentUserOrganizationMembership =
+				existingTag.organization.organizationMembershipsWhereOrganization[0];
+
+			if (
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "assigneeId"],
+							},
+							{
+								argumentPath: ["input", "tagId"],
+							},
+						],
+					},
+					message:
+						"You are not authorized to perform this action on the resources associated to the provided arguments.",
+				});
+			}
+
+			const [createdTagAssignment] = await ctx.drizzleClient
+				.insert(tagAssignmentsTable)
 				.values({
+					assigneeId: parsedArgs.input.assigneeId,
 					creatorId: currentUserId,
-					folderId: parsedArgs.input.folderId,
-					name: parsedArgs.input.name,
-					organizationId: parsedArgs.input.organizationId,
+					tagId: parsedArgs.input.tagId,
 				})
 				.returning();
 
-			// Inserted tag not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdTag === undefined) {
+			// Created tag assignment not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+			if (createdTagAssignment === undefined) {
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 				);
@@ -224,8 +234,8 @@ builder.mutationField("createTagAssignment", (t) =>
 				});
 			}
 
-			return createdTag;
+			return existingTag;
 		},
-		type: Organization,
+		type: Tag,
 	}),
 );

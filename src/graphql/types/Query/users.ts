@@ -2,12 +2,12 @@ import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
 import { z } from "zod";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
+import { User } from "~/src/graphql/types/User/User";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
-} from "~/src/graphql/reusables/defaultGraphQLConnection";
-import { User } from "~/src/graphql/types/User/User";
+} from "~/src/utilities/defaultGraphQLConnection";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const queryUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -78,7 +78,7 @@ builder.queryField("users", (t) =>
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to access this resource.",
+						message: "You are not authorized to perform this action.",
 					});
 				}
 

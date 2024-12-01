@@ -112,7 +112,7 @@ builder.mutationField("updateUser", (t) =>
 				.where(eq(usersTable.id, id))
 				.returning();
 
-			// Updated user not being returned means that either the user does not exist or it was already deleted or its `id` column was changed by external entities before this upate operation.
+			// Updated user not being returned means that either the user does not exist or it was deleted or its `id` column was changed by external entities before this upate operation.
 			if (updatedUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

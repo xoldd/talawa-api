@@ -130,7 +130,7 @@ builder.mutationField("updateOrganizations", (t) =>
 									.where(eq(organizationsTable.id, id))
 									.returning();
 
-								// If the updated organization record is not returned, it means that either it was already deleted or itrs `id` column was changed by external entities before this update operation. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
+								// If the updated organization record is not returned, it means that either it was deleted or itrs `id` column was changed by external entities before this update operation could take place. To keep the update operation consistent with the input we throw the error to rollback the postgres transaction.
 								if (updatedOrganization === undefined) {
 									throw new TalawaGraphQLError({
 										extensions: {
