@@ -43,7 +43,7 @@ export const tagsTable = pgTable(
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Boolean to tell if the tag is used as a tag folder.
+		 * Boolean to tell if the tag is to be used as a tag folder.
 		 */
 		isFolder: boolean("is_folder").notNull(),
 		/**
@@ -60,9 +60,9 @@ export const tagsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 		/**
-		 * Foreign key reference to the id of the tag within which the tag is positioned.
+		 * Foreign key reference to the id of the parent tag.
 		 */
-		parentTagFolderId: uuid("parent_tag_folder_id").references(
+		parentTagId: uuid("parent_tag_id").references(
 			(): AnyPgColumn => tagsTable.id,
 			{
 				onDelete: "cascade",
@@ -89,20 +89,15 @@ export const tagsTable = pgTable(
 	},
 	(self) => [
 		index().on(self.creatorId),
+		index().on(self.isFolder),
 		index().on(self.name),
-		index().on(self.parentTagFolderId),
 		index().on(self.organizationId),
+		index().on(self.parentTagId),
 		uniqueIndex().on(self.isFolder, self.name, self.organizationId),
 	],
 );
 
 export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
-	/**
-	 * One to many relationship from `tags` table to `tags` table.
-	 */
-	tagsWhereParentTag: many(tagsTable, {
-		relationName: "tags.id:tags.parent_tag_folder_id",
-	}),
 	/**
 	 * Many to one relationship from `tags` table to `users` table.
 	 */
@@ -110,14 +105,6 @@ export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
 		fields: [tagsTable.creatorId],
 		references: [usersTable.id],
 		relationName: "tags.creator_id:users.id",
-	}),
-	/**
-	 * Many to one relationship from `tags` table to `tags` table.
-	 */
-	parentTagFolder: one(tagsTable, {
-		fields: [tagsTable.parentTagFolderId],
-		references: [tagsTable.id],
-		relationName: "tags.id:tags.parent_tag_folder_id",
 	}),
 	/**
 	 * Many to one relationship from `tags` table to `organizations` table.
@@ -128,10 +115,24 @@ export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
 		relationName: "organizations.id:tags.organization_id",
 	}),
 	/**
+	 * Many to one relationship from `tags` table to `tags` table.
+	 */
+	parentTag: one(tagsTable, {
+		fields: [tagsTable.parentTagId],
+		references: [tagsTable.id],
+		relationName: "tags.id:tags.parent_tag_id",
+	}),
+	/**
 	 * One to many relationship from `tags` table to `tag_assignments` table.
 	 */
 	tagAssignmentsWhereTag: many(tagAssignmentsTable, {
 		relationName: "tag_assignments.tag_id:tags.id",
+	}),
+	/**
+	 * One to many relationship from `tags` table to `tags` table.
+	 */
+	tagsWhereParentTag: many(tagsTable, {
+		relationName: "tags.id:tags.parent_tag_id",
 	}),
 	/**
 	 * Many to one relationship from `tags` table to `users` table.

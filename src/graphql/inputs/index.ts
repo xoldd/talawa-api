@@ -27,4 +27,5 @@ import "./OrganizationNameWhereInput";
 import "./QueryOrganizationInput";
 import "./QueryOrganizationsWhereInput";
 import "./QuerySignInInput";
+import "./QueryTagInput";
 import "./QueryUserInput";

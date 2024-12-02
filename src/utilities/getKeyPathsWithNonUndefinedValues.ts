@@ -2,6 +2,9 @@ type Paths<T> = T extends object
 	? { [K in keyof T]: [K, ...Paths<T[K]>] | [K] }[keyof T]
 	: never;
 
+/**
+ * This function takes in a javascript object and a list of key paths within that object as arguments and outputs all paths amongst those key paths that correspond to a non-undefined value.
+ */
 export const getKeyPathsWithNonUndefinedValues = <
 	T extends Record<string, unknown>,
 >({

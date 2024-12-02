@@ -1,52 +1,52 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
 import type { z } from "zod";
 import { tagsTable, tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
+import { Tag } from "~/src/graphql/types/Tag/Tag";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
-import { Tag } from "./Tag";
+import { Organization } from "./Organization";
 
-const tagsWhereParentTagArgumentsSchema =
-	defaultGraphQLConnectionArgumentsSchema
-		.transform(transformDefaultGraphQLConnectionArguments)
-		.transform((arg, ctx) => {
-			let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+const tagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
+	.transform(transformDefaultGraphQLConnectionArguments)
+	.transform((arg, ctx) => {
+		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
 
-			try {
-				if (arg.cursor !== undefined) {
-					cursor = cursorSchema.parse(
-						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
-					);
-				}
-			} catch (error) {
-				ctx.addIssue({
-					code: "custom",
-					message: "Not a valid cursor.",
-					path: [arg.isInversed ? "before" : "after"],
-				});
+		try {
+			if (arg.cursor !== undefined) {
+				cursor = cursorSchema.parse(
+					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
+				);
 			}
+		} catch (error) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Not a valid cursor.",
+				path: [arg.isInversed ? "before" : "after"],
+			});
+		}
 
-			return {
-				cursor,
-				isInversed: arg.isInversed,
-				limit: arg.limit,
-			};
-		});
+		return {
+			cursor,
+			isInversed: arg.isInversed,
+			limit: arg.limit,
+		};
+	});
 
 const cursorSchema = tagsTableInsertSchema.pick({
 	isFolder: true,
 	name: true,
 });
 
-Tag.implement({
+Organization.implement({
 	fields: (t) => ({
-		tagsWhereParentTag: t.connection(
+		tags: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the tags that have the tag as their parent tag",
+					"GraphQL connection to traverse through the tags associated to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
@@ -61,7 +61,7 @@ Tag.implement({
 						data: parsedArgs,
 						error,
 						success,
-					} = tagsWhereParentTagArgumentsSchema.safeParse(args);
+					} = tagsArgumentsSchema.safeParse(args);
 
 					if (!success) {
 						throw new TalawaGraphQLError({
@@ -80,13 +80,14 @@ Tag.implement({
 
 					const currentUser =
 						await ctx.drizzleClient.query.usersTable.findFirst({
+							columns: {
+								role: true,
+							},
 							with: {
 								organizationMembershipsWhereMember: {
-									columns: {
-										role: true,
-									},
+									columns: {},
 									where: (fields, operators) =>
-										operators.eq(fields.organizationId, parent.organizationId),
+										operators.eq(fields.organizationId, parent.id),
 								},
 							},
 							where: (fields, operators) =>
@@ -107,8 +108,7 @@ Tag.implement({
 
 					if (
 						currentUser.role !== "administrator" &&
-						(currentUserOrganizationMembership === undefined ||
-							currentUserOrganizationMembership.role !== "administrator")
+						currentUserOrganizationMembership === undefined
 					) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -134,13 +134,13 @@ Tag.implement({
 										.from(tagsTable)
 										.where(
 											and(
-												eq(tagsTable.parentTagId, parent.id),
 												eq(tagsTable.isFolder, cursor.isFolder),
 												eq(tagsTable.name, cursor.name),
+												eq(tagsTable.organizationId, parent.id),
 											),
 										),
 								),
-								eq(tagsTable.parentTagId, parent.id),
+								eq(tagsTable.organizationId, parent.id),
 								or(
 									and(
 										eq(tagsTable.isFolder, cursor.isFolder),
@@ -150,7 +150,7 @@ Tag.implement({
 								),
 							);
 						} else {
-							where = eq(tagsTable.parentTagId, parent.id);
+							where = eq(tagsTable.organizationId, parent.id);
 						}
 					} else {
 						if (cursor !== undefined) {
@@ -161,13 +161,13 @@ Tag.implement({
 										.from(tagsTable)
 										.where(
 											and(
-												eq(tagsTable.parentTagId, parent.id),
 												eq(tagsTable.isFolder, cursor.isFolder),
 												eq(tagsTable.name, cursor.name),
+												eq(tagsTable.organizationId, parent.id),
 											),
 										),
 								),
-								eq(tagsTable.parentTagId, parent.id),
+								eq(tagsTable.organizationId, parent.id),
 								or(
 									and(
 										eq(tagsTable.isFolder, cursor.isFolder),
@@ -177,7 +177,7 @@ Tag.implement({
 								),
 							);
 						} else {
-							where = eq(tagsTable.parentTagId, parent.id);
+							where = eq(tagsTable.organizationId, parent.id);
 						}
 					}
 

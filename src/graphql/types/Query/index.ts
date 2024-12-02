@@ -13,7 +13,7 @@ import "./organization";
 // import "./post"
 import "./renewAuthenticationToken";
 import "./signIn";
-// import "./tag"
+import "./tag";
 import "./user";
 import "./users";
 import "./venue";

@@ -106,8 +106,8 @@ builder.mutationField("updateTag", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.parentTagFolderId)) {
-				const parentTagFolderId = parsedArgs.input.parentTagFolderId;
+			if (isNotNullish(parsedArgs.input.parentTagId)) {
+				const parentTagId = parsedArgs.input.parentTagId;
 
 				const existingParentTag =
 					await ctx.drizzleClient.query.tagsTable.findFirst({
@@ -115,8 +115,7 @@ builder.mutationField("updateTag", (t) =>
 							isFolder: true,
 							organizationId: true,
 						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, parentTagFolderId),
+						where: (fields, operators) => operators.eq(fields.id, parentTagId),
 					});
 
 				if (existingParentTag === undefined) {
@@ -125,7 +124,7 @@ builder.mutationField("updateTag", (t) =>
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "parentTagFolderId"],
+									argumentPath: ["input", "parentTagId"],
 								},
 							],
 						},
@@ -140,7 +139,7 @@ builder.mutationField("updateTag", (t) =>
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "parentTagFolderId"],
+									argumentPath: ["input", "parentTagId"],
 									message:
 										"This tag does not belong to the associated organization.",
 								},
@@ -157,7 +156,7 @@ builder.mutationField("updateTag", (t) =>
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "parentTagFolderId"],
+									argumentPath: ["input", "parentTagId"],
 									message: "This must be a tag folder.",
 								},
 							],
@@ -224,7 +223,7 @@ builder.mutationField("updateTag", (t) =>
 			const [updatedTag] = await ctx.drizzleClient
 				.update(tagsTable)
 				.set({
-					parentTagFolderId: parsedArgs.input.parentTagFolderId,
+					parentTagId: parsedArgs.input.parentTagId,
 					name: parsedArgs.input.name,
 					updaterId: currentUserId,
 				})
